@@ -45,26 +45,6 @@ import org.ngoy.internal.parser.Parser;
 import org.ngoy.internal.util.Nullable;
 
 public class Ngoy {
-	public static String getTemplate(Class<?> clazz) {
-		try {
-			Component cmp = clazz.getAnnotation(Component.class);
-			String templateUrl = cmp.templateUrl();
-			String tpl;
-			if (isSet(templateUrl)) {
-				InputStream in = clazz.getResourceAsStream(templateUrl);
-				if (in == null) {
-					throw new NgoyException("template could not be found: '%s'", templateUrl);
-				}
-				tpl = copyToString(in);
-			} else {
-				tpl = cmp.template();
-			}
-			return tpl;
-		} catch (Exception e) {
-			throw wrap(e);
-		}
-	}
-
 	public static class Builder {
 		private Class<?> appRoot;
 		private Provider[] providers;
@@ -127,6 +107,26 @@ public class Ngoy {
 		new Ngoy(optionalConfig(config)).renderTemplate(templatePath, true, ctx, out);
 	}
 
+	public static String getTemplate(Class<?> clazz) {
+		try {
+			Component cmp = clazz.getAnnotation(Component.class);
+			String templateUrl = cmp.templateUrl();
+			String tpl;
+			if (isSet(templateUrl)) {
+				InputStream in = clazz.getResourceAsStream(templateUrl);
+				if (in == null) {
+					throw new NgoyException("template could not be found: '%s'", templateUrl);
+				}
+				tpl = copyToString(in);
+			} else {
+				tpl = cmp.template();
+			}
+			return tpl;
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
 	private void renderTemplate(String templateOrPath, boolean templateIsPath, Ctx ctx, OutputStream out) {
 		String tpl = templateIsPath ? copyToString(getClass().getResourceAsStream(templateOrPath)) : templateOrPath;
 		Class<?> clazz = createTemplate(cache.key(templateOrPath), createParser(null, null, config), tpl, config.contentType);
@@ -137,7 +137,7 @@ public class Ngoy {
 		return config.length > 0 ? config[0] : new Config();
 	}
 
-	protected static class Config {
+	public static class Config {
 		public Locale locale;
 		public boolean parseBody;
 		public String translateBundle;
