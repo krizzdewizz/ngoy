@@ -1,6 +1,6 @@
 package org.ngoy;
 
-import static org.ngoy.common.ANgoyTest.getJngTestResourcesPath;
+import static org.ngoy.common.ANgoyTest.getTestResourcesPath;
 import static org.ngoy.internal.util.Util.newPrintStream;
 
 import java.io.File;
@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import org.junit.Test;
-import org.ngoy.Ngoy;
 import org.ngoy.common.DatePipe;
 import org.ngoy.common.LowerCasePipe;
 import org.ngoy.common.UpperCasePipe;
@@ -23,7 +22,7 @@ import org.ngoy.testapp.TestApp;
 public class XTest {
 
 	@Test
-	public void testJng() throws Exception {
+	public void testNgoy() throws Exception {
 		Ngoy ng = Ngoy.app(TestApp.class)
 				.providers(Provider.of(PersonService.class))
 				.build();
@@ -42,7 +41,7 @@ public class XTest {
 		)
 				.variable("person", new Person("krizz"))//
 				.variable("x", true);
-		File target = getJngTestResourcesPath().resolve("x.html")
+		File target = getTestResourcesPath().resolve("x.html")
 				.toFile();
 		try (PrintStream out = newPrintStream(new FileOutputStream(target))) {
 			ctx.setOut(out, null);

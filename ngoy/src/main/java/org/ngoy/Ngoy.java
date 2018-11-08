@@ -107,6 +107,9 @@ public class Ngoy {
 		new Ngoy(optionalConfig(config)).renderTemplate(templatePath, true, ctx, out);
 	}
 
+	/**
+	 * non-api
+	 */
 	public static String getTemplate(Class<?> clazz) {
 		try {
 			Component cmp = clazz.getAnnotation(Component.class);

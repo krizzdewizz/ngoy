@@ -14,11 +14,11 @@ import org.ngoy.core.Provider;
 
 public abstract class ANgoyTest {
 
-	public static Path getJngTestPath() {
+	public static Path getTestPath() {
 		return Paths.get(System.getProperty("user.dir"), "src\\test\\java\\org\\ngoy");
 	}
 
-	public static Path getJngTestResourcesPath() {
+	public static Path getTestResourcesPath() {
 		return Paths.get(System.getProperty("user.dir"), "src\\test\\resources\\org\\ngoy");
 	}
 

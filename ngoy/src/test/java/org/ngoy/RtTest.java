@@ -1,7 +1,7 @@
 package org.ngoy;
 
 import static java.lang.String.format;
-import static org.ngoy.common.ANgoyTest.getJngTestPath;
+import static org.ngoy.common.ANgoyTest.getTestPath;
 import static org.ngoy.core.NgoyException.wrap;
 import static org.ngoy.internal.util.Util.newPrintStream;
 
@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.Test;
-import org.ngoy.Ngoy;
 import org.ngoy.Ngoy.Config;
 import org.ngoy.core.Provider;
 import org.ngoy.core.internal.Ctx;
@@ -31,7 +30,7 @@ public class RtTest {
 					parser.parse(Ngoy.getTemplate(appRoot), new JavaTemplate(newPrintStream(out)));
 
 					String html = new String(baos.toByteArray(), "UTF-8");
-					Path src = getJngTestPath().resolve("X.java");
+					Path src = getTestPath().resolve("X.java");
 					System.out.println(format("see %s", src));
 					Files.write(src, html.getBytes("UTF-8"));
 				} catch (Exception e) {

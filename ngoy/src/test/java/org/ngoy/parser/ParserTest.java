@@ -13,8 +13,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.Test;
-import org.ngoy.Ngoy;
 import org.ngoy.JavaTemplate;
+import org.ngoy.Ngoy;
 import org.ngoy.common.ANgoyTest;
 import org.ngoy.core.ElementRef;
 import org.ngoy.core.internal.CmpRef;
@@ -75,7 +75,7 @@ public class ParserTest {
 		// System.out.println(flatten(html));
 		String html = new String(baos.toByteArray(), "UTF-8");
 
-		Path src = ANgoyTest.getJngTestPath()
+		Path src = ANgoyTest.getTestPath()
 				.resolve("X.java");
 		Files.write(src, html.getBytes("UTF-8"));
 
