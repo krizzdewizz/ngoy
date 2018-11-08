@@ -1,0 +1,7 @@
+.metadata
+.recommenders
+ng-test/
+.idea/
+out/
+.sonarlint/
+RemoteSystemsTempFiles/

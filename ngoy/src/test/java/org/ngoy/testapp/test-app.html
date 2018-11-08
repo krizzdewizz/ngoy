@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Document</title>
+
+	<style>
+		.qbert {
+			color: red;
+		}
+	</style>
+
+
+</head>
+
+<body>
+aaaaaaaa
+<h1> {{ T(java.time.LocalDateTime).now() | date:'hh:mm:ss' }}   </h1>
+<h1> {{'MSG_HELLO' | translate | uppercase }}   </h1>
+
+<script>
+
+//setTimeout(() => location.reload(), 2000);
+
+</script>
+
+	<person-list [persons]="persons"></person-list>
+	<person-list [persons]="persons"></person-list>
+
+	<div class="honk" [class]="{qbert: true}">Höööööööööönk</div>
+
+	<span *ngIf="0 == 0">I'm there</span>
+
+	<div *ngIf="0 == 0">I'm there
+		<h1 *ngFor="let it of persons">Hello: {{it.name}}</h1>
+	</div>
+
+	<div class="ok" [class.x]="0 == 0" [class.y]="1 == 1">
+		a {{'abc'}} hello {{'krizz'}}
+		<br> hello
+		<a [href]="'x'" title="{{'gogo'}}">{{'you'}}</a>
+		z
+	</div>
+</body>
+
+</html>
+
+
+
+
