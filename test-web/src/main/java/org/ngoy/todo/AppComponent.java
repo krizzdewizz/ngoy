@@ -1,22 +1,21 @@
 package org.ngoy.todo;
 
-import static org.ngoy.todo.TodoEvent.TODO_DELETED;
+import static org.ngoy.todo.TodoEvent.ADD_TODO;
+import static org.ngoy.todo.TodoEvent.DELETE_TODO;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.ngoy.core.Component;
 import org.ngoy.core.Events;
 import org.ngoy.core.Inject;
 import org.ngoy.core.NgModule;
-import org.ngoy.core.OnDestroy;
 import org.ngoy.core.OnInit;
 import org.ngoy.todo.model.Todo;
 import org.ngoy.todo.services.TodoService;
 
 @Component(selector = "", templateUrl = "/todo/app.component.html")
 @NgModule(declarations = { TodoComponent.class })
-public class AppComponent implements OnInit, OnDestroy {
+public class AppComponent implements OnInit {
 	public final String appName = "Todo";
 
 	@Inject
@@ -27,21 +26,14 @@ public class AppComponent implements OnInit, OnDestroy {
 
 	public boolean deleted;
 
-	private Consumer<String> setDeleted = unused -> deleted = true;
-
-	public boolean isDeleted() {
-		return deleted;
-	}
-
 	@Override
 	public void ngOnInit() {
 		deleted = false;
-		events.<String>subscribe(TODO_DELETED, setDeleted);
-	}
-
-	@Override
-	public void ngOnDestroy() {
-		events.<String>unsubscribe(TODO_DELETED, setDeleted);
+		events.<String>subscribe(ADD_TODO, todoService::addTodo);
+		events.<String>subscribe(DELETE_TODO, id -> {
+			todoService.deleteTodo(id);
+			deleted = true;
+		});
 	}
 
 	public List<Todo> getTodos() {

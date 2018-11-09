@@ -9,7 +9,13 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class Events {
-	private Map<Object, Set<Consumer<?>>> map = new HashMap<>();
+	private static class Event {
+		Object topic;
+		Object payload;
+	}
+
+	private final Map<Object, Set<Consumer<?>>> map = new HashMap<>();
+	private final List<Event> events = new ArrayList<>();
 
 	public <T> void subscribe(Object token, Consumer<T> consumer) {
 		Set<Consumer<?>> set = map.get(token);
@@ -34,13 +40,6 @@ public class Events {
 		}
 	}
 
-	static class Event {
-		Object topic;
-		Object payload;
-	}
-
-	List<Event> events = new ArrayList<>();
-
 	public <T> void publish(Object topic, T payload) {
 		Event e = new Event();
 		e.topic = topic;
@@ -59,5 +58,9 @@ public class Events {
 			}
 			events.remove(e);
 		}
+	}
+
+	public void clear() {
+		map.clear();
 	}
 }

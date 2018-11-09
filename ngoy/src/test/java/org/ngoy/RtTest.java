@@ -12,6 +12,7 @@ import java.nio.file.Path;
 
 import org.junit.Test;
 import org.ngoy.Ngoy.Config;
+import org.ngoy.core.Injector;
 import org.ngoy.core.Provider;
 import org.ngoy.core.internal.Ctx;
 import org.ngoy.internal.parser.Parser;
@@ -22,7 +23,7 @@ public class RtTest {
 
 	@Test
 	public void run() {
-		Ngoy rt = new Ngoy(TestApp.class, new Config(), null, Provider.of(PersonService.class)) {
+		Ngoy rt = new Ngoy(TestApp.class, new Config(), null, new Injector[0], Provider.of(PersonService.class)) {
 			@Override
 			protected void parseAndRender(Class<?> appRoot, Parser parser, Ctx ctx, PrintStream out) {
 				try {

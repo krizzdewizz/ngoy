@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import java.util.List;
 
 import org.ngoy.core.ElementRef;
+import org.ngoy.core.Injector;
 
 public interface Resolver {
 	Resolver DEFAULT = new Resolver() {

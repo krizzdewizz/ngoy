@@ -16,15 +16,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.ngoy.core.Injector;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.Provider;
 
-public class Injector {
+public class DefaultInjector implements Injector {
 
 	private final Map<Class<?>, Provider> providers;
 	private final Map<Class<?>, Object> providerInstances = new HashMap<>();
+	private final Injector[] moreInjectors;
 
-	public Injector(Provider... providers) {
+	public DefaultInjector(Provider... providers) {
+		this(new Injector[0]);
+	}
+
+	public DefaultInjector(Injector[] more, Provider... providers) {
+		this.moreInjectors = more;
 		Map<Class<?>, Provider> all = new LinkedHashMap<>();
 		for (Provider p : providers) {
 			all.put(p.getProvide(), p);
@@ -32,6 +39,7 @@ public class Injector {
 		this.providers = all;
 	}
 
+	@Override
 	public <T> T get(Class<T> clazz) {
 		return getInternal(clazz, new HashSet<>());
 	}
@@ -51,6 +59,12 @@ public class Injector {
 			Object object = providerInstances.get(clazz);
 			if (object != null) {
 				return (T) object;
+			}
+
+			for (Injector inj : moreInjectors) {
+				if ((object = inj.get(clazz)) != null) {
+					return (T) object;
+				}
 			}
 
 			Provider provider = providers.get(clazz);

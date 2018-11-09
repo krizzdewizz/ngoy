@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.ngoy.core.Component;
+import org.ngoy.core.Injector;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.OnDestroy;
 import org.ngoy.core.OnInit;

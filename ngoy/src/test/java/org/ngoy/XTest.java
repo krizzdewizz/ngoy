@@ -13,7 +13,7 @@ import org.ngoy.common.LowerCasePipe;
 import org.ngoy.common.UpperCasePipe;
 import org.ngoy.core.Provider;
 import org.ngoy.core.internal.Ctx;
-import org.ngoy.core.internal.Injector;
+import org.ngoy.core.internal.DefaultInjector;
 import org.ngoy.model.Person;
 import org.ngoy.testapp.PersonDetailComponent;
 import org.ngoy.testapp.PersonService;
@@ -33,7 +33,7 @@ public class XTest {
 	public void test() throws Exception {
 		TestApp testApp = new TestApp();
 		testApp.personService = new PersonService();
-		Ctx ctx = Ctx.of(testApp, new Injector( //
+		Ctx ctx = Ctx.of(testApp, new DefaultInjector( //
 				Provider.of(PersonDetailComponent.class), //
 				Provider.of(DatePipe.class), //
 				Provider.of(UpperCasePipe.class), //

@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ngoy.todo.model.Todo;
+import org.springframework.stereotype.Service;
 
+@Service
 public class TodoService {
 
 	// the 'database' or 'repository'

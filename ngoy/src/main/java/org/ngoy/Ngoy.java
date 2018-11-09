@@ -29,6 +29,7 @@ import org.ngoy.core.Context;
 import org.ngoy.core.Directive;
 import org.ngoy.core.ElementRef;
 import org.ngoy.core.Events;
+import org.ngoy.core.Injector;
 import org.ngoy.core.NgModule;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.OnDestroy;
@@ -40,7 +41,7 @@ import org.ngoy.core.TemplateCache;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.ContainerComponent;
 import org.ngoy.core.internal.Ctx;
-import org.ngoy.core.internal.Injector;
+import org.ngoy.core.internal.DefaultInjector;
 import org.ngoy.core.internal.Resolver;
 import org.ngoy.internal.parser.ByteCodeTemplate;
 import org.ngoy.internal.parser.Parser;
@@ -50,6 +51,7 @@ public class Ngoy {
 	public static class Builder {
 		private Class<?> appRoot;
 		private Provider[] providers;
+		private Injector[] injectors;
 		private Config config = new Config();
 		private TemplateCache cache;
 
@@ -59,6 +61,11 @@ public class Ngoy {
 
 		public Builder providers(Provider... providers) {
 			this.providers = providers;
+			return this;
+		}
+
+		public Builder injectors(Injector... injectors) {
+			this.injectors = injectors;
 			return this;
 		}
 
@@ -93,7 +100,7 @@ public class Ngoy {
 		}
 
 		public Ngoy build() {
-			return new Ngoy(appRoot, config, cache, providers != null ? providers : new Provider[0]);
+			return new Ngoy(appRoot, config, cache, injectors != null ? injectors : new Injector[0], providers != null ? providers : new Provider[0]);
 		}
 	}
 
@@ -180,21 +187,21 @@ public class Ngoy {
 	private Object appInstance;
 	private Resolver resolver;
 	private Injector injector;
-	private TemplateCache cache;
+	private final TemplateCache cache;
 	private final Events events = new Events();
 
 	protected Ngoy(Config config) {
-		this(Object.class, config, null);
+		this(Object.class, config, null, new Injector[0]);
 	}
 
-	protected Ngoy(Class<?> appRoot, Config config, TemplateCache cache, Provider... rootProviders) {
+	protected Ngoy(Class<?> appRoot, Config config, TemplateCache cache, Injector[] injectors, Provider... rootProviders) {
 		this.appRoot = appRoot;
 		this.config = config;
 		this.cache = cache != null ? cache : TemplateCache.DEFAULT;
-		this.init(rootProviders);
+		this.init(injectors, rootProviders);
 	}
 
-	private void init(Provider... rootProviders) {
+	private void init(Injector[] injectors, Provider... rootProviders) {
 
 		List<Provider> cmpProviders = new ArrayList<>();
 		Map<String, Provider> cmpDecls = new HashMap<>();
@@ -227,7 +234,7 @@ public class Ngoy {
 		all.addAll(cmpDecls.values());
 		all.addAll(pipeDecls.values());
 
-		injector = new Injector(all.toArray(new Provider[all.size()]));
+		injector = new DefaultInjector(injectors, all.toArray(new Provider[all.size()]));
 
 		if (hasTranslate) {
 			injector.get(TranslateService.class)
@@ -293,6 +300,8 @@ public class Ngoy {
 			if (appInstance instanceof OnDestroy) {
 				((OnDestroy) appInstance).ngOnDestroy();
 			}
+
+			events.clear();
 
 		} catch (Exception e) {
 			throw wrap(e);
