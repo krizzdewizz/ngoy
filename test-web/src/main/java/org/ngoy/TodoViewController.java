@@ -24,13 +24,13 @@ public class TodoViewController {
 
 	@PostMapping("/todo")
 	public void todoSubmit(@RequestParam("text") String text, HttpServletResponse response) throws Exception {
-		app().post("todo.add", text)
+		app().publish("todo.add", text)
 				.render(response.getOutputStream());
 	}
 
 	@PostMapping("/todo/delete")
 	public void todoDelete(@RequestParam("id") String id, HttpServletResponse response) throws Exception {
-		app().post("todo.delete", id)
+		app().publish("todo.delete", id)
 				.render(response.getOutputStream());
 	}
 
