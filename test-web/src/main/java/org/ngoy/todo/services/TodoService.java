@@ -18,7 +18,7 @@ public class TodoService {
 
 	public Todo addTodo(String text) {
 		Todo todo = new Todo(text);
-		todos.add(todo);
+		todos.add(0, todo);
 		return todo;
 	}
 
