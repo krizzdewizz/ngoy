@@ -153,7 +153,7 @@ public class Ctx {
 					root = rootClass.getName();
 				}
 			}
-			String msg = format("error while evaluating expression '%s'. modelRoot: %s. templateUrl: %s, message: %s", expr, root, templateUrl, NgoyException.realException(e));
+			String msg = format("Error while evaluating expression '%s'. modelRoot: %s. templateUrl: %s, message: %s", expr, root, templateUrl, NgoyException.realException(e));
 
 			throw new NgoyException(msg);
 		}
@@ -168,7 +168,7 @@ public class Ctx {
 		Object obj = eval(expr);
 
 		if (obj == null) {
-			throw new NgoyException("cannot repeat with a null iterable");
+			throw new NgoyException("Cannot repeat with a null iterable");
 		}
 
 		if (obj instanceof Iterable) {
@@ -190,7 +190,7 @@ public class Ctx {
 			};
 		}
 
-		throw new NgoyException("cannot repeat with an iterable of type %s", obj.getClass()
+		throw new NgoyException("Cannot repeat with an iterable of type %s", obj.getClass()
 				.getName());
 	}
 
@@ -230,7 +230,7 @@ public class Ctx {
 						Object valueType = value == null ? null
 								: value.getClass()
 										.getName();
-						throw new NgoyException("error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", className, field.getName(), expr,
+						throw new NgoyException("Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", className, field.getName(), expr,
 								fieldType, valueType);
 					}
 				}
@@ -244,13 +244,13 @@ public class Ctx {
 						Object valueType = value == null ? null
 								: value.getClass()
 										.getName();
-						throw new NgoyException("error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", className, setter.getName(),
+						throw new NgoyException("Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", className, setter.getName(),
 								expr, parameterType, valueType);
 					}
 				}
 					break;
 				default:
-					throw new NgoyException("unknown input type: %s", inputType);
+					throw new NgoyException("Unknown input type: %s", inputType);
 				}
 			}
 

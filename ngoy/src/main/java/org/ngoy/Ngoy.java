@@ -127,7 +127,7 @@ public class Ngoy {
 		if (isSet(templateUrl)) {
 			InputStream in = clazz.getResourceAsStream(templateUrl);
 			if (in == null) {
-				throw new NgoyException("template could not be found: '%s'", templateUrl);
+				throw new NgoyException("Template could not be found: '%s'", templateUrl);
 			}
 			try (InputStream inn = in) {
 				tpl = copyToString(inn);
@@ -146,7 +146,7 @@ public class Ngoy {
 		if (templateIsPath) {
 			InputStream in = getClass().getResourceAsStream(templateOrPath);
 			if (in == null) {
-				throw new NgoyException("template could not be found: '%s'", templateOrPath);
+				throw new NgoyException("Template could not be found: '%s'", templateOrPath);
 			}
 			try (InputStream inn = in) {
 				tpl = copyToString(inn);

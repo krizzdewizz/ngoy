@@ -1,12 +1,14 @@
 package org.ngoy.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.ngoy.ANgoyTest;
 
 public class DepCycleTest extends ANgoyTest {
-	
+
 	public static class ServiceA {
 		@Inject
 		public ServiceB b;
@@ -17,6 +19,9 @@ public class DepCycleTest extends ANgoyTest {
 		public ServiceA a;
 	}
 
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
 	@Component(selector = "test", providers = { ServiceA.class, ServiceB.class })
 	public static class Cmp {
 		@Inject
@@ -25,6 +30,21 @@ public class DepCycleTest extends ANgoyTest {
 
 	@Test
 	public void test() {
-		assertThat(render(Cmp.class)).isEqualTo("");
+		expectedEx.expect(NgoyException.class);
+		expectedEx.expectMessage(containsString("Dependency cycle detected"));
+		render(Cmp.class);
+	}
+
+	@Component(selector = "test", providers = { ServiceA.class, ServiceB.class })
+	public static class CmpCtor {
+		public CmpCtor(ServiceA a) {
+		}
+	}
+
+	@Test
+	public void testCtor() {
+		expectedEx.expect(NgoyException.class);
+		expectedEx.expectMessage(containsString("Dependency cycle detected"));
+		render(CmpCtor.class);
 	}
 }

@@ -71,8 +71,7 @@ public class Util {
 	}
 
 	/**
-	 * @param contentType
-	 *            null or empty to use default
+	 * @param contentType null or empty to use default
 	 */
 	public static String escapeMarkup(String text, @Nullable String contentType) {
 		if ("text/xml".equals(contentType)) {
@@ -104,6 +103,6 @@ public class Util {
 				.filter(m -> m.getName()
 						.equals(name) && m.getParameterCount() == 1)
 				.findFirst()
-				.orElseThrow(() -> new NgoyException("setter method %s%s could not be found or has not exactly 1 parameter", clazz.getName(), name));
+				.orElseThrow(() -> new NgoyException("Setter method %s%s could not be found or has not exactly 1 parameter", clazz.getName(), name));
 	}
 }
