@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-public class ViewController {
+public class GreetingViewController {
 
 	private static Ngoy ngoy;
 
@@ -34,7 +34,9 @@ public class ViewController {
 	@GetMapping(path = "/p")
 	@ResponseBody
 	public void persons(HttpServletResponse response) throws Exception {
+		// do not disable in production
 		TemplateCache.DEFAULT.setDisabled(true);
+
 		app().render(response.getOutputStream());
 	}
 
