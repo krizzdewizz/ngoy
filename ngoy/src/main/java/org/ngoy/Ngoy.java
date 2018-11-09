@@ -131,7 +131,17 @@ public class Ngoy {
 	}
 
 	private void renderTemplate(String templateOrPath, boolean templateIsPath, Ctx ctx, OutputStream out) {
-		String tpl = templateIsPath ? copyToString(getClass().getResourceAsStream(templateOrPath)) : templateOrPath;
+		String tpl;
+		if (templateIsPath) {
+			InputStream in = getClass().getResourceAsStream(templateOrPath);
+			if (in == null) {
+				throw new NgoyException("template could not be found: '%s'", templateOrPath);
+			}
+			tpl = copyToString(in);
+		} else {
+			tpl = templateOrPath;
+		}
+
 		Class<?> clazz = createTemplate(cache.key(templateOrPath), createParser(null, null, config), tpl, config.contentType);
 		invokeRender(clazz, ctx, newPrintStream(out));
 	}
@@ -357,8 +367,10 @@ public class Ngoy {
 	private static String getContentType(@Nullable Class<?> appRoot, Config config) {
 		String contentType = config.contentType;
 		if ((contentType == null || contentType.isEmpty()) && appRoot != null) {
-			contentType = appRoot.getAnnotation(Component.class)
-					.contentType();
+			Component cmp = appRoot.getAnnotation(Component.class);
+			if (cmp != null) {
+				contentType = cmp.contentType();
+			}
 		}
 		return contentType;
 	}
