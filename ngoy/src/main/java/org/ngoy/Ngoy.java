@@ -397,8 +397,8 @@ public class Ngoy {
 		return parser;
 	}
 
-	public <T> Ngoy post(String event, T payload) {
-		events.post(event, payload);
+	public <T> Ngoy publish(Object event, T payload) {
+		events.publish(event, payload);
 		return this;
 	}
 

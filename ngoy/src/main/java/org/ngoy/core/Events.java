@@ -1,25 +1,44 @@
 package org.ngoy.core;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class Events {
-	private Map<String, Consumer<?>> map = new HashMap<>();
+	private Map<Object, Set<Consumer<?>>> map = new HashMap<>();
 
-	public <T> void subscribe(String token, Consumer<T> c) {
-		map.put(token, c);
+	public <T> void subscribe(Object token, Consumer<T> consumer) {
+		Set<Consumer<?>> set = map.get(token);
+		if (set == null) {
+			set = new LinkedHashSet<>();
+			map.put(token, set);
+		}
+		set.add(consumer);
 	}
 
-	public void unsubscribe(String token) {
-		map.remove(token);
+	public void unsubscribe(Object topic) {
+		map.remove(topic);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> void post(String token, T payload) {
-		Consumer<T> consumer = (Consumer<T>) map.get(token);
-		if (consumer != null) {
-			consumer.accept(payload);
+	public void unsubscribe(Object topic, Consumer<?> consumer) {
+		Set<Consumer<?>> set = map.get(topic);
+		if (set != null) {
+			set.remove(consumer);
+			if (set.isEmpty()) {
+				map.remove(topic);
+			}
+		}
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public <T> void publish(Object topic, T payload) {
+		Set<Consumer<?>> set = map.get(topic);
+		if (set != null) {
+			for (Consumer consumer : set) {
+				consumer.accept(payload);
+			}
 		}
 	}
 }
