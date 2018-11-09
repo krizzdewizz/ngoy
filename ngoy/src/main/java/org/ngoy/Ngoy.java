@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import org.ngoy.common.TranslateModule;
 import org.ngoy.common.TranslateService;
 import org.ngoy.core.Component;
+import org.ngoy.core.Context;
 import org.ngoy.core.Directive;
 import org.ngoy.core.ElementRef;
 import org.ngoy.core.NgModule;
@@ -99,12 +100,20 @@ public class Ngoy {
 		return new Builder(appRoot);
 	}
 
-	public static void renderString(String string, Ctx ctx, OutputStream out, Config... config) {
-		new Ngoy(optionalConfig(config)).renderTemplate(string, false, ctx, out);
+	/**
+	 * Renders the given string.
+	 */
+	public static void renderString(String template, Context context, OutputStream out, Config... config) {
+		new Ngoy(optionalConfig(config)).renderTemplate(template, false, (Ctx) context.internal(), out);
 	}
 
-	public static void render(String templatePath, Ctx ctx, OutputStream out, Config... config) {
-		new Ngoy(optionalConfig(config)).renderTemplate(templatePath, true, ctx, out);
+	/**
+	 * Renders the given template
+	 * 
+	 * @param templatePath see {@link Class#getResourceAsStream(String)}
+	 */
+	public static void render(String templatePath, Context context, OutputStream out, Config... config) {
+		new Ngoy(optionalConfig(config)).renderTemplate(templatePath, true, (Ctx) context.internal(), out);
 	}
 
 	/**
