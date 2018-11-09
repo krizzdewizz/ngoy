@@ -2,28 +2,38 @@ package org.ngoy.core;
 
 import static java.lang.String.format;
 
+import java.lang.reflect.InvocationTargetException;
+
 public class NgoyException extends RuntimeException {
 
-	public static RuntimeException wrap(Throwable cause) {
-		if (cause instanceof RuntimeException) {
-			return (RuntimeException) cause;
+	public static Throwable realException(Throwable t) {
+		if (t instanceof InvocationTargetException) {
+			t = ((InvocationTargetException) t).getTargetException();
+		}
+		return t;
+	}
+
+	public static RuntimeException wrap(Throwable t) {
+		t = realException(t);
+		if (t instanceof RuntimeException) {
+			return (RuntimeException) t;
 		}
 
-		return new NgoyException(cause);
+		return new NgoyException(t);
 	}
 
 	private static final long serialVersionUID = 1L;
-
-	public NgoyException(String message, Throwable cause) {
-		super(message, cause);
-	}
 
 	public NgoyException(String message, Object... args) {
 		super(format(message, args));
 	}
 
+	public NgoyException(Throwable cause, String message, Object... args) {
+		super(format(message, args), realException(cause));
+	}
+
 	private NgoyException(Throwable cause) {
-		super(cause);
+		super(realException(cause));
 	}
 
 }

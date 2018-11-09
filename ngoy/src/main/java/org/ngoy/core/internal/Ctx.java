@@ -1,5 +1,6 @@
 package org.ngoy.core.internal;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.ngoy.core.NgoyException.wrap;
 import static org.ngoy.internal.util.Util.escapeMarkup;
@@ -16,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.ngoy.core.Component;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.OnDestroy;
 import org.ngoy.core.OnInit;
@@ -118,9 +120,10 @@ public class Ctx {
 	}
 
 	public Object eval(String expr, String[]... pipes) {
+		EvaluationContext peek = spelCtxs.peek();
 		try {
 			Object value = exprParser.parseExpression(expr)
-					.getValue(spelCtxs.peek());
+					.getValue(peek);
 
 			for (String[] pipeWithParam : pipes) {
 				String pipeClass = pipeWithParam[0];
@@ -135,7 +138,24 @@ public class Ctx {
 
 			return value;
 		} catch (Exception e) {
-			throw new NgoyException("error while evaluating expression: " + e, e);
+			TypedValue rootObject = peek.getRootObject();
+			String root = "null";
+			String templateUrl = "none";
+			if (rootObject != null) {
+				Object value = rootObject.getValue();
+				if (value != null) {
+					Class<?> rootClass = value.getClass();
+					Component cmpAnn = rootClass.getAnnotation(Component.class);
+					if (cmpAnn != null) {
+						templateUrl = format("'%s'", cmpAnn.templateUrl());
+					}
+
+					root = rootClass.getName();
+				}
+			}
+			String msg = format("error while evaluating expression '%s'. modelRoot: %s. templateUrl: %s, message: %s", expr, root, templateUrl, NgoyException.realException(e));
+
+			throw new NgoyException(msg);
 		}
 	}
 

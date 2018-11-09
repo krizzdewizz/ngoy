@@ -28,6 +28,7 @@ import org.ngoy.core.Component;
 import org.ngoy.core.Context;
 import org.ngoy.core.Directive;
 import org.ngoy.core.ElementRef;
+import org.ngoy.core.Events;
 import org.ngoy.core.NgModule;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.OnDestroy;
@@ -180,6 +181,7 @@ public class Ngoy {
 	private Resolver resolver;
 	private Injector injector;
 	private TemplateCache cache;
+	private final Events events = new Events();
 
 	protected Ngoy(Config config) {
 		this(Object.class, config, null);
@@ -219,6 +221,7 @@ public class Ngoy {
 
 		List<Provider> all = new ArrayList<>();
 		all.add(of(appRoot));
+		all.add(useValue(Events.class, events));
 		all.addAll(asList(rootProviders));
 		all.addAll(cmpProviders);
 		all.addAll(cmpDecls.values());
@@ -275,19 +278,15 @@ public class Ngoy {
 		try {
 			if (appInstance == null) {
 				appInstance = injector.get(appRoot);
-			}
-
-			if (appInstance instanceof OnInit) {
-				((OnInit) appInstance).ngOnInit();
+				if (appInstance instanceof OnInit) {
+					((OnInit) appInstance).ngOnInit();
+				}
 			}
 
 			Ctx ctx = Ctx.of(appInstance, injector);
 
 			parseAndRender(appRoot, createParser(appRoot, resolver, config), ctx, newPrintStream(out));
 
-			if (appInstance instanceof OnDestroy) {
-				((OnDestroy) appInstance).ngOnDestroy();
-			}
 		} catch (Exception e) {
 			throw wrap(e);
 		}
@@ -396,5 +395,17 @@ public class Ngoy {
 
 		parser.contentType = getContentType(appRoot, config);
 		return parser;
+	}
+
+	public <T> Ngoy post(String event, T payload) {
+		events.post(event, payload);
+		return this;
+	}
+
+	public void destroy() {
+		if (appInstance instanceof OnDestroy) {
+			((OnDestroy) appInstance).ngOnDestroy();
+		}
+		appInstance = null;
 	}
 }
