@@ -278,14 +278,21 @@ public class Ngoy {
 		try {
 			if (appInstance == null) {
 				appInstance = injector.get(appRoot);
-				if (appInstance instanceof OnInit) {
-					((OnInit) appInstance).ngOnInit();
-				}
+			}
+
+			if (appInstance instanceof OnInit) {
+				((OnInit) appInstance).ngOnInit();
 			}
 
 			Ctx ctx = Ctx.of(appInstance, injector);
 
+			events.tick();
+
 			parseAndRender(appRoot, createParser(appRoot, resolver, config), ctx, newPrintStream(out));
+
+			if (appInstance instanceof OnDestroy) {
+				((OnDestroy) appInstance).ngOnDestroy();
+			}
 
 		} catch (Exception e) {
 			throw wrap(e);
@@ -403,9 +410,6 @@ public class Ngoy {
 	}
 
 	public void destroy() {
-		if (appInstance instanceof OnDestroy) {
-			((OnDestroy) appInstance).ngOnDestroy();
-		}
 		appInstance = null;
 	}
 }

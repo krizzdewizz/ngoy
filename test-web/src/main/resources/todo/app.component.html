@@ -25,6 +25,10 @@
 			width: 20rem;
 		}
 
+		.deleted {
+			color: gray;
+		}
+
 	</style>
 </head>
 
@@ -32,6 +36,8 @@
 
 	<div class="container">
 		<h1>{{appName}}</h1>
+
+		<span class="deleted" *ngIf="deleted">Todo has been deleted.</span>
 
 		<todo *ngFor="let it of todos" [todo]="it"></todo>
 

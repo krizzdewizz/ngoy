@@ -40,15 +40,15 @@ public class LifecycleTest extends ANgoyTest {
 	}
 
 	@Component(selector = "test", template = "<person></person><person></person>", declarations = { PersonCmp.class })
-	public static class Attr extends ACmp {
+	public static class Lifecycle extends ACmp {
 	}
 
 	@Mock
 	private Service service;
 
 	@Test
-	public void testAttr() {
-		render(Attr.class, useValue(Service.class, service));
+	public void testLifecycle() {
+		render(Lifecycle.class, useValue(Service.class, service));
 		verify(service, times(3)).init();
 		verify(service, times(3)).destroy();
 	}
