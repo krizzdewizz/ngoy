@@ -13,9 +13,9 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.Test;
+import org.ngoy.ANgoyTest;
 import org.ngoy.JavaTemplate;
 import org.ngoy.Ngoy;
-import org.ngoy.common.ANgoyTest;
 import org.ngoy.core.ElementRef;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.Ctx;

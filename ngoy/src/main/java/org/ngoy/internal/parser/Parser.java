@@ -67,30 +67,7 @@ public class Parser {
 		@Override
 		public void tail(Node node, int depth) {
 			if (node instanceof Element) {
-				Element el = (Element) node;
-
-				if (!el.tag()
-						.isSelfClosing()) {
-
-					if (inlineComponent(el)) {
-						if (!cmpElements.remove(el)) {
-							handler.elementEnd(node.nodeName());
-						}
-					} else {
-						handler.elementEnd(node.nodeName());
-					}
-				}
-
-				if (el.equals(elementConditionals.peek())) {
-					elementConditionals.pop();
-					elementConditionalElse(el);
-					handler.elementConditionalEnd();
-				}
-
-				if (el.equals(elementRepeated.peek())) {
-					elementRepeated.pop();
-					handler.elementRepeatedEnd();
-				}
+				endElement((Element) node);
 			}
 		}
 	}
@@ -100,9 +77,9 @@ public class Parser {
 
 	private static final Pattern PIPE_PARAM_PATTERN = Pattern.compile("(.*?):(.*)");
 	private static final Pattern EXPR_PATTERN = Pattern.compile("\\{\\{(.*?)\\}\\}", Pattern.MULTILINE);
-	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)", Pattern.MULTILINE);
+	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
 	private static final Pattern NG_CONTAINER_PATTERN = Pattern.compile("<ng-container(.*)>((.|\\s)*)</ng-container>", Pattern.MULTILINE);
-	private static final Pattern NG_FOR_PATTERN = Pattern.compile("\\*ngFor=\"(.*)\"", Pattern.MULTILINE);
+	private static final Pattern NG_FOR_PATTERN = Pattern.compile("\\*ngFor=\"(.*)\"");
 
 	private final LinkedList<Element> elementConditionals = new LinkedList<>();
 	private final LinkedList<Element> elementRepeated = new LinkedList<>();
@@ -120,7 +97,8 @@ public class Parser {
 	}
 
 	/**
-	 * @param resolver if null, uses {@link Resolver#DEFAULT}
+	 * @param resolver
+	 *            if null, uses {@link Resolver#DEFAULT}
 	 */
 	public Parser(@Nullable Resolver resolver) {
 		this.resolver = resolver == null ? Resolver.DEFAULT : resolver;
@@ -135,7 +113,7 @@ public class Parser {
 		List<Node> nodes = parseBody ? parseBody(template, false) : asList(parseHtml(template));
 
 		handler.documentStart();
-		traverse(nodes);
+		accept(nodes);
 		handler.documentEnd();
 	}
 
@@ -174,7 +152,7 @@ public class Parser {
 		visitor.tail(c, -1);
 	}
 
-	private void replaceElement(Node node, boolean traverseChildren) {
+	private void replaceElement(Node node, boolean acceptChildren) {
 		Element el = (Element) node;
 
 		String ngIf = el.attr("*ngIf");
@@ -234,9 +212,9 @@ public class Parser {
 					handler.elementHeadEnd();
 				}
 
-				acceptCmpRef(el, cmpRef, traverseChildren);
+				acceptCmpRef(el, cmpRef, acceptChildren);
 
-				if (traverseChildren) {
+				if (acceptChildren) {
 					handler.componentEnd();
 				}
 
@@ -245,7 +223,7 @@ public class Parser {
 		}
 	}
 
-	private void acceptCmpRef(Element el, CmpRef cmpRef, boolean traverseChildren) {
+	private void acceptCmpRef(Element el, CmpRef cmpRef, boolean acceptChildren) {
 		List<Node> cmpNodes = parseBody(cmpRef.template, true);
 
 		Element ngContentEl = findNgContent(cmpNodes);
@@ -265,15 +243,15 @@ public class Parser {
 
 			ngContentEl.remove();
 
-			if (traverseChildren) {
-				traverse(nodesBefore);
+			if (acceptChildren) {
+				accept(nodesBefore);
 			}
 
 			handler.ngContentStart();
 
-			if (traverseChildren) {
+			if (acceptChildren) {
 				if (selector.isEmpty()) {
-					traverse(el.childNodes());
+					accept(el.childNodes());
 				} else {
 					el.childNodes()
 							.stream()
@@ -285,14 +263,14 @@ public class Parser {
 
 				handler.ngContentEnd();
 
-				traverse(nodesAfter);
+				accept(nodesAfter);
 			}
 		} else {
-			traverse(cmpNodes);
+			accept(cmpNodes);
 		}
 	}
 
-	private void traverse(List<Node> nodes) {
+	private void accept(List<Node> nodes) {
 		nodes.forEach(n -> n.traverse(visitor));
 	}
 
@@ -496,7 +474,7 @@ public class Parser {
 					.trim();
 			Element template = findTemplate(templateRef, el.ownerDocument());
 			handler.elementConditionalElse();
-			traverse(template.childNodes());
+			accept(template.childNodes());
 		}
 	}
 
@@ -519,5 +497,30 @@ public class Parser {
 
 	private boolean inlineComponent(Element el) {
 		return inlineComponents || el.is(ContainerComponent.SELECTOR);
+	}
+
+	private void endElement(Element el) {
+		if (!el.tag()
+				.isSelfClosing()) {
+
+			if (inlineComponent(el)) {
+				if (!cmpElements.remove(el)) {
+					handler.elementEnd(el.nodeName());
+				}
+			} else {
+				handler.elementEnd(el.nodeName());
+			}
+		}
+
+		if (el.equals(elementConditionals.peek())) {
+			elementConditionals.pop();
+			elementConditionalElse(el);
+			handler.elementConditionalEnd();
+		}
+
+		if (el.equals(elementRepeated.peek())) {
+			elementRepeated.pop();
+			handler.elementRepeatedEnd();
+		}
 	}
 }

@@ -6,7 +6,7 @@ import static org.ngoy.core.Provider.useValue;
 
 import org.junit.Test;
 import org.mockito.Mock;
-import org.ngoy.common.ANgoyTest;
+import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Inject;
 import org.ngoy.core.OnDestroy;

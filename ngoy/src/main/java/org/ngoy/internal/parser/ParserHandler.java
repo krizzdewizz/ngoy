@@ -13,6 +13,8 @@ public interface ParserHandler {
 
 	void attributeClasses(List<String[]> classExprPairs);
 
+	void attributeExpr(String name, String expr);
+
 	void attributeEnd();
 
 	void elementHeadEnd();
@@ -34,8 +36,6 @@ public interface ParserHandler {
 	void componentStart(String clazz, List<String> params);
 
 	void componentEnd();
-
-	void attributeExpr(String name, String expr);
 
 	void ngContentStart();
 

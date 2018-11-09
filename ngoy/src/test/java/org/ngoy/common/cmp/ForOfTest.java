@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ngoy.common.ANgoyTest;
+import org.ngoy.ANgoyTest;
 import org.ngoy.common.cmp.CmpTest.PersonCmp;
 import org.ngoy.core.Component;
 import org.ngoy.core.Inject;

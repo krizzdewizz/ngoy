@@ -3,6 +3,7 @@ package org.ngoy.common;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+import org.ngoy.ANgoyTest;
 import org.ngoy.common.LowerCasePipe;
 import org.ngoy.core.Component;
 

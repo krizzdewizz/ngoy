@@ -6,6 +6,7 @@ import static org.ngoy.core.Provider.useValue;
 import java.util.Locale;
 
 import org.junit.Test;
+import org.ngoy.ANgoyTest;
 import org.ngoy.common.TranslateModule;
 import org.ngoy.common.TranslateService;
 import org.ngoy.core.Component;

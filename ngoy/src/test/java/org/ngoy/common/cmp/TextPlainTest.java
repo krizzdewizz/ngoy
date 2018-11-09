@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.junit.Test;
-import org.ngoy.common.ANgoyTest;
+import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.model.Person;
 

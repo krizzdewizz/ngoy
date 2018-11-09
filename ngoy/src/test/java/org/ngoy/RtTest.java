@@ -1,7 +1,7 @@
 package org.ngoy;
 
 import static java.lang.String.format;
-import static org.ngoy.common.ANgoyTest.getTestPath;
+import static org.ngoy.ANgoyTest.getTestPath;
 import static org.ngoy.core.NgoyException.wrap;
 import static org.ngoy.internal.util.Util.newPrintStream;
 

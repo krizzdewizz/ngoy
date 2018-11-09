@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.ngoy.core.Provider.useValue;
 
 import org.junit.Test;
-import org.ngoy.common.ANgoyTest;
+import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Directive;
 import org.ngoy.core.HostBinding;

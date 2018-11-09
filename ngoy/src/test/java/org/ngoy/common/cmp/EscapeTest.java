@@ -3,7 +3,7 @@ package org.ngoy.common.cmp;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.ngoy.common.ANgoyTest;
+import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 
 public class EscapeTest extends ANgoyTest {

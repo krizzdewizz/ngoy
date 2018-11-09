@@ -1,6 +1,6 @@
 package org.ngoy;
 
-import static org.ngoy.common.ANgoyTest.getTestResourcesPath;
+import static org.ngoy.ANgoyTest.getTestResourcesPath;
 import static org.ngoy.internal.util.Util.newPrintStream;
 
 import java.io.File;

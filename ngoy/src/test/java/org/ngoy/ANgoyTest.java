@@ -1,4 +1,4 @@
-package org.ngoy.common;
+package org.ngoy;
 
 import static org.ngoy.Ngoy.app;
 import static org.ngoy.core.NgoyException.wrap;
@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import org.junit.Rule;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.ngoy.Ngoy;
 import org.ngoy.core.Provider;
 
 public abstract class ANgoyTest {
@@ -30,10 +31,11 @@ public abstract class ANgoyTest {
 	protected String render(Class<?> clazz, Provider... providers) {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			app(clazz).parseBody(true)
+			Ngoy app = app(clazz).parseBody(true)
 					.providers(providers)
-					.build()
-					.render(baos);
+					.build();
+			app.render(baos);
+			app.destroy();
 			String html = new String(baos.toByteArray(), "UTF-8");
 			if (debugPrint) {
 				System.out.println(html);
