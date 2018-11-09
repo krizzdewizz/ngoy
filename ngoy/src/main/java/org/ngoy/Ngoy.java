@@ -120,23 +120,24 @@ public class Ngoy {
 	 * non-api
 	 */
 	public static String getTemplate(Class<?> clazz) {
-		try {
-			Component cmp = clazz.getAnnotation(Component.class);
-			String templateUrl = cmp.templateUrl();
-			String tpl;
-			if (isSet(templateUrl)) {
-				InputStream in = clazz.getResourceAsStream(templateUrl);
-				if (in == null) {
-					throw new NgoyException("template could not be found: '%s'", templateUrl);
-				}
-				tpl = copyToString(in);
-			} else {
-				tpl = cmp.template();
+		Component cmp = clazz.getAnnotation(Component.class);
+		String templateUrl = cmp.templateUrl();
+		String tpl;
+		if (isSet(templateUrl)) {
+			InputStream in = clazz.getResourceAsStream(templateUrl);
+			if (in == null) {
+				throw new NgoyException("template could not be found: '%s'", templateUrl);
 			}
-			return tpl;
-		} catch (Exception e) {
-			throw wrap(e);
+			try (InputStream inn = in) {
+				tpl = copyToString(inn);
+			} catch (Exception e) {
+				throw wrap(e);
+			}
+		} else {
+			tpl = cmp.template();
 		}
+		return tpl;
+
 	}
 
 	private void renderTemplate(String templateOrPath, boolean templateIsPath, Ctx ctx, OutputStream out) {
@@ -146,7 +147,11 @@ public class Ngoy {
 			if (in == null) {
 				throw new NgoyException("template could not be found: '%s'", templateOrPath);
 			}
-			tpl = copyToString(in);
+			try (InputStream inn = in) {
+				tpl = copyToString(inn);
+			} catch (Exception e) {
+				throw wrap(e);
+			}
 		} else {
 			tpl = templateOrPath;
 		}
