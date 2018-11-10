@@ -10,9 +10,6 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public class TodoViewController implements InitializingBean {
-	public TodoViewController() {
-		System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-	}
 
 	@SuppressWarnings("unused")
 	private Ngoy ngoy;

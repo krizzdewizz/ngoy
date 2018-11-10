@@ -318,9 +318,6 @@ public class Ngoy implements Renderer {
 			if (appInstance instanceof OnDestroy) {
 				((OnDestroy) appInstance).ngOnDestroy();
 			}
-
-			events.clear();
-
 		} catch (Exception e) {
 			throw wrap(e);
 		}

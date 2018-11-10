@@ -1,5 +1,7 @@
 package org.ngoy.todo;
 
+import static org.ngoy.todo.TodoEvent.TODO_DELETED;
+
 import org.ngoy.core.Component;
 import org.ngoy.core.Events;
 import org.ngoy.core.Inject;
@@ -27,7 +29,7 @@ public class TodoComponent {
 	@PostMapping("/tododelete")
 	public String deleteTodo(@RequestParam("id") String id) throws Exception {
 		todoService.deleteTodo(id);
-		events.publish(TodoEvent.DELETE_TODO, null);
+		events.publish(TODO_DELETED, null);
 		return "redirect:todo";
 	}
 }

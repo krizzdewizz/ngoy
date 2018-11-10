@@ -58,9 +58,6 @@ public class Events {
 			}
 			events.remove(e);
 		}
-	}
-
-	public void clear() {
 		map.clear();
 	}
 }

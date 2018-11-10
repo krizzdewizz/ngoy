@@ -38,7 +38,7 @@ public class AppComponent implements OnInit {
 	@Override
 	public void ngOnInit() {
 		deleted = false;
-		events.subscribe(TodoEvent.DELETE_TODO, unused -> {
+		events.subscribe(TodoEvent.TODO_DELETED, unused -> {
 			deleted = true;
 		});
 	}
