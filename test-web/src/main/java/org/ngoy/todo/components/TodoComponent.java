@@ -12,5 +12,5 @@ public class TodoComponent {
 	public Todo todo;
 
 	@Input
-	public String action;
+	public String deleteAction;
 }
