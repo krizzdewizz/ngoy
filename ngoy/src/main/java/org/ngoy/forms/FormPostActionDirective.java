@@ -1,5 +1,6 @@
 package org.ngoy.forms;
 
+import static java.lang.String.format;
 import static org.ngoy.core.NgoyException.wrap;
 
 import java.lang.annotation.Annotation;
@@ -32,7 +33,10 @@ public class FormPostActionDirective implements OnCompile {
 					.getContextClassLoader()
 					.loadClass(cmpClass);
 
-			String path = Stream.of(clazz.getMethods())
+			String requestPath = findRequestMapping(clazz).map(this::findPath)
+					.orElse("");
+
+			String postPath = Stream.of(clazz.getMethods())
 					.filter(method -> method.getName()
 							.equals(controllerMethod))
 					.findFirst()
@@ -40,12 +44,22 @@ public class FormPostActionDirective implements OnCompile {
 					.map(this::findPath)
 					.orElseThrow(() -> new NgoyException("Controller method %s.%s with a @PostMapping annotation could not be not found", cmpClass, controllerMethod));
 
+			String path = requestPath.isEmpty() ? postPath : format("%s/%s", requestPath, postPath);
+
 			el.attr("action", path);
 			el.attr("method", "post");
 
 		} catch (Exception e) {
 			throw wrap(e);
 		}
+	}
+
+	private Optional<Annotation> findRequestMapping(Class<?> clazz) {
+		return Stream.of(clazz.getAnnotations())
+				.filter(ann -> ann.annotationType()
+						.getSimpleName()
+						.equals("RequestMapping"))
+				.findFirst();
 	}
 
 	private Optional<Annotation> findPostMapping(Method method) {
