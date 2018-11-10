@@ -72,7 +72,7 @@ public class Util {
 	/**
 	 * @param contentType null or empty to use default
 	 */
-	public static String escapeMarkup(String text, @Nullable String contentType) {
+	public static String escape(String text, @Nullable String contentType) {
 		if ("text/xml".equals(contentType)) {
 			return escapeXml(text);
 		}

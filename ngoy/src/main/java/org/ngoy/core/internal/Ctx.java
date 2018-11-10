@@ -3,7 +3,7 @@ package org.ngoy.core.internal;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.ngoy.core.NgoyException.wrap;
-import static org.ngoy.core.Util.escapeMarkup;
+import static org.ngoy.core.Util.escape;
 import static org.ngoy.core.Util.findSetter;
 
 import java.io.PrintStream;
@@ -309,7 +309,7 @@ public class Ctx {
 
 	public void printEscaped(@Nullable Object obj) {
 		if (obj != null) {
-			print(escapeMarkup(obj.toString(), contentType));
+			print(escape(obj.toString(), contentType));
 		}
 	}
 
