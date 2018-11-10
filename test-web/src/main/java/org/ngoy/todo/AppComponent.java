@@ -5,11 +5,9 @@ import static org.ngoy.core.Util.isSet;
 import java.util.List;
 
 import org.ngoy.core.Component;
-import org.ngoy.core.Events;
 import org.ngoy.core.Inject;
 import org.ngoy.core.NgModule;
 import org.ngoy.core.OnDestroy;
-import org.ngoy.core.Renderer;
 import org.ngoy.forms.FormsModule;
 import org.ngoy.todo.components.TodoComponent;
 import org.ngoy.todo.model.Todo;
@@ -29,18 +27,12 @@ public class AppComponent implements OnDestroy {
 	@Inject
 	public TodoService todoService;
 
-	@Inject
-	public Renderer renderer;
-
-	@Inject
-	public Events events;
-
-	public boolean deleted;
+	public String deletedTodo;
 	public boolean textRequired;
 
 	@Override
 	public void ngOnDestroy() {
-		deleted = false;
+		deletedTodo = null;
 		textRequired = false;
 	}
 
@@ -60,8 +52,11 @@ public class AppComponent implements OnDestroy {
 
 	@PostMapping("delete")
 	public String deleteTodo(@RequestParam("id") String id) throws Exception {
-		deleted = true;
-		todoService.deleteTodo(id);
+		todoService.getTodo(id)
+				.ifPresent(todo -> {
+					deletedTodo = todo.text;
+					todoService.deleteTodo(id);
+				});
 		return REDIRECT_HOME;
 	}
 }

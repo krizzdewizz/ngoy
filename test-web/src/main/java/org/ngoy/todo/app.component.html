@@ -22,9 +22,9 @@
 	<div class="container">
 		<h1>{{appName}}</h1>
 
-		<div class="messages">
-			<span [class.deleted]="deleted">Todo has been deleted.</span>
-			<span [class.text-required]="textRequired">Text required.</span>
+		<div>
+			<span class="message" [class.deleted]="deletedTodo != null">Todo <span>{{deletedTodo}}</span> has been deleted.</span>
+			<span class="message" [class.text-required]="textRequired">Text required.</span>
 		</div>
 
 		<form ngoyFormPost="addTodo">
@@ -35,7 +35,7 @@
 			<button type="submit" class="btn btn-primary">Add</button>
 		</form>
 
-		<todo *ngFor="let it of todos" [todo]="it" action="delete"></todo>
+		<todo *ngFor="let it of todos" [todo]="it" [action]="'delete'"></todo>
 
 	</div>
 

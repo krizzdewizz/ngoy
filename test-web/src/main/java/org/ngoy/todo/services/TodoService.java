@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.ngoy.todo.model.Todo;
 import org.springframework.stereotype.Service;
@@ -26,5 +27,11 @@ public class TodoService {
 
 	public void deleteTodo(String id) {
 		todos.removeIf(todo -> todo.id.equals(id));
+	}
+
+	public Optional<Todo> getTodo(String id) {
+		return todos.stream()
+				.filter(it -> it.id.equals(id))
+				.findFirst();
 	}
 }

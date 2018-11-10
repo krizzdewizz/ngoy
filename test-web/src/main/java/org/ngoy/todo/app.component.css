@@ -6,16 +6,20 @@ form {
 	width: 20rem;
 }
 
-.messages span {
+.message {
 	visibility: hidden;
 }
 
-.messages span.deleted {
+.message.deleted {
 	visibility: visible;
 	color: gray;
 }
 
-.messages span.text-required {
+.message.deleted span {
+	font-weight: bold;
+}
+
+.message.text-required {
 	visibility: visible;
 	float: left;
 	color: red;
