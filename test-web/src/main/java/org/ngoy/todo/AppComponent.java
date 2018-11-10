@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Component(selector = "", templateUrl = "app.component.html")
+@Component(selector = "", templateUrl = "app.component.html", styleUrls = { "app.component.css" })
 @NgModule(imports = { FormsModule.class }, declarations = { TodoComponent.class })
 @Controller
 public class AppComponent implements OnInit, OnDestroy {

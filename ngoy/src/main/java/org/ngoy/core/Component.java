@@ -16,6 +16,8 @@ public @interface Component {
 
 	String contentType() default "";
 
+	String[] styleUrls() default {};
+
 	Class<?>[] declarations() default {};
 
 	Class<?>[] providers() default {};

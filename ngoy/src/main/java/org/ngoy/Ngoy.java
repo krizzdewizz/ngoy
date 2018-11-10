@@ -41,7 +41,7 @@ import org.ngoy.core.Provider;
 import org.ngoy.core.Renderer;
 import org.ngoy.core.TemplateCache;
 import org.ngoy.core.internal.CmpRef;
-import org.ngoy.core.internal.ContainerComponent;
+import org.ngoy.core.internal.CoreInternalModule;
 import org.ngoy.core.internal.Ctx;
 import org.ngoy.core.internal.DefaultInjector;
 import org.ngoy.core.internal.Resolver;
@@ -219,7 +219,7 @@ public class Ngoy implements Renderer {
 			addModuleDecls(TranslateModule.class, cmpDecls, pipeDecls, cmpProviders);
 		}
 
-		cmpDecls.put(ContainerComponent.SELECTOR, of(ContainerComponent.class));
+		addModuleDecls(CoreInternalModule.class, cmpDecls, pipeDecls, cmpProviders);
 
 		addModuleDecls(appRoot, cmpDecls, pipeDecls, cmpProviders);
 
