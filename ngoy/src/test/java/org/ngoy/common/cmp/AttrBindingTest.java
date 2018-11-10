@@ -1,11 +1,15 @@
 package org.ngoy.common.cmp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Input;
+import org.ngoy.core.NgoyException;
 
 public class AttrBindingTest extends ANgoyTest {
 
@@ -51,5 +55,27 @@ public class AttrBindingTest extends ANgoyTest {
 	@Test
 	public void testAttr2() {
 		assertThat(render(Attr2.class)).isEqualTo("<person>hello: abcdefghijkl</person>");
+	}
+
+	//
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
+	@Component(selector = "person", template = "hello: {{title}}{{title2}}{{title3}}{{title4}}")
+	public static class PersonNonStringCmp {
+		@Input()
+		public int number;
+	}
+
+	@Component(selector = "test", declarations = { PersonNonStringCmp.class }, template = "<person number=\"0\"></person>")
+	public static class AttrNonString {
+	}
+
+	@Test
+	public void testAttrNonString() {
+		expectedEx.expect(NgoyException.class);
+		expectedEx.expectMessage(containsString("but would receive a string"));
+		assertThat(render(AttrNonString.class)).isEqualTo("<person>hello: abcdefghijkl</person>");
 	}
 }

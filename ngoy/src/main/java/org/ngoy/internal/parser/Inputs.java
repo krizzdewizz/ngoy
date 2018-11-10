@@ -12,6 +12,7 @@ import java.util.Set;
 import org.jsoup.nodes.Element;
 import org.ngoy.core.ElementRef;
 import org.ngoy.core.Input;
+import org.ngoy.core.NgoyException;
 import org.ngoy.core.internal.JSoupElementRef;
 
 public class Inputs {
@@ -41,8 +42,8 @@ public class Inputs {
 				binding = fieldName;
 			}
 
-			addInput(FIELD_INPUT, VALUE_TEXT, result, el, fieldName, binding, excludeBindings);
-			addInput(FIELD_INPUT, VALUE_EXPR, result, el, fieldName, binding, excludeBindings);
+			addInput(FIELD_INPUT, VALUE_TEXT, result, el, binding, fieldName, f.getType(), clazz, excludeBindings);
+			addInput(FIELD_INPUT, VALUE_EXPR, result, el, binding, fieldName, f.getType(), clazz, excludeBindings);
 		}
 
 		for (Method m : clazz.getMethods()) {
@@ -52,7 +53,7 @@ public class Inputs {
 			}
 
 			if (m.getParameterCount() != 1) {
-				throw new ParseException("input setter method %s.%s must have exactly 1 parameter.", clazz.getName(), m.getName());
+				throw new ParseException("input setter method %s.%s must have exactly one parameter.", clazz.getName(), m.getName());
 			}
 
 			String methodName = m.getName();
@@ -61,20 +62,26 @@ public class Inputs {
 				binding = fieldName(methodName);
 			}
 
-			addInput(METHOD_INPUT, VALUE_TEXT, result, el, methodName, binding, excludeBindings);
-			addInput(METHOD_INPUT, VALUE_EXPR, result, el, methodName, binding, excludeBindings);
+			addInput(METHOD_INPUT, VALUE_TEXT, result, el, binding, methodName, m.getReturnType(), clazz, excludeBindings);
+			addInput(METHOD_INPUT, VALUE_EXPR, result, el, binding, methodName, m.getReturnType(), clazz, excludeBindings);
 		}
 		return result;
 	}
 
-	private static void addInput(char inputType, char valueType, List<String> result, Element el, String fieldName, String binding, Set<String> excludeBindings) {
-		String attr = valueType == VALUE_EXPR ? format("[%s]", binding) : binding;
+	private static void addInput(char inputType, char valueType, List<String> result, Element el, String input, String fieldName, Class<?> fieldType, Class<?> clazz, Set<String> excludeBindings) {
+		String attr = valueType == VALUE_EXPR ? format("[%s]", input) : input;
 		String inp = el.attr(attr);
 		if (!inp.isEmpty()) {
+
+			if (valueType == VALUE_TEXT && !fieldType.equals(String.class)) {
+				throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(),
+						fieldType.getName(), format("[%s]", input));
+			}
+
 			result.add(format("%s%s%s", inputType, valueType, fieldName));
 			result.add(inp);
+			excludeBindings.add(input);
 			excludeBindings.add(fieldName);
-			excludeBindings.add(binding);
 		}
 	}
 

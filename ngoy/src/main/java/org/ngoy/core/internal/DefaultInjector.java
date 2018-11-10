@@ -99,9 +99,9 @@ public class DefaultInjector implements Injector {
 			Constructor<?>[] ctors = useClass.getConstructors();
 			Object inst;
 			if (ctors.length > 1) {
-				throw new NgoyException("Only 1 constructor allowed: %s", useClass);
+				throw new NgoyException("Only one constructor allowed: %s", useClass.getName());
 			} else if (ctors.length == 0) {
-				throw new NgoyException("No constructor found: %s", useClass);
+				throw new NgoyException("No constructor found: %s", useClass.getName());
 			} else {
 				Constructor<?> ctor = ctors[0];
 				inst = ctor.newInstance(Stream.of(ctor.getParameterTypes())
@@ -132,7 +132,6 @@ public class DefaultInjector implements Injector {
 
 				field.set(inst, getInternal(field.getType(), resolving));
 			}
-
 		} catch (Exception e) {
 			throw wrap(e);
 		}

@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.ngoy.ANgoyTest;
 
-public class DepCycleTest extends ANgoyTest {
+public class DependencyCycleTest extends ANgoyTest {
 
 	public static class ServiceA {
 		@Inject
