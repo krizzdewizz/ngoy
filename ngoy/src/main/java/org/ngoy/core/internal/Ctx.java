@@ -3,8 +3,8 @@ package org.ngoy.core.internal;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.ngoy.core.NgoyException.wrap;
-import static org.ngoy.internal.util.Util.escapeMarkup;
-import static org.ngoy.internal.util.Util.findSetter;
+import static org.ngoy.core.Util.escapeMarkup;
+import static org.ngoy.core.Util.findSetter;
 
 import java.io.PrintStream;
 import java.lang.reflect.Array;

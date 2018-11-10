@@ -1,7 +1,7 @@
 package org.ngoy.internal.parser;
 
 import static java.lang.String.format;
-import static org.ngoy.internal.util.Util.fieldName;
+import static org.ngoy.core.Util.fieldName;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

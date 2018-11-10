@@ -2,7 +2,7 @@ package org.ngoy;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
-import static org.ngoy.internal.util.Util.escapeJava;
+import static org.ngoy.core.Util.escapeJava;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -10,10 +10,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.ngoy.core.Util;
 import org.ngoy.core.internal.Ctx;
 import org.ngoy.internal.parser.ParseException;
 import org.ngoy.internal.parser.ParserHandler;
-import org.ngoy.internal.util.Util;
 import org.ngoy.parser.TextOutput;
 import org.ngoy.util.CodeBuilder;
 import org.ngoy.util.PrintStreamPrinter;

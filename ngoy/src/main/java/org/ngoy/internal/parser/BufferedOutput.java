@@ -1,6 +1,6 @@
 package org.ngoy.internal.parser;
 
-import static org.ngoy.internal.util.Util.escapeMarkup;
+import static org.ngoy.core.Util.escapeMarkup;
 
 public abstract class BufferedOutput implements Output {
 	private final StringBuilder buf = new StringBuilder();

@@ -7,9 +7,9 @@ import static org.ngoy.core.NgoyException.wrap;
 import static org.ngoy.core.Provider.of;
 import static org.ngoy.core.Provider.useClass;
 import static org.ngoy.core.Provider.useValue;
-import static org.ngoy.internal.util.Util.copyToString;
-import static org.ngoy.internal.util.Util.isSet;
-import static org.ngoy.internal.util.Util.newPrintStream;
+import static org.ngoy.core.Util.copyToString;
+import static org.ngoy.core.Util.isSet;
+import static org.ngoy.core.Util.newPrintStream;
 
 import java.io.InputStream;
 import java.io.OutputStream;

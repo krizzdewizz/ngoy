@@ -1,7 +1,7 @@
 package org.ngoy;
 
 import static org.ngoy.ANgoyTest.getTestResourcesPath;
-import static org.ngoy.internal.util.Util.newPrintStream;
+import static org.ngoy.core.Util.newPrintStream;
 
 import java.io.File;
 import java.io.FileOutputStream;

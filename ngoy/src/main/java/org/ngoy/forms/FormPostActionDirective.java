@@ -1,4 +1,4 @@
-package org.ngoy.todo;
+package org.ngoy.forms;
 
 import static org.ngoy.core.NgoyException.wrap;
 
@@ -12,8 +12,8 @@ import org.ngoy.core.Directive;
 import org.ngoy.core.ElementRef;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.OnCompile;
+import org.ngoy.core.Util;
 import org.ngoy.core.internal.JSoupElementRef;
-import org.ngoy.internal.util.Util;
 
 @Directive(selector = "[ngoyFormPost]")
 public class FormPostActionDirective implements OnCompile {

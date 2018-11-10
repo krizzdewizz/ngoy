@@ -2,8 +2,8 @@ package org.ngoy.parser;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.ngoy.internal.util.Util.copyToString;
-import static org.ngoy.internal.util.Util.newPrintStream;
+import static org.ngoy.core.Util.copyToString;
+import static org.ngoy.core.Util.newPrintStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;

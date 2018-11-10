@@ -1,4 +1,4 @@
-package org.ngoy.internal.util;
+package org.ngoy.core;
 
 import static org.ngoy.core.NgoyException.wrap;
 
@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.ngoy.core.NgoyException;
+import org.ngoy.internal.util.Nullable;
 
 public class Util {
 	private static final String SET_PREFIX = "set";

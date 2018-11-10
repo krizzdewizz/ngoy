@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.ngoy.core.NgoyException.wrap;
 import static org.ngoy.core.Provider.useValue;
-import static org.ngoy.internal.util.Util.findAnnotation;
+import static org.ngoy.core.Util.findAnnotation;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

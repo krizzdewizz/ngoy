@@ -11,7 +11,6 @@
 	 crossorigin="anonymous">
 
 	<style>
-
 		todo {
 			display: block;
 			margin-top: 20px;
@@ -24,11 +23,21 @@
 		.todo-text {
 			width: 20rem;
 		}
+		
+		.messages span {
+			visibility: hidden;
+		}
 
-		.deleted {
+		.messages span.deleted {
+			visibility: visible;
 			color: gray;
 		}
 
+		.messages span.text-required {
+			visibility: visible;
+			float: left;
+			color: red;
+		}
 	</style>
 </head>
 
@@ -37,17 +46,20 @@
 	<div class="container">
 		<h1>{{appName}}</h1>
 
-		<span class="deleted" *ngIf="deleted">Todo has been deleted.</span>
-
-		<todo *ngFor="let it of todos" [todo]="it"></todo>
+		<div class="messages">
+			<span [class.deleted]="deleted">Todo has been deleted.</span>
+			<span [class.text-required]="textRequired">Text required.</span>
+		</div>
 
 		<form ngoyFormPost="addTodo">
 			<div class="form-group">
 				<label>Task</label>
-				<input type="text" class="todo-text form-control" name="text">
+				<input autofocus type="text" class="todo-text form-control" name="text">
 			</div>
 			<button type="submit" class="btn btn-primary">Add</button>
 		</form>
+
+		<todo *ngFor="let it of todos" [todo]="it"></todo>
 
 	</div>
 

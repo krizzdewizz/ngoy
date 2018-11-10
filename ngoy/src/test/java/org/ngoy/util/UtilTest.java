@@ -1,7 +1,7 @@
 package org.ngoy.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.ngoy.internal.util.Util.fieldName;
+import static org.ngoy.core.Util.fieldName;
 
 import org.junit.Test;
 
