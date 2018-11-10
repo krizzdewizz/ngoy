@@ -41,7 +41,7 @@
 
 		<todo *ngFor="let it of todos" [todo]="it"></todo>
 
-		<form action="#" action="/todo" method="post">
+		<form ngoyFormPost="addTodo">
 			<div class="form-group">
 				<label>Task</label>
 				<input type="text" class="todo-text form-control" name="text">

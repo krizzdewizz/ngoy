@@ -1,7 +1,7 @@
 <div class="card" style="width: 18rem;">
 	<div class="card-body">
 		<h5 class="card-title">{{todo.text}}</h5>
-		<form action="#" action="/tododelete" method="post">
+		<form ngoyFormPost="deleteTodo">
 			<input hidden name="id" [value]="todo.id">
 			<button type="submit" class="btn">Done</button>
 		</form>

@@ -17,6 +17,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.ngoy.core.OnInit;
 import org.ngoy.core.Pipe;
 import org.ngoy.core.Provide;
 import org.ngoy.core.Provider;
+import org.ngoy.core.Renderer;
 import org.ngoy.core.TemplateCache;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.ContainerComponent;
@@ -47,7 +49,7 @@ import org.ngoy.internal.parser.ByteCodeTemplate;
 import org.ngoy.internal.parser.Parser;
 import org.ngoy.internal.util.Nullable;
 
-public class Ngoy {
+public class Ngoy implements Renderer {
 	public static class Builder {
 		private Class<?> appRoot;
 		private Provider[] providers;
@@ -207,12 +209,7 @@ public class Ngoy {
 		Map<String, Provider> cmpDecls = new HashMap<>();
 		Map<String, Provider> pipeDecls = new HashMap<>();
 
-		boolean providesLocale = Stream.of(rootProviders)
-				.filter(p -> p.getProvide()
-						.equals(Locale.class))
-				.findFirst()
-				.isPresent();
-		if (!providesLocale) {
+		if (provides(Locale.class, rootProviders) == null) {
 			cmpProviders.add(useValue(Locale.class, config.locale != null ? config.locale : DEFAULT_LOCALE));
 		}
 
@@ -227,14 +224,25 @@ public class Ngoy {
 		addModuleDecls(appRoot, cmpDecls, pipeDecls, cmpProviders);
 
 		List<Provider> all = new ArrayList<>();
-		all.add(of(appRoot));
+		all.add(useValue(Renderer.class, this));
 		all.add(useValue(Events.class, events));
 		all.addAll(asList(rootProviders));
 		all.addAll(cmpProviders);
 		all.addAll(cmpDecls.values());
 		all.addAll(pipeDecls.values());
 
-		injector = new DefaultInjector(injectors, all.toArray(new Provider[all.size()]));
+		Provider appRootProvider = provides(appRoot, rootProviders);
+
+		DefaultInjector inj = new DefaultInjector(injectors, all.toArray(new Provider[all.size()]));
+		injector = inj;
+
+		if (appRootProvider != null && appRootProvider.getUseValue() != null) {
+			appInstance = appRootProvider.getUseValue();
+			inj.injectFields(appRoot, appInstance, new HashSet<>());
+		} else {
+			inj.put(of(appRoot));
+			appInstance = injector.get(appRoot);
+		}
 
 		if (hasTranslate) {
 			injector.get(TranslateService.class)
@@ -278,15 +286,25 @@ public class Ngoy {
 			public Injector getInjector() {
 				return injector;
 			}
+
+			@Override
+			public String resolveCmpClass(String cmpClass) {
+				return isSet(cmpClass) ? cmpClass : appRoot.getName();
+			}
 		};
 	}
 
+	private Provider provides(Class<?> theClass, Provider... rootProviders) {
+		return Stream.of(rootProviders)
+				.filter(p -> p.getProvide()
+						.equals(theClass))
+				.findFirst()
+				.orElse(null);
+	}
+
+	@Override
 	public void render(OutputStream out) {
 		try {
-			if (appInstance == null) {
-				appInstance = injector.get(appRoot);
-			}
-
 			if (appInstance instanceof OnInit) {
 				((OnInit) appInstance).ngOnInit();
 			}

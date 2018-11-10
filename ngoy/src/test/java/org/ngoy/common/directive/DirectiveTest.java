@@ -16,7 +16,7 @@ public class DirectiveTest extends ANgoyTest {
 	@Directive(selector = "[makeBold]")
 	public static class MakeBoldCompileDirective implements OnCompile {
 		@Override
-		public void ngOnCompile(ElementRef elRef) {
+		public void ngOnCompile(ElementRef elRef, String cmpClass) {
 			((Element) elRef.getNativeElement()).attr("style", "font-weight:bold");
 		}
 	}

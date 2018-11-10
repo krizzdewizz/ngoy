@@ -40,4 +40,167 @@ public interface ParserHandler {
 	void ngContentStart();
 
 	void ngContentEnd();
+
+	class Default implements ParserHandler {
+
+		@Override
+		public void documentStart() {
+		}
+
+		@Override
+		public void documentEnd() {
+		}
+
+		@Override
+		public void elementHead(String name) {
+		}
+
+		@Override
+		public void attributeStart(String name, boolean hasValue) {
+		}
+
+		@Override
+		public void attributeClasses(List<String[]> classExprPairs) {
+		}
+
+		@Override
+		public void attributeExpr(String name, String expr) {
+		}
+
+		@Override
+		public void attributeEnd() {
+		}
+
+		@Override
+		public void elementHeadEnd() {
+		}
+
+		@Override
+		public void text(String text, boolean textIsExpr, List<String[]> pipes) {
+		}
+
+		@Override
+		public void elementEnd(String name) {
+		}
+
+		@Override
+		public void elementConditionalStart(String expr) {
+		}
+
+		@Override
+		public void elementConditionalElse() {
+		}
+
+		@Override
+		public void elementConditionalEnd() {
+		}
+
+		@Override
+		public void elementRepeatedStart(String expr) {
+		}
+
+		@Override
+		public void elementRepeatedEnd() {
+		}
+
+		@Override
+		public void componentStart(String clazz, List<String> params) {
+		}
+
+		@Override
+		public void componentEnd() {
+		}
+
+		@Override
+		public void ngContentStart() {
+		}
+
+		@Override
+		public void ngContentEnd() {
+		}
+	}
+
+	class Delegate implements ParserHandler {
+		private final ParserHandler target;
+
+		public Delegate(ParserHandler target) {
+			this.target = target;
+		}
+
+		public void documentStart() {
+			target.documentStart();
+		}
+
+		public void documentEnd() {
+			target.documentEnd();
+		}
+
+		public void elementHead(String name) {
+			target.elementHead(name);
+		}
+
+		public void attributeStart(String name, boolean hasValue) {
+			target.attributeStart(name, hasValue);
+		}
+
+		public void attributeClasses(List<String[]> classExprPairs) {
+			target.attributeClasses(classExprPairs);
+		}
+
+		public void attributeExpr(String name, String expr) {
+			target.attributeExpr(name, expr);
+		}
+
+		public void attributeEnd() {
+			target.attributeEnd();
+		}
+
+		public void elementHeadEnd() {
+			target.elementHeadEnd();
+		}
+
+		public void text(String text, boolean textIsExpr, List<String[]> pipes) {
+			target.text(text, textIsExpr, pipes);
+		}
+
+		public void elementEnd(String name) {
+			target.elementEnd(name);
+		}
+
+		public void elementConditionalStart(String expr) {
+			target.elementConditionalStart(expr);
+		}
+
+		public void elementConditionalElse() {
+			target.elementConditionalElse();
+		}
+
+		public void elementConditionalEnd() {
+			target.elementConditionalEnd();
+		}
+
+		public void elementRepeatedStart(String expr) {
+			target.elementRepeatedStart(expr);
+		}
+
+		public void elementRepeatedEnd() {
+			target.elementRepeatedEnd();
+		}
+
+		public void componentStart(String clazz, List<String> params) {
+			target.componentStart(clazz, params);
+		}
+
+		public void componentEnd() {
+			target.componentEnd();
+		}
+
+		public void ngContentStart() {
+			target.ngContentStart();
+		}
+
+		public void ngContentEnd() {
+			target.ngContentEnd();
+		}
+	}
 }

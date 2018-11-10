@@ -51,11 +51,6 @@ public class ParserTest {
 		Parser parser = new Parser(new Resolver() {
 
 			@Override
-			public Class<?> resolvePipe(String name) {
-				return null;
-			}
-
-			@Override
 			public List<CmpRef> resolveCmps(ElementRef element) {
 				return ((JSoupElementRef) element).getNativeElement()
 						.nodeName()
@@ -63,7 +58,17 @@ public class ParserTest {
 			}
 
 			@Override
+			public Class<?> resolvePipe(String name) {
+				return null;
+			}
+
+			@Override
 			public Injector getInjector() {
+				return null;
+			}
+
+			@Override
+			public String resolveCmpClass(String cmpClass) {
 				return null;
 			}
 		});

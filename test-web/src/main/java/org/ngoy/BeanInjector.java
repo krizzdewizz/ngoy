@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class BeanInjector implements Injector {
 
 	@Autowired
-	ApplicationContext context;
+	private ApplicationContext context;
 
 	@Override
 	public <T> T get(Class<T> clazz) {

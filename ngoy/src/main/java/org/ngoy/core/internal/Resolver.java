@@ -24,6 +24,11 @@ public interface Resolver {
 		public Injector getInjector() {
 			return null;
 		}
+
+		@Override
+		public String resolveCmpClass(String cmpClass) {
+			return null;
+		}
 	};
 
 	Injector getInjector();
@@ -31,4 +36,6 @@ public interface Resolver {
 	List<CmpRef> resolveCmps(ElementRef element);
 
 	Class<?> resolvePipe(String name);
+
+	String resolveCmpClass(String cmpClass);
 }

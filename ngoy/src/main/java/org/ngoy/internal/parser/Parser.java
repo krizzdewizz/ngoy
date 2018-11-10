@@ -88,17 +88,36 @@ public class Parser {
 	public boolean inlineComponents;
 	public String contentType;
 
-	private ParserHandler handler;
+	private MyHandler handler;
 	private Resolver resolver;
 	private SkipSubTreeVisitor visitor;
+
+	private static class MyHandler extends ParserHandler.Delegate {
+		final LinkedList<String> cmpClassesStack = new LinkedList<>();
+
+		public MyHandler(ParserHandler target) {
+			super(target);
+		}
+
+		@Override
+		public void componentStart(String clazz, List<String> params) {
+			super.componentStart(clazz, params);
+			cmpClassesStack.push(clazz);
+		}
+
+		@Override
+		public void componentEnd() {
+			super.componentEnd();
+			cmpClassesStack.pop();
+		}
+	}
 
 	public Parser() {
 		this(null);
 	}
 
 	/**
-	 * @param resolver
-	 *            if null, uses {@link Resolver#DEFAULT}
+	 * @param resolver if null, uses {@link Resolver#DEFAULT}
 	 */
 	public Parser(@Nullable Resolver resolver) {
 		this.resolver = resolver == null ? Resolver.DEFAULT : resolver;
@@ -108,13 +127,17 @@ public class Parser {
 
 		Objects.requireNonNull(template, "template must not be null.");
 
-		this.handler = handler;
+		this.handler = new MyHandler(handler);
 		visitor = new SkipSubTreeVisitor(new Visitor());
 		List<Node> nodes = parseBody ? parseBody(template, false) : asList(parseHtml(template));
 
-		handler.documentStart();
+		acceptDocument(nodes);
+	}
+
+	private void acceptDocument(List<Node> nodes) {
+		this.handler.documentStart();
 		accept(nodes);
-		handler.documentEnd();
+		this.handler.documentEnd();
 	}
 
 	private void replaceExprs(Node node) {
@@ -479,7 +502,6 @@ public class Parser {
 	}
 
 	private void compileDirectives(List<CmpRef> cmpRefs, Element el) {
-
 		for (CmpRef cmpRef : cmpRefs) {
 			if (!cmpRef.directive) {
 				continue;
@@ -489,7 +511,8 @@ public class Parser {
 					.get(cmpRef.clazz);
 
 			if (dir instanceof OnCompile) {
-				((OnCompile) dir).ngOnCompile(new JSoupElementRef(el));
+				String cmpClass = resolver.resolveCmpClass(handler.cmpClassesStack.peek());
+				((OnCompile) dir).ngOnCompile(new JSoupElementRef(el), cmpClass);
 			}
 		}
 

@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.ngoy.core.NgoyException.wrap;
+import static org.ngoy.core.Provider.useValue;
 import static org.ngoy.internal.util.Util.findAnnotation;
 
 import java.lang.reflect.Constructor;
@@ -36,12 +37,23 @@ public class DefaultInjector implements Injector {
 		for (Provider p : providers) {
 			all.put(p.getProvide(), p);
 		}
+		all.put(Injector.class, useValue(Injector.class, this));
 		this.providers = all;
 	}
 
 	@Override
 	public <T> T get(Class<T> clazz) {
 		return getInternal(clazz, new HashSet<>());
+	}
+
+	public void put(Provider provider) {
+		Class<?> provide = provider.getProvide();
+		Object useValue = provider.getUseValue();
+
+		providers.put(provide, provider);
+		if (useValue != null) {
+			providerInstances.put(provide, useValue);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -63,6 +75,8 @@ public class DefaultInjector implements Injector {
 
 			for (Injector inj : moreInjectors) {
 				if ((object = inj.get(clazz)) != null) {
+					providerInstances.put(clazz, object);
+					injectFields(clazz, object, resolving);
 					return (T) object;
 				}
 			}
@@ -108,7 +122,7 @@ public class DefaultInjector implements Injector {
 		}
 	}
 
-	private void injectFields(Class<?> clazz, Object inst, Set<Class<?>> resolving) throws Exception {
+	public void injectFields(Class<?> clazz, Object inst, Set<Class<?>> resolving) {
 		try {
 			for (Field f : clazz.getFields()) {
 				int mods = f.getModifiers();
