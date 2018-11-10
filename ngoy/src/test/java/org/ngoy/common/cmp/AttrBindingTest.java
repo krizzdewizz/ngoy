@@ -76,6 +76,6 @@ public class AttrBindingTest extends ANgoyTest {
 	public void testAttrNonString() {
 		expectedEx.expect(NgoyException.class);
 		expectedEx.expectMessage(containsString("but would receive a string"));
-		assertThat(render(AttrNonString.class)).isEqualTo("<person>hello: abcdefghijkl</person>");
+		render(AttrNonString.class);
 	}
 }

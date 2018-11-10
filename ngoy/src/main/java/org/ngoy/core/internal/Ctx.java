@@ -230,7 +230,7 @@ public class Ctx {
 						Object valueType = value == null ? null
 								: value.getClass()
 										.getName();
-						throw new NgoyException("Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", className, field.getName(), expr,
+						throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", className, field.getName(), expr,
 								fieldType, valueType);
 					}
 				}
@@ -244,8 +244,8 @@ public class Ctx {
 						Object valueType = value == null ? null
 								: value.getClass()
 										.getName();
-						throw new NgoyException("Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", className, setter.getName(),
-								expr, parameterType, valueType);
+						throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", className,
+								setter.getName(), expr, parameterType, valueType);
 					}
 				}
 					break;
