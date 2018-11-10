@@ -14,28 +14,28 @@ public class Events {
 		Object payload;
 	}
 
-	private final Map<Object, Set<Consumer<?>>> map = new HashMap<>();
-	private final List<Event> events = new ArrayList<>();
+	private final Map<Object, Set<Consumer<?>>> subscriptions = new HashMap<>();
+	private final List<Event> queue = new ArrayList<>();
 
 	public <T> void subscribe(Object token, Consumer<T> consumer) {
-		Set<Consumer<?>> set = map.get(token);
+		Set<Consumer<?>> set = subscriptions.get(token);
 		if (set == null) {
 			set = new LinkedHashSet<>();
-			map.put(token, set);
+			subscriptions.put(token, set);
 		}
 		set.add(consumer);
 	}
 
 	public void unsubscribe(Object topic) {
-		map.remove(topic);
+		subscriptions.remove(topic);
 	}
 
 	public <T> void unsubscribe(Object topic, Consumer<T> consumer) {
-		Set<Consumer<?>> set = map.get(topic);
+		Set<Consumer<?>> set = subscriptions.get(topic);
 		if (set != null) {
 			set.remove(consumer);
 			if (set.isEmpty()) {
-				map.remove(topic);
+				subscriptions.remove(topic);
 			}
 		}
 	}
@@ -44,20 +44,20 @@ public class Events {
 		Event e = new Event();
 		e.topic = topic;
 		e.payload = payload;
-		events.add(e);
+		queue.add(e);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void tick() {
-		for (Event e : new ArrayList<>(events)) {
-			Set<Consumer<?>> set = map.get(e.topic);
+		for (Event e : new ArrayList<>(queue)) {
+			Set<Consumer<?>> set = subscriptions.get(e.topic);
 			if (set != null) {
 				for (Consumer consumer : set) {
 					consumer.accept(e.payload);
 				}
 			}
-			events.remove(e);
+			queue.remove(e);
 		}
-		map.clear();
+		subscriptions.clear();
 	}
 }

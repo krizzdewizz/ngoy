@@ -5,7 +5,7 @@ import org.ngoy.core.internal.Ctx;
 /**
  * The context or 'model' associated with a template.
  * <p>
- * Bindings will be looked up either on the 'modelRoot' and on variables.
+ * Bindings will be looked up either on the 'modelRoot' or on variables.
  * 
  * @author krizz
  */

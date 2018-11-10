@@ -54,10 +54,10 @@ import org.ngoy.internal.parser.Parser;
 
 public class Ngoy implements Renderer {
 	public static class Builder {
-		private Class<?> appRoot;
+		private final Class<?> appRoot;
+		private final Config config = new Config();
 		private Provider[] providers;
 		private Injector[] injectors;
-		private Config config = new Config();
 		private TemplateCache cache;
 
 		public Builder(Class<?> appRoot) {
