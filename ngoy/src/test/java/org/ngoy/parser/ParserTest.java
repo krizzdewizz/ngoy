@@ -2,6 +2,7 @@ package org.ngoy.parser;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static org.ngoy.core.Util.copyToString;
 import static org.ngoy.core.Util.newPrintStream;
 
@@ -11,6 +12,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
@@ -70,6 +72,11 @@ public class ParserTest {
 			@Override
 			public String resolveCmpClass(String cmpClass) {
 				return null;
+			}
+
+			@Override
+			public Set<Class<?>> getCmpClasses() {
+				return emptySet();
 			}
 		});
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

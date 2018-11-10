@@ -14,9 +14,9 @@ import org.ngoy.core.OnDestroy;
 import org.ngoy.core.OnInit;
 import org.ngoy.core.Renderer;
 import org.ngoy.forms.FormsModule;
+import org.ngoy.todo.components.TodoComponent;
 import org.ngoy.todo.model.Todo;
 import org.ngoy.todo.services.TodoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class AppComponent implements OnInit, OnDestroy {
 	public final String appName = "Todo";
 
-	@Autowired
+	@Inject
 	public TodoService todoService;
 
 	@Inject

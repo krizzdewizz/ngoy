@@ -50,7 +50,7 @@ public class DirectiveTest extends ANgoyTest {
 
 	@Test
 	public void testHostBinding() {
-		assertThat(render(CmpHostBinding.class)).isEqualTo("<a addbold addhref href=\"http://x\" class=\"bold\">XX</a>");
+		assertThat(render(CmpHostBinding.class)).isEqualTo("<a addbold addhref class=\"bold\" href=\"http://x\">XX</a>");
 	}
 
 }

@@ -1,0 +1,8 @@
+todo {
+	display: block;
+	margin-top: 20px;
+}
+
+todo .card-title {
+	font-size: 1rem;
+}

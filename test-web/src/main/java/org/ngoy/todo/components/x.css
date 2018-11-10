@@ -1,0 +1,65 @@
+.qbert {
+	color: red;
+}
+
+form {
+	margin-top: 20px;
+}
+
+.todo-text {
+	width: 20rem;
+}
+
+.messages span {
+	visibility: hidden;
+}
+
+.messages span.deleted {
+	visibility: visible;
+	color: gray;
+}
+
+.messages span.text-required {
+	visibility: visible;
+	float: left;
+	color: red;
+}
+
+todo {
+	display: block;
+	margin-top: 20px;
+	font-size: 90px;
+}
+
+.qbert {
+	color: red;
+}
+
+form {
+	margin-top: 20px;
+}
+
+.todo-text {
+	width: 20rem;
+}
+
+.messages span {
+	visibility: hidden;
+}
+
+.messages span.deleted {
+	visibility: visible;
+	color: gray;
+}
+
+.messages span.text-required {
+	visibility: visible;
+	float: left;
+	color: red;
+}
+
+todo {
+	display: block;
+	margin-top: 20px;
+	font-size: 90px;
+}

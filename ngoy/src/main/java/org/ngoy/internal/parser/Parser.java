@@ -322,7 +322,7 @@ public class Parser {
 
 	private void acceptSpecialElementsContent(Element el) {
 		String nodeName = el.nodeName();
-		if (nodeName.equals("style") || nodeName.equals("script")) {
+		if (nodeName.equals("script")) {
 			el.childNodes()
 					.forEach(c -> handler.text(c.toString(), false, null));
 		}

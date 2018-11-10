@@ -18,9 +18,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.ngoy.common.TranslateModule;
@@ -206,7 +209,7 @@ public class Ngoy implements Renderer {
 	private void init(Injector[] injectors, Provider... rootProviders) {
 
 		List<Provider> cmpProviders = new ArrayList<>();
-		Map<String, Provider> cmpDecls = new HashMap<>();
+		Map<String, Provider> cmpDecls = new LinkedHashMap<>(); // order of css
 		Map<String, Provider> pipeDecls = new HashMap<>();
 
 		if (provides(Locale.class, rootProviders) == null) {
@@ -220,10 +223,14 @@ public class Ngoy implements Renderer {
 		}
 
 		addModuleDecls(CoreInternalModule.class, cmpDecls, pipeDecls, cmpProviders);
-
 		addModuleDecls(appRoot, cmpDecls, pipeDecls, cmpProviders);
 
+		// collection done
+
+		resolver = createResolver(cmpDecls, pipeDecls);
+
 		List<Provider> all = new ArrayList<>();
+		all.add(useValue(Resolver.class, resolver));
 		all.add(useValue(Renderer.class, this));
 		all.add(useValue(Events.class, events));
 		all.addAll(asList(rootProviders));
@@ -248,8 +255,10 @@ public class Ngoy implements Renderer {
 			injector.get(TranslateService.class)
 					.setBundle(translateBundle);
 		}
+	}
 
-		resolver = new Resolver() {
+	private Resolver createResolver(Map<String, Provider> cmpDecls, Map<String, Provider> pipeDecls) {
+		return new Resolver() {
 			@Override
 			public List<CmpRef> resolveCmps(ElementRef node) {
 				return cmpDecls.entrySet()
@@ -290,6 +299,17 @@ public class Ngoy implements Renderer {
 			@Override
 			public String resolveCmpClass(String cmpClass) {
 				return isSet(cmpClass) ? cmpClass : appRoot.getName();
+			}
+
+			@Override
+			public Set<Class<?>> getCmpClasses() {
+				Set<Class<?>> all = new LinkedHashSet<>();
+				all.add(appRoot);
+				cmpDecls.values()
+						.stream()
+						.map(Provider::getProvide)
+						.forEach(all::add);
+				return all;
 			}
 		};
 	}
