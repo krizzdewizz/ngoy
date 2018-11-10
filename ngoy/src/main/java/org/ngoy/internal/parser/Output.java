@@ -1,6 +1,6 @@
 package org.ngoy.internal.parser;
 
-import org.ngoy.internal.util.Nullable;
+import org.ngoy.core.Nullable;
 
 public interface Output {
 	/**

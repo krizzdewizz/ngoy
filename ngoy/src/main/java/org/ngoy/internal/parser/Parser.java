@@ -27,13 +27,13 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.NodeVisitor;
 import org.ngoy.core.HostBinding;
 import org.ngoy.core.NgoyException;
+import org.ngoy.core.Nullable;
 import org.ngoy.core.OnCompile;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.ContainerComponent;
 import org.ngoy.core.internal.JSoupElementRef;
 import org.ngoy.core.internal.Resolver;
 import org.ngoy.internal.parser.visitor.SkipSubTreeVisitor;
-import org.ngoy.internal.util.Nullable;
 
 public class Parser {
 

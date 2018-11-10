@@ -1,9 +1,9 @@
 package org.ngoy.common;
 
 import org.ngoy.core.Inject;
+import org.ngoy.core.Nullable;
 import org.ngoy.core.Pipe;
 import org.ngoy.core.PipeTransform;
-import org.ngoy.internal.util.Nullable;
 
 @Pipe("translate")
 public class TranslatePipe implements PipeTransform {

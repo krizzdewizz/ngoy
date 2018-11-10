@@ -36,6 +36,7 @@ import org.ngoy.core.Events;
 import org.ngoy.core.Injector;
 import org.ngoy.core.NgModule;
 import org.ngoy.core.NgoyException;
+import org.ngoy.core.Nullable;
 import org.ngoy.core.OnDestroy;
 import org.ngoy.core.OnInit;
 import org.ngoy.core.Pipe;
@@ -50,7 +51,6 @@ import org.ngoy.core.internal.DefaultInjector;
 import org.ngoy.core.internal.Resolver;
 import org.ngoy.internal.parser.ByteCodeTemplate;
 import org.ngoy.internal.parser.Parser;
-import org.ngoy.internal.util.Nullable;
 
 public class Ngoy implements Renderer {
 	public static class Builder {

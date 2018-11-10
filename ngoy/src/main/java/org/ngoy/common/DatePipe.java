@@ -5,9 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 import org.ngoy.core.Inject;
+import org.ngoy.core.Nullable;
 import org.ngoy.core.Pipe;
 import org.ngoy.core.PipeTransform;
-import org.ngoy.internal.util.Nullable;
 
 @Pipe("date")
 public class DatePipe implements PipeTransform {

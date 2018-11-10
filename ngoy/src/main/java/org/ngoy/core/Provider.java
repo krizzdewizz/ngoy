@@ -5,8 +5,6 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.stream.Stream;
 
-import org.ngoy.internal.util.Nullable;
-
 public class Provider {
 
 	public static Provider[] of(Class<?>... clazz) {

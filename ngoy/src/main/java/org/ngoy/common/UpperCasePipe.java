@@ -3,9 +3,9 @@ package org.ngoy.common;
 import java.util.Locale;
 
 import org.ngoy.core.Inject;
+import org.ngoy.core.Nullable;
 import org.ngoy.core.Pipe;
 import org.ngoy.core.PipeTransform;
-import org.ngoy.internal.util.Nullable;
 
 @Pipe("uppercase")
 public class UpperCasePipe implements PipeTransform {

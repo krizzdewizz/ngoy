@@ -83,7 +83,7 @@ public class DefaultInjector implements Injector {
 
 			Provider provider = providers.get(clazz);
 			if (provider == null) {
-				throw new NgoyException("No provider for '%s'", clazz.getName());
+				throw new NgoyException("No provider for %s", clazz.getName());
 			}
 
 			Object useValue = provider.getUseValue();
@@ -99,9 +99,9 @@ public class DefaultInjector implements Injector {
 			Constructor<?>[] ctors = useClass.getConstructors();
 			Object inst;
 			if (ctors.length > 1) {
-				throw new NgoyException("Only 1 ctor allowed: '%s'", useClass);
+				throw new NgoyException("Only 1 constructor allowed: %s", useClass);
 			} else if (ctors.length == 0) {
-				throw new NgoyException("No ctor found: '%s'", useClass);
+				throw new NgoyException("No constructor found: %s", useClass);
 			} else {
 				Constructor<?> ctor = ctors[0];
 				inst = ctor.newInstance(Stream.of(ctor.getParameterTypes())
@@ -124,13 +124,13 @@ public class DefaultInjector implements Injector {
 
 	public void injectFields(Class<?> clazz, Object inst, Set<Class<?>> resolving) {
 		try {
-			for (Field f : clazz.getFields()) {
-				int mods = f.getModifiers();
-				if (!Modifier.isPublic(mods) || Modifier.isStatic(mods) || Modifier.isFinal(mods) || findAnnotation(f, "Inject") == null) {
+			for (Field field : clazz.getFields()) {
+				int mods = field.getModifiers();
+				if (!Modifier.isPublic(mods) || Modifier.isStatic(mods) || Modifier.isFinal(mods) || findAnnotation(field, "Inject") == null) {
 					continue;
 				}
 
-				f.set(inst, getInternal(f.getType(), resolving));
+				field.set(inst, getInternal(field.getType(), resolving));
 			}
 
 		} catch (Exception e) {
