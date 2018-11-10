@@ -363,7 +363,7 @@ public class Parser {
 						String name = attr.getKey();
 						if (name.startsWith("[")) {
 							attributeBinding(name, attr.getValue(), classNames, attrNames, excludeBindings);
-						} else {
+						} else if (!excludeBindings.contains(name)) {
 							boolean hasValue = attr.getValue() != null;
 							handler.attributeStart(name, hasValue);
 							if (hasValue) {

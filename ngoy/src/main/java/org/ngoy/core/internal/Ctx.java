@@ -154,9 +154,7 @@ public class Ctx {
 					root = rootClass.getName();
 				}
 			}
-			String msg = format("Error while evaluating expression '%s'. modelRoot: %s. templateUrl: %s, message: %s", expr, root, templateUrl, NgoyException.realException(e));
-
-			throw new NgoyException(msg);
+			throw new NgoyException(format("Error while evaluating expression '%s'. modelRoot: %s. templateUrl: %s, message: %s", expr, root, templateUrl, NgoyException.realException(e)));
 		}
 	}
 
@@ -216,10 +214,11 @@ public class Ctx {
 			for (int i = 0, n = paramPairs.length; i < n; i += 2) {
 				String input = paramPairs[i];
 				char inputType = input.charAt(0);
-				input = input.substring(1);
+				char inputValueType = input.charAt(1);
+				input = input.substring(2);
 				String expr = paramPairs[i + 1];
 
-				Object value = eval(expr);
+				Object value = inputValueType == Inputs.VALUE_EXPR ? eval(expr) : expr;
 				switch (inputType) {
 				case Inputs.FIELD_INPUT: {
 					Field field = clazz.getField(input);
