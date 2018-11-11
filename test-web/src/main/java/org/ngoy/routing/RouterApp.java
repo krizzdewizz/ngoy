@@ -7,11 +7,9 @@ import org.ngoy.core.Inject;
 import org.ngoy.core.NgModule;
 import org.ngoy.router.Route;
 import org.ngoy.router.Router;
-import org.ngoy.routing.home.HomeComponent;
-import org.ngoy.routing.settings.SettingsComponent;
 
 @Component(selector = "", templateUrl = "app.component.html")
-@NgModule(declarations = { HomeComponent.class, SettingsComponent.class })
+@NgModule()
 public class RouterApp {
 	public final String appName = "Router";
 
