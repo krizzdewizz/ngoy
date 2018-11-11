@@ -10,10 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.jsoup.nodes.Element;
-import org.ngoy.core.ElementRef;
 import org.ngoy.core.Input;
 import org.ngoy.core.NgoyException;
-import org.ngoy.core.internal.JSoupElementRef;
 
 public class Inputs {
 
@@ -25,10 +23,7 @@ public class Inputs {
 	public static final char VALUE_EXPR = '0';
 	public static final char VALUE_TEXT = '1';
 
-	public static List<String> cmpInputs(ElementRef elRef, Class<?> clazz, Set<String> excludeBindings) {
-
-		Element el = ((JSoupElementRef) elRef).getNativeElement();
-
+	public static List<String> cmpInputs(Element el, Class<?> clazz, Set<String> excludeBindings) {
 		List<String> result = new ArrayList<>();
 		for (Field f : clazz.getFields()) {
 			Input input = f.getAnnotation(Input.class);
@@ -80,8 +75,8 @@ public class Inputs {
 
 			result.add(format("%s%s%s", inputType, valueType, fieldName));
 			result.add(inp);
-			excludeBindings.add(input);
-			excludeBindings.add(fieldName);
+			excludeBindings.add(input.toLowerCase());
+			excludeBindings.add(fieldName.toLowerCase());
 		}
 	}
 

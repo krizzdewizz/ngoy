@@ -41,7 +41,7 @@ public class RuntimeErrorsTest extends ANgoyTest {
 	public static class PersonSetterCmp {
 		@Input()
 		public int age(int age) throws Exception {
-			throw new Exception("xxx");
+			throw new Exception("xxx" + age);
 		};
 	}
 

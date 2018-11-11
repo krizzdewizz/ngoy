@@ -2,14 +2,8 @@ package org.ngoy.internal.parser;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.stream.Collectors.toList;
 import static org.ngoy.core.NgoyException.wrap;
-import static org.ngoy.internal.parser.Inputs.cmpInputs;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -26,7 +20,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.NodeVisitor;
-import org.ngoy.core.HostBinding;
 import org.ngoy.core.Nullable;
 import org.ngoy.core.OnCompile;
 import org.ngoy.core.internal.CmpRef;
@@ -45,7 +38,7 @@ public class Parser {
 		}
 	}
 
-	private List<Node> parseBody(String template, boolean forceHtmlContentType) {
+	List<Node> parseBody(String template, boolean forceHtmlContentType) {
 		try {
 			if (!forceHtmlContentType && "text/plain".equals(contentType)) {
 				template = format("<![CDATA[%s]]>", template);
@@ -72,9 +65,6 @@ public class Parser {
 		}
 	}
 
-	private static final String BINDING_CLASS = "class.";
-	private static final String BINDING_ATTR = "attr.";
-
 	private static final Pattern PIPE_PARAM_PATTERN = Pattern.compile("(.*?):(.*)");
 	private static final Pattern EXPR_PATTERN = Pattern.compile("\\{\\{(.*?)\\}\\}", Pattern.MULTILINE);
 	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
@@ -83,16 +73,17 @@ public class Parser {
 
 	private final LinkedList<Element> elementConditionals = new LinkedList<>();
 	private final LinkedList<Element> elementRepeated = new LinkedList<>();
-	private final Set<Element> cmpElements = new HashSet<>();
 	public boolean parseBody;
 	public boolean inlineComponents;
 	public String contentType;
 
-	private MyHandler handler;
+	final Set<Element> cmpElements = new HashSet<>();
+	MyHandler handler;
+	SkipSubTreeVisitor visitor;
 	private Resolver resolver;
-	private SkipSubTreeVisitor visitor;
+	private final CmpRefParser cmpRefParser;
 
-	private static class MyHandler extends ParserHandler.Delegate {
+	static class MyHandler extends ParserHandler.Delegate {
 		final LinkedList<String> cmpClassesStack = new LinkedList<>();
 
 		public MyHandler(ParserHandler target) {
@@ -120,6 +111,7 @@ public class Parser {
 	 * @param resolver if null, uses {@link Resolver#DEFAULT}
 	 */
 	public Parser(@Nullable Resolver resolver) {
+		this.cmpRefParser = new CmpRefParser(this);
 		this.resolver = resolver == null ? Resolver.DEFAULT : resolver;
 	}
 
@@ -196,152 +188,16 @@ public class Parser {
 			handler.elementRepeatedStart(ngFor);
 		}
 
-		JSoupElementRef domEl = new JSoupElementRef(el);
-		List<CmpRef> cmpRefs = resolver.resolveCmps(domEl);
+		List<CmpRef> cmpRefs = resolver.resolveCmps(new JSoupElementRef(el));
 		compileCmps(cmpRefs, el);
 
-		if (cmpRefs.isEmpty()) {
-			handler.elementHead(el.nodeName());
-			replaceAttrExpr(el, emptySet(), null, true);
-			handler.elementHeadEnd();
-
+		if (!cmpRefParser.acceptCmpRefs(el, cmpRefs, acceptChildren)) {
 			acceptSpecialElementsContent(el);
-		} else {
-
-			List<CmpRef> allDirs = new ArrayList<>();
-			List<CmpRef> allCmps = new ArrayList<>();
-			splitComponentsAndDirectives(cmpRefs, allCmps, allDirs);
-
-			Set<String> excludeBindings = new HashSet<>();
-			List<String> cmpInputs = allCmps.isEmpty() ? emptyList() : cmpInputs(domEl, allCmps.get(0).clazz, excludeBindings);
-
-			List<List<String>> dirInputs = allDirs.stream()
-					.map(ref -> cmpInputs(domEl, ref.clazz, excludeBindings))
-					.collect(toList());
-
-			boolean hadElementHead = false;
-
-			if (!allDirs.isEmpty()) {
-				handler.elementHead(el.nodeName());
-				hadElementHead = true;
-
-				int countRefs = allDirs.size();
-				for (int i = 0; i < countRefs; i++) {
-					CmpRef ref = allDirs.get(i);
-					handler.componentStart(ref.clazz.getName(), dirInputs.get(i));
-					replaceAttrExpr(el, excludeBindings, ref.clazz, i == 0);
-				}
-
-				if (allCmps.isEmpty()) {
-					handler.elementHeadEnd();
-				}
-
-				for (int i = 0; i < countRefs; i++) {
-					handler.componentEnd();
-				}
-			}
-
-			if (!allCmps.isEmpty()) {
-				CmpRef ref = allCmps.get(0);
-				handler.componentStart(ref.clazz.getName(), cmpInputs);
-
-				if (inlineComponent(el)) {
-					cmpElements.add(el);
-				} else {
-					if (!hadElementHead) {
-						handler.elementHead(el.nodeName());
-					}
-					replaceAttrExpr(el, excludeBindings, ref.clazz, true);
-					handler.elementHeadEnd();
-				}
-
-				acceptCmpRef(el, ref, acceptChildren);
-
-				if (acceptChildren) {
-					handler.componentEnd();
-				}
-
-				visitor.skipSubTree(el);
-			}
 		}
 	}
 
-	private void acceptCmpRef(Element el, CmpRef ref, boolean acceptChildren) {
-		List<Node> cmpNodes = parseBody(ref.template, true);
-
-		Element ngContentEl = findNgContent(cmpNodes);
-
-		if (ngContentEl == null) {
-			accept(cmpNodes);
-			return;
-		}
-
-		boolean invokeHandler = !ngContentEl.hasAttr("scope");
-		String select = ngContentEl.attr("select");
-		String selector = select.isEmpty() ? ngContentEl.attr("selector") : select;
-
-		Element parent = ngContentEl.parent();
-
-		List<Node> childNodes = new ArrayList<>(parent.childNodes());
-		int ngContentIndex = childNodes.indexOf(ngContentEl);
-
-		List<Node> nodesBefore = childNodes.subList(0, ngContentIndex);
-		List<Node> nodesAfter = childNodes.subList(ngContentIndex + 1, childNodes.size());
-
-		ngContentEl.remove();
-
-		if (acceptChildren) {
-			accept(nodesBefore);
-		}
-
-		if (invokeHandler) {
-			handler.ngContentStart();
-		}
-
-		if (acceptChildren) {
-			if (selector.isEmpty()) {
-				accept(el.childNodes());
-			} else {
-				el.childNodes()
-						.stream()
-						.filter(Element.class::isInstance)
-						.map(Element.class::cast)
-						.filter(e -> e.is(selector))
-						.forEach(e -> e.traverse(visitor));
-			}
-
-			if (invokeHandler) {
-				handler.ngContentEnd();
-			}
-
-			accept(nodesAfter);
-		}
-
-	}
-
-	private void accept(List<Node> nodes) {
+	void accept(List<Node> nodes) {
 		nodes.forEach(n -> n.traverse(visitor));
-	}
-
-	@Nullable
-	private Element findNgContent(List<Node> cmpNodes) {
-		return cmpNodes.stream()
-				.filter(Element.class::isInstance)
-				.map(Element.class::cast)
-				.map(cmpNode -> cmpNode.selectFirst("ng-content"))
-				.filter(Objects::nonNull)
-				.findFirst()
-				.orElse(null);
-	}
-
-	private void splitComponentsAndDirectives(List<CmpRef> cmpRefs, List<CmpRef> cmps, List<CmpRef> dirs) {
-		for (CmpRef ref : cmpRefs) {
-			if (ref.directive) {
-				dirs.add(ref);
-			} else {
-				cmps.add(ref);
-			}
-		}
 	}
 
 	private void acceptSpecialElementsContent(Element el) {
@@ -355,111 +211,13 @@ public class Parser {
 	private Element findTemplate(String ref, Document document) {
 		Element template = document.selectFirst(format("ng-template[#%s]", ref));
 		if (template == null) {
-			throw new ParseException("no <ng-template> found for name %s", ref);
+			throw new ParseException("No <ng-template> found for name %s", ref);
 		}
 
 		return template;
 	}
 
-	private void replaceAttrExpr(Element el, Set<String> excludeBindings, @Nullable Class<?> cmpClass, boolean first) {
-
-		// add lower case copy because jsoup attributes are all lower case
-		new HashSet<String>(excludeBindings).stream()
-				.map(String::toLowerCase)
-				.forEach(excludeBindings::add);
-
-		List<String[]> classNames = first ? el.classNames()
-				.stream()
-				.map(it -> new String[] { it, "" })
-				.collect(toList()) : new ArrayList<>();
-
-		List<String[]> attrNames = new ArrayList<>();
-
-		if (first) {
-			el.attributes()
-					.asList()
-					.stream()
-					.filter(attr -> !attr.getKey()
-							.equals("class")
-							&& !attr.getKey()
-									.startsWith("*"))
-					.forEach(attr -> {
-						String name = attr.getKey();
-						if (name.startsWith("[")) {
-							attributeBinding(name, attr.getValue(), classNames, attrNames, excludeBindings);
-						} else if (!excludeBindings.contains(name)) {
-							boolean hasValue = attr.getValue() != null;
-							handler.attributeStart(name, hasValue);
-							if (hasValue) {
-								replaceExpr(attr.getValue());
-								handler.attributeEnd();
-							}
-						}
-					});
-		}
-
-		if (cmpClass != null) {
-			addHostAttributeBindings(cmpClass, classNames, attrNames, excludeBindings);
-		}
-
-		if (!classNames.isEmpty()) {
-			handler.attributeClasses(classNames);
-		}
-
-		if (!attrNames.isEmpty()) {
-			attrNames.forEach(it -> handler.attributeExpr(it[0], it[1]));
-		}
-	}
-
-	private void addHostAttributeBindings(Class<?> cmpClass, List<String[]> classNames, List<String[]> attrNames, Set<String> excludeBindings) {
-		for (Field f : cmpClass.getFields()) {
-			HostBinding hb = f.getAnnotation(HostBinding.class);
-			if (hb == null) {
-				continue;
-			}
-
-			attributeBinding(format("[%s]", hb.value()), f.getName(), classNames, attrNames, excludeBindings);
-		}
-
-		for (Method m : cmpClass.getMethods()) {
-			HostBinding hb = m.getAnnotation(HostBinding.class);
-			if (hb == null) {
-				continue;
-			}
-
-			if (m.getParameterCount() > 0) {
-				throw new ParseException("Host binding method must not have parameters: %s.%s", cmpClass.getName(), m.getName());
-			}
-
-			attributeBinding(format("[%s]", hb.value()), format("%s()", m.getName()), classNames, attrNames, excludeBindings);
-		}
-	}
-
-	private void attributeBinding(String name, String value, List<String[]> classNames, List<String[]> attrNames, Set<String> exclude) {
-		if (!name.endsWith("]")) {
-			throw new ParseException("Attribute binding malformed: missing ]");
-		}
-		String rawName = name.substring(1, name.length() - 1);
-
-		if (exclude.contains(rawName)) {
-			return;
-		}
-
-		if (rawName.equals("class")) {
-			ObjParser.parse(value)
-					.forEach((key, expr) -> classNames.add(new String[] { key, expr }));
-		} else if (rawName.startsWith(BINDING_CLASS)) {
-			String className = rawName.substring(BINDING_CLASS.length());
-			classNames.add(new String[] { className, value });
-		} else if (rawName.startsWith(BINDING_ATTR)) {
-			String attrName = rawName.substring(BINDING_ATTR.length());
-			attrNames.add(new String[] { attrName, value });
-		} else {
-			handler.attributeExpr(rawName, value);
-		}
-	}
-
-	private void replaceExpr(@Nullable String text) {
+	void replaceExpr(@Nullable String text) {
 		if (text == null || text.isEmpty()) {
 			return;
 		}
@@ -537,7 +295,7 @@ public class Parser {
 		}
 	}
 
-	private boolean inlineComponent(Element el) {
+	boolean inlineComponent(Element el) {
 		return inlineComponents || el.is(ContainerComponent.SELECTOR);
 	}
 

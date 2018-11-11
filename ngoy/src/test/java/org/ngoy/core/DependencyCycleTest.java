@@ -38,6 +38,7 @@ public class DependencyCycleTest extends ANgoyTest {
 	@Component(selector = "test", providers = { ServiceA.class, ServiceB.class })
 	public static class CmpCtor {
 		public CmpCtor(ServiceA a) {
+			String.valueOf(a);
 		}
 	}
 

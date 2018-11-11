@@ -24,13 +24,14 @@ public class DirectiveAndCmpTest extends ANgoyTest {
 		public String q = "abc";
 	}
 
-	@Component(selector = "test", template = "<a [makeItBold]=\"'bi'\"></a>")
+	@Component(selector = "test", template = "<a [attr.q]=\"q\" [makeItBold]=\"'bi'\"></a>")
 	@NgModule(declarations = { ACmp.class, BoldDirective.class })
 	public static class Cmp {
+		public String q = "abc";
 	}
 
 	@Test
 	public void test() {
-		assertThat(render(Cmp.class)).isEqualTo("<a q-bold=\"bi\">hello:abc</a>");
+		assertThat(render(Cmp.class)).isEqualTo("<a q=\"abc\" q-bold=\"bi\">hello:abc</a>");
 	}
 }

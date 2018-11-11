@@ -28,7 +28,7 @@ public class DefaultInjector implements Injector {
 	private final Injector[] moreInjectors;
 
 	public DefaultInjector(Provider... providers) {
-		this(new Injector[0]);
+		this(new Injector[0], providers);
 	}
 
 	public DefaultInjector(Injector[] more, Provider... providers) {

@@ -10,11 +10,18 @@ import org.ngoy.ANgoyTest;
 import org.ngoy.Modules;
 import org.ngoy.core.Component;
 import org.ngoy.core.ModuleWithProviders;
+import org.ngoy.core.NgModule;
 
 public class RouterTest extends ANgoyTest {
 
-	@Component(selector = "home", template = "hello home<a routerLink=\"/settings\">goto settings</a>")
+	@Component(selector = "a", template = "<x>x<ng-content></ng-content></x>")
+	public static class ACmp {
+	}
+
+	@Component(selector = "home", template = "hello home<a [class.active]=\"ok\" [routerLink]=\"route\">goto settings</a>")
 	public static class HomeCmp {
+		public boolean ok = true;
+		public String route = "/settings";
 	}
 
 	@Component(selector = "settings", template = "hello settings")
@@ -22,6 +29,7 @@ public class RouterTest extends ANgoyTest {
 	}
 
 	@Component(selector = "test", template = "router test:<router-outlet></router-outlet>")
+	@NgModule(declarations = { ACmp.class })
 	public static class Cmp {
 	}
 
@@ -40,7 +48,7 @@ public class RouterTest extends ANgoyTest {
 		ModuleWithProviders<RouterModule> router = RouterModule.forRoot(routerConfig);
 		Modules<RouterModule> routerModule = Modules.of(router);
 
-		assertThat(render(Cmp.class, routerModule)).isEqualTo("router test:<router-outlet><home>hello home<a href=\"/settings\">goto settings</a></home></router-outlet>");
+		assertThat(render(Cmp.class, routerModule)).isEqualTo("router test:<router-outlet><home>hello home<a class=\"active\" href=\"/settings\">xgoto settings</a></home></router-outlet>");
 
 		when(location.getPath()).thenReturn("/app/settings");
 		assertThat(render(Cmp.class, routerModule)).isEqualTo("router test:<router-outlet><settings>hello settings</settings></router-outlet>");

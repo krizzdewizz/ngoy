@@ -9,6 +9,7 @@ import org.junit.Test;
 public class MethodRefTest {
 
 	private void setDeleted(String unused) {
+		String.valueOf(unused);
 	}
 
 	@Test
