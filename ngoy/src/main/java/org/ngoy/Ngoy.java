@@ -416,7 +416,15 @@ public class Ngoy implements Renderer {
 			Component cmp = p.getProvide()
 					.getAnnotation(Component.class);
 			if (cmp != null) {
-				targetCmps.put(cmp.selector(), p);
+				Provider existing = targetCmps.put(cmp.selector(), p);
+				if (existing != null) {
+					throw new NgoyException(
+							"More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
+							cmp.selector(), existing.getProvide()
+									.getName(),
+							p.getProvide()
+									.getName());
+				}
 			}
 
 			Directive dir = p.getProvide()

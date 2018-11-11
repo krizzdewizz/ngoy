@@ -2,6 +2,7 @@ package org.ngoy.internal.parser;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
 import static org.ngoy.core.NgoyException.wrap;
@@ -26,7 +27,6 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.NodeVisitor;
 import org.ngoy.core.HostBinding;
-import org.ngoy.core.NgoyException;
 import org.ngoy.core.Nullable;
 import org.ngoy.core.OnCompile;
 import org.ngoy.core.internal.CmpRef;
@@ -208,38 +208,54 @@ public class Parser {
 			acceptSpecialElementsContent(el);
 		} else {
 
-			boolean directive = checkAllForDirective(el, cmpRefs);
-			int countCmpRefs = cmpRefs.size();
+			List<CmpRef> allDirs = new ArrayList<>();
+			List<CmpRef> allCmps = new ArrayList<>();
+			splitComponentsAndDirectives(cmpRefs, allCmps, allDirs);
+
 			Set<String> excludeBindings = new HashSet<>();
+			List<String> cmpInputs = allCmps.isEmpty() ? emptyList() : cmpInputs(domEl, allCmps.get(0).clazz, excludeBindings);
 
-			if (directive) {
-				List<List<String>> cmpInputs = cmpRefs.stream()
-						.map(ref -> cmpInputs(domEl, ref.clazz, excludeBindings))
-						.collect(toList());
+			List<List<String>> dirInputs = allDirs.stream()
+					.map(ref -> cmpInputs(domEl, ref.clazz, excludeBindings))
+					.collect(toList());
 
+			boolean hadElementHead = false;
+
+			if (!allDirs.isEmpty()) {
 				handler.elementHead(el.nodeName());
-				for (int i = 0; i < countCmpRefs; i++) {
-					CmpRef cmpRef = cmpRefs.get(i);
-					handler.componentStart(cmpRef.clazz.getName(), cmpInputs.get(i));
-					replaceAttrExpr(el, excludeBindings, cmpRef.clazz, i == 0);
+				hadElementHead = true;
+
+				int countRefs = allDirs.size();
+				for (int i = 0; i < countRefs; i++) {
+					CmpRef ref = allDirs.get(i);
+					handler.componentStart(ref.clazz.getName(), dirInputs.get(i));
+					replaceAttrExpr(el, excludeBindings, ref.clazz, i == 0);
 				}
-				handler.elementHeadEnd();
-				for (int i = 0; i < countCmpRefs; i++) {
+
+				if (allCmps.isEmpty()) {
+					handler.elementHeadEnd();
+				}
+
+				for (int i = 0; i < countRefs; i++) {
 					handler.componentEnd();
 				}
-			} else {
-				CmpRef cmpRef = cmpRefs.get(0);
-				handler.componentStart(cmpRef.clazz.getName(), cmpInputs(domEl, cmpRef.clazz, excludeBindings));
+			}
+
+			if (!allCmps.isEmpty()) {
+				CmpRef ref = allCmps.get(0);
+				handler.componentStart(ref.clazz.getName(), cmpInputs);
 
 				if (inlineComponent(el)) {
 					cmpElements.add(el);
 				} else {
-					handler.elementHead(el.nodeName());
-					replaceAttrExpr(el, excludeBindings, cmpRef.clazz, true);
+					if (!hadElementHead) {
+						handler.elementHead(el.nodeName());
+					}
+					replaceAttrExpr(el, excludeBindings, ref.clazz, true);
 					handler.elementHeadEnd();
 				}
 
-				acceptCmpRef(el, cmpRef, acceptChildren);
+				acceptCmpRef(el, ref, acceptChildren);
 
 				if (acceptChildren) {
 					handler.componentEnd();
@@ -250,8 +266,8 @@ public class Parser {
 		}
 	}
 
-	private void acceptCmpRef(Element el, CmpRef cmpRef, boolean acceptChildren) {
-		List<Node> cmpNodes = parseBody(cmpRef.template, true);
+	private void acceptCmpRef(Element el, CmpRef ref, boolean acceptChildren) {
+		List<Node> cmpNodes = parseBody(ref.template, true);
 
 		Element ngContentEl = findNgContent(cmpNodes);
 
@@ -318,17 +334,14 @@ public class Parser {
 				.orElse(null);
 	}
 
-	private boolean checkAllForDirective(Element el, List<CmpRef> cmpRefs) {
-		if (cmpRefs.size() > 1) {
-			for (CmpRef ref : cmpRefs) {
-				if (!ref.directive) {
-					throw new NgoyException("More than one component found for element '%s'", el.cssSelector());
-				}
+	private void splitComponentsAndDirectives(List<CmpRef> cmpRefs, List<CmpRef> cmps, List<CmpRef> dirs) {
+		for (CmpRef ref : cmpRefs) {
+			if (ref.directive) {
+				dirs.add(ref);
+			} else {
+				cmps.add(ref);
 			}
-			return true;
 		}
-
-		return cmpRefs.get(0).directive;
 	}
 
 	private void acceptSpecialElementsContent(Element el) {
