@@ -13,7 +13,7 @@ import org.ngoy.core.ModuleWithProviders;
 
 public class RouterTest extends ANgoyTest {
 
-	@Component(selector = "home", template = "hello home")
+	@Component(selector = "home", template = "hello home<a routerLink=\"/settings\">goto settings</a>")
 	public static class HomeCmp {
 	}
 
@@ -41,7 +41,7 @@ public class RouterTest extends ANgoyTest {
 		ModuleWithProviders<RouterModule> router = RouterModule.forRoot(routerConfig);
 		Modules<RouterModule> routerModule = Modules.of(router);
 
-		assertThat(render(Cmp.class, routerModule)).isEqualTo("router test:<router-outlet><home>hello home</home></router-outlet>");
+		assertThat(render(Cmp.class, routerModule)).isEqualTo("router test:<router-outlet><home>hello home<a href=\"/settings\">goto settings</a></home></router-outlet>");
 
 		when(location.getPath()).thenReturn("/app/settings");
 		assertThat(render(Cmp.class, routerModule)).isEqualTo("router test:<router-outlet><settings>hello settings</settings></router-outlet>");

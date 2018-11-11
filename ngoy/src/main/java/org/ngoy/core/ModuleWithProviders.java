@@ -7,12 +7,36 @@ import java.util.List;
 
 public class ModuleWithProviders<T> {
 
-	public static <T> ModuleWithProviders<T> of(Class<?> mod, Provider... providers) {
-		return of(mod, emptyList(), providers);
+	public static class Builder<T> {
+		private Provider[] providers;
+		private Class<?>[] declarations;
+		private final Class<?> mod;
+
+		public Builder(Class<?> mod) {
+			this.mod = mod;
+		}
+
+		public Builder<T> providers(Provider... providers) {
+			this.providers = providers;
+			return this;
+		}
+
+		public Builder<T> declarations(Class<?>... declarations) {
+			this.declarations = declarations;
+			return this;
+		}
+
+		public ModuleWithProviders<T> build() {
+			return new ModuleWithProviders<T>(mod, asList(declarations), asList(providers));
+		}
 	}
 
-	public static <T> ModuleWithProviders<T> of(Class<?> mod, List<Class<?>> declarations, Provider... providers) {
-		return new ModuleWithProviders<>(mod, declarations, asList(providers));
+	public static <T> ModuleWithProviders<T> of(Class<?> mod, Provider... providers) {
+		return new ModuleWithProviders<T>(mod, emptyList(), asList(providers));
+	}
+
+	public static <T> Builder<T> of(Class<?> mod) {
+		return new Builder<T>(mod);
 	}
 
 	private final Class<?> mod;

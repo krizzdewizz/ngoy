@@ -4,13 +4,17 @@ import java.util.List;
 
 import org.ngoy.core.Inject;
 
-public class RouterService {
+public class Router {
 
 	@Inject
 	public Location location;
 
 	@Inject
 	public Config config;
+
+	public boolean isActive(Route route) {
+		return getRoutes().indexOf(route) == getActiveRoute();
+	}
 
 	public int getActiveRoute() {
 		String base = config.getBaseHref();
@@ -27,7 +31,7 @@ public class RouterService {
 
 		sub = sub.substring(1); // remove slash
 
-		List<Route> routes = config.getRoutes();
+		List<Route> routes = getRoutes();
 		for (int i = 0, n = routes.size(); i < n; i++) {
 			if (routes.get(i)
 					.getPath()
@@ -37,5 +41,9 @@ public class RouterService {
 		}
 
 		return 0;
+	}
+
+	public List<Route> getRoutes() {
+		return config.getRoutes();
 	}
 }

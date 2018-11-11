@@ -1,4 +1,4 @@
-package org.ngoy.router.outlet;
+package org.ngoy.router.internal;
 
 import static java.lang.String.format;
 
@@ -11,7 +11,7 @@ import org.ngoy.core.OnCompile;
 import org.ngoy.core.OnInit;
 import org.ngoy.router.Config;
 import org.ngoy.router.Route;
-import org.ngoy.router.RouterService;
+import org.ngoy.router.Router;
 
 @Component(selector = "router-outlet", template = "<ng-content scope></ng-content>")
 public class OutletComponent implements OnCompile, OnInit {
@@ -20,13 +20,13 @@ public class OutletComponent implements OnCompile, OnInit {
 	public Config config;
 
 	@Inject
-	public RouterService routerService;
+	public Router router;
 
 	public int activeRoute;
 
 	@Override
 	public void ngOnInit() {
-		activeRoute = routerService.getActiveRoute();
+		activeRoute = router.getActiveRoute();
 	}
 
 	@Override

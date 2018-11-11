@@ -16,10 +16,14 @@
 	<div class="container">
 		<h1>{{appName}}</h1>
 
+		<ul class="nav nav-tabs">
+			<li class="nav-item" *ngFor="let route of routes">
+				<a class="nav-link" [class.active]="isActiveRoute(route)" [href]="route.path">{{route.path}}</a>
+			</li>
+		</ul>
+
 		<router-outlet></router-outlet>
-
 	</div>
-
 </body>
 
 </html>
