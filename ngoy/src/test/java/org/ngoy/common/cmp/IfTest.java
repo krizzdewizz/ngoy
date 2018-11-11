@@ -12,6 +12,7 @@ import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Inject;
 import org.ngoy.core.Input;
+import org.ngoy.core.NgModule;
 import org.ngoy.model.Person;
 import org.ngoy.service.TestService;
 
@@ -34,7 +35,8 @@ public class IfTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", declarations = { PersonCmp.class }, template = "<person *ngFor=\"let it of persons\" [person]=\"it\"></person>")
+	@Component(selector = "test", template = "<person *ngFor=\"let it of persons\" [person]=\"it\"></person>")
+	@NgModule(declarations = { PersonCmp.class })
 	public static class CmpIf {
 		@Inject
 		public TestService<List<Person>> service;
@@ -62,7 +64,8 @@ public class IfTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", declarations = { PersonIfElseCmp.class }, template = "<person *ngFor=\"let it of persons\" [person]=\"it\"></person>")
+	@Component(selector = "test", template = "<person *ngFor=\"let it of persons\" [person]=\"it\"></person>")
+	@NgModule(declarations = { PersonIfElseCmp.class })
 	public static class CmpIfElse {
 		@Inject
 		public TestService<List<Person>> service;

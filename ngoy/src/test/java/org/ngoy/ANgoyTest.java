@@ -6,11 +6,13 @@ import static org.ngoy.core.NgoyException.wrap;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
+import java.util.function.Function;
 
 import org.junit.Rule;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.ngoy.Ngoy;
+import org.ngoy.Ngoy.Builder;
 import org.ngoy.core.Provider;
 
 public abstract class ANgoyTest {
@@ -29,10 +31,15 @@ public abstract class ANgoyTest {
 	public MockitoRule mockitoRule = MockitoJUnit.rule();
 
 	protected String render(Class<?> clazz, Provider... providers) {
+		return render(clazz, Objects::requireNonNull, providers);
+	}
+
+	protected String render(Class<?> clazz, Function<Ngoy.Builder, Ngoy.Builder> onBuild, Provider... providers) {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			Ngoy app = app(clazz).parseBody(true)
-					.providers(providers)
+			Builder builder = app(clazz).parseBody(true)
+					.providers(providers);
+			Ngoy app = onBuild.apply(builder)
 					.build();
 			app.render(baos);
 			app.destroy();
@@ -45,5 +52,4 @@ public abstract class ANgoyTest {
 			throw wrap(e);
 		}
 	}
-
 }

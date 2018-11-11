@@ -251,52 +251,59 @@ public class Parser {
 
 		Element ngContentEl = findNgContent(cmpNodes);
 
-		if (ngContentEl != null) {
-
-			String select = ngContentEl.attr("select");
-			String selector = select.isEmpty() ? ngContentEl.attr("selector") : select;
-
-			Element parent = ngContentEl.parent();
-
-			List<Node> childNodes = new ArrayList<>(parent.childNodes());
-			int ngContentIndex = childNodes.indexOf(ngContentEl);
-
-			List<Node> nodesBefore = childNodes.subList(0, ngContentIndex);
-			List<Node> nodesAfter = childNodes.subList(ngContentIndex + 1, childNodes.size());
-
-			ngContentEl.remove();
-
-			if (acceptChildren) {
-				accept(nodesBefore);
-			}
-
-			handler.ngContentStart();
-
-			if (acceptChildren) {
-				if (selector.isEmpty()) {
-					accept(el.childNodes());
-				} else {
-					el.childNodes()
-							.stream()
-							.filter(Element.class::isInstance)
-							.map(Element.class::cast)
-							.filter(e -> e.is(selector))
-							.forEach(e -> e.traverse(visitor));
-				}
-
-				handler.ngContentEnd();
-
-				accept(nodesAfter);
-			}
-		} else {
+		if (ngContentEl == null) {
 			accept(cmpNodes);
+			return;
 		}
+
+		boolean invokeHandler = !ngContentEl.hasAttr("scope");
+		String select = ngContentEl.attr("select");
+		String selector = select.isEmpty() ? ngContentEl.attr("selector") : select;
+
+		Element parent = ngContentEl.parent();
+
+		List<Node> childNodes = new ArrayList<>(parent.childNodes());
+		int ngContentIndex = childNodes.indexOf(ngContentEl);
+
+		List<Node> nodesBefore = childNodes.subList(0, ngContentIndex);
+		List<Node> nodesAfter = childNodes.subList(ngContentIndex + 1, childNodes.size());
+
+		ngContentEl.remove();
+
+		if (acceptChildren) {
+			accept(nodesBefore);
+		}
+
+		if (invokeHandler) {
+			handler.ngContentStart();
+		}
+
+		if (acceptChildren) {
+			if (selector.isEmpty()) {
+				accept(el.childNodes());
+			} else {
+				el.childNodes()
+						.stream()
+						.filter(Element.class::isInstance)
+						.map(Element.class::cast)
+						.filter(e -> e.is(selector))
+						.forEach(e -> e.traverse(visitor));
+			}
+
+			if (invokeHandler) {
+				handler.ngContentEnd();
+			}
+
+			accept(nodesAfter);
+		}
+
 	}
 
 	private void accept(List<Node> nodes) {
 		nodes.forEach(n -> n.traverse(visitor));
 	}
 
+	@Nullable
 	private Element findNgContent(List<Node> cmpNodes) {
 		return cmpNodes.stream()
 				.filter(Element.class::isInstance)
@@ -503,10 +510,6 @@ public class Parser {
 
 	private void compileDirectives(List<CmpRef> cmpRefs, Element el) {
 		for (CmpRef cmpRef : cmpRefs) {
-			if (!cmpRef.directive) {
-				continue;
-			}
-
 			Object dir = resolver.getInjector()
 					.get(cmpRef.clazz);
 

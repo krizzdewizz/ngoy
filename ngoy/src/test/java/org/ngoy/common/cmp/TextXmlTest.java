@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Input;
+import org.ngoy.core.NgModule;
 import org.ngoy.model.Person;
 
 public class TextXmlTest extends ANgoyTest {
@@ -31,7 +32,8 @@ public class TextXmlTest extends ANgoyTest {
 		public Person person;
 	}
 
-	@Component(selector = "test", contentType = "text/xml", declarations = { PersonCmp.class }, template = "<xml><person *ngFor=\"let p of persons\" [person]=\"p\"></person></xml>")
+	@Component(selector = "test", contentType = "text/xml", template = "<xml><person *ngFor=\"let p of persons\" [person]=\"p\"></person></xml>")
+	@NgModule(declarations = { PersonCmp.class })
 	public static class CmpWithPersonCmp {
 		public List<Person> persons = asList(new Person("peter", 22), new Person("paul", 26), new Person("marü", 24));
 	}

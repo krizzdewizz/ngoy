@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Input;
+import org.ngoy.core.NgModule;
 
 public class InputTest extends ANgoyTest {
 
@@ -32,7 +33,8 @@ public class InputTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", template = "<person [name]=\"'a'\" [namex]=\"'b'\" [nameY]=\"'c'\" [qbertInTheSky]=\"'d'\"></person>", declarations = { PersonCmp.class })
+	@Component(selector = "test", template = "<person [name]=\"'a'\" [namex]=\"'b'\" [nameY]=\"'c'\" [qbertInTheSky]=\"'d'\"></person>")
+	@NgModule(declarations = { PersonCmp.class })
 	public static class Cmp {
 	}
 

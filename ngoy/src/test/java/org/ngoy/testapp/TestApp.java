@@ -12,8 +12,8 @@ import org.ngoy.core.NgModule;
 import org.ngoy.core.OnInit;
 import org.ngoy.model.Person;
 
-@Component(selector = "person-list", templateUrl = "test-app.html", declarations = { PersonDetailComponent.class, PersonListComponent.class })
-@NgModule(imports = { PipesModule.class, TranslateModule.class })
+@Component(selector = "person-list", templateUrl = "test-app.html")
+@NgModule(imports = { PipesModule.class, TranslateModule.class }, declarations = { PersonDetailComponent.class, PersonListComponent.class })
 public class TestApp implements OnInit {
 
 	@Inject

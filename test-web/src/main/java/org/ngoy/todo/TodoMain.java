@@ -7,13 +7,11 @@ import org.ngoy.Ngoy;
 import org.ngoy.core.TemplateCache;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-@Controller
-@RequestMapping("/todo")
-public class Main implements InitializingBean {
+//@Controller
+//@RequestMapping("/todo")
+public class TodoMain implements InitializingBean {
 
 	private Ngoy ngoy;
 
@@ -31,7 +29,7 @@ public class Main implements InitializingBean {
 		// do not disable in production
 		TemplateCache.DEFAULT.setDisabled(true);
 
-		ngoy = Ngoy.app(AppComponent.class)
+		ngoy = Ngoy.app(TodoApp.class)
 				.injectors(beanInjector)
 				.build();
 	}

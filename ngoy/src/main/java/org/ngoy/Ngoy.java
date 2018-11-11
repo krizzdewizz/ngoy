@@ -34,6 +34,7 @@ import org.ngoy.core.Directive;
 import org.ngoy.core.ElementRef;
 import org.ngoy.core.Events;
 import org.ngoy.core.Injector;
+import org.ngoy.core.ModuleWithProviders;
 import org.ngoy.core.NgModule;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.Nullable;
@@ -59,6 +60,7 @@ public class Ngoy implements Renderer {
 		private Provider[] providers;
 		private Injector[] injectors;
 		private TemplateCache cache;
+		private ModuleWithProviders<?>[] modules;
 
 		public Builder(Class<?> appRoot) {
 			this.appRoot = appRoot;
@@ -71,6 +73,11 @@ public class Ngoy implements Renderer {
 
 		public Builder injectors(Injector... injectors) {
 			this.injectors = injectors;
+			return this;
+		}
+
+		public Builder modules(ModuleWithProviders<?>... modules) {
+			this.modules = modules;
 			return this;
 		}
 
@@ -105,7 +112,12 @@ public class Ngoy implements Renderer {
 		}
 
 		public Ngoy build() {
-			return new Ngoy(appRoot, config, cache, injectors != null ? injectors : new Injector[0], providers != null ? providers : new Provider[0]);
+			return new Ngoy(appRoot, //
+					config, //
+					cache, //
+					injectors != null ? injectors : new Injector[0], //
+					modules != null ? modules : new ModuleWithProviders[0], //
+					providers != null ? providers : new Provider[0]);
 		}
 	}
 
@@ -196,17 +208,17 @@ public class Ngoy implements Renderer {
 	private final Events events = new Events();
 
 	protected Ngoy(Config config) {
-		this(Object.class, config, null, new Injector[0]);
+		this(Object.class, config, null, new Injector[0], new ModuleWithProviders[0]);
 	}
 
-	protected Ngoy(Class<?> appRoot, Config config, TemplateCache cache, Injector[] injectors, Provider... rootProviders) {
+	protected Ngoy(Class<?> appRoot, Config config, TemplateCache cache, Injector[] injectors, ModuleWithProviders<?>[] modules, Provider... rootProviders) {
 		this.appRoot = appRoot;
 		this.config = config;
 		this.cache = cache != null ? cache : TemplateCache.DEFAULT;
-		this.init(injectors, rootProviders);
+		this.init(injectors, modules, rootProviders);
 	}
 
-	private void init(Injector[] injectors, Provider... rootProviders) {
+	private void init(Injector[] injectors, ModuleWithProviders<?>[] modules, Provider... rootProviders) {
 
 		List<Provider> cmpProviders = new ArrayList<>();
 		Map<String, Provider> cmpDecls = new LinkedHashMap<>(); // order of css
@@ -225,18 +237,27 @@ public class Ngoy implements Renderer {
 		addModuleDecls(CoreInternalModule.class, cmpDecls, pipeDecls, cmpProviders);
 		addModuleDecls(appRoot, cmpDecls, pipeDecls, cmpProviders);
 
+		List<Provider> all = new ArrayList<>();
+
+		for (ModuleWithProviders<?> mod : modules) {
+			addModuleDecls(mod.getModule(), cmpDecls, pipeDecls, cmpProviders);
+			addDecls(toProviders(mod.getDeclarations()), cmpDecls, pipeDecls);
+			for (Provider p : mod.getProviders()) {
+				all.add(p);
+			}
+		}
+
 		// collection done
 
 		resolver = createResolver(cmpDecls, pipeDecls);
 
-		List<Provider> all = new ArrayList<>();
 		all.add(useValue(Resolver.class, resolver));
 		all.add(useValue(Renderer.class, this));
 		all.add(useValue(Events.class, events));
-		all.addAll(asList(rootProviders));
 		all.addAll(cmpProviders);
 		all.addAll(cmpDecls.values());
 		all.addAll(pipeDecls.values());
+		all.addAll(asList(rootProviders));
 
 		Provider appRootProvider = provides(appRoot, rootProviders);
 
@@ -255,6 +276,12 @@ public class Ngoy implements Renderer {
 			injector.get(TranslateService.class)
 					.setBundle(translateBundle);
 		}
+	}
+
+	private List<Provider> toProviders(List<Class<?>> list) {
+		return list.stream()
+				.map(Provider::of)
+				.collect(toList());
 	}
 
 	private Resolver createResolver(Map<String, Provider> cmpDecls, Map<String, Provider> pipeDecls) {
@@ -347,9 +374,6 @@ public class Ngoy implements Renderer {
 	private void addModuleDecls(Class<?> clazz, Map<String, Provider> targetCmps, Map<String, Provider> targetPipes, List<Provider> providers) {
 		Component cmp = clazz.getAnnotation(Component.class);
 		if (cmp != null) {
-			addDecls(asList(cmp.declarations()).stream()
-					.map(Provider::of)
-					.collect(toList()), targetCmps, targetPipes);
 
 			for (Class<?> prov : cmp.providers()) {
 				providers.add(of(prov));
@@ -364,9 +388,7 @@ public class Ngoy implements Renderer {
 
 		NgModule mod = clazz.getAnnotation(NgModule.class);
 		if (mod != null) {
-			addDecls(asList(mod.declarations()).stream()
-					.map(Provider::of)
-					.collect(toList()), targetCmps, targetPipes);
+			addDecls(toProviders(asList(mod.declarations())), targetCmps, targetPipes);
 
 			for (Class<?> imp : mod.imports()) {
 				addModuleDecls(imp, targetCmps, targetPipes, providers);
@@ -383,24 +405,24 @@ public class Ngoy implements Renderer {
 		}
 	}
 
-	private void addDecls(List<Provider> declarations, Map<String, Provider> targetCmps, Map<String, Provider> targetPipes) {
-		for (Provider decl : declarations) {
-			Pipe pipe = decl.getProvide()
+	private void addDecls(List<Provider> providers, Map<String, Provider> targetCmps, Map<String, Provider> targetPipes) {
+		for (Provider p : providers) {
+			Pipe pipe = p.getProvide()
 					.getAnnotation(Pipe.class);
 			if (pipe != null) {
-				targetPipes.put(pipe.value(), decl);
+				targetPipes.put(pipe.value(), p);
 			}
 
-			Component cmp = decl.getProvide()
+			Component cmp = p.getProvide()
 					.getAnnotation(Component.class);
 			if (cmp != null) {
-				targetCmps.put(cmp.selector(), decl);
+				targetCmps.put(cmp.selector(), p);
 			}
 
-			Directive dir = decl.getProvide()
+			Directive dir = p.getProvide()
 					.getAnnotation(Directive.class);
 			if (dir != null) {
-				targetCmps.put(dir.selector(), decl);
+				targetCmps.put(dir.selector(), p);
 			}
 		}
 	}

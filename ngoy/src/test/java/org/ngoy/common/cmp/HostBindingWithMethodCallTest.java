@@ -9,6 +9,7 @@ import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.HostBinding;
 import org.ngoy.core.Inject;
+import org.ngoy.core.NgModule;
 import org.ngoy.service.OkService;
 
 public class HostBindingWithMethodCallTest extends ANgoyTest {
@@ -29,7 +30,8 @@ public class HostBindingWithMethodCallTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", declarations = { PersonCmp.class }, template = "<person></person>")
+	@Component(selector = "test", template = "<person></person>")
+	@NgModule(declarations = { PersonCmp.class })
 	public static class Cmp {
 	}
 

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Component(selector = "", templateUrl = "app.component.html", styleUrls = { "app.component.css" })
 @NgModule(imports = { FormsModule.class }, declarations = { TodoComponent.class })
 @Controller
-public class AppComponent implements OnDestroy {
+public class TodoApp implements OnDestroy {
 	private static final String REDIRECT_HOME = "redirect:/todo";
 
 	public final String appName = "Todo";

@@ -18,8 +18,6 @@ public @interface Component {
 
 	String[] styleUrls() default {};
 
-	Class<?>[] declarations() default {};
-
 	Class<?>[] providers() default {};
 
 	Provide[] provide() default {};

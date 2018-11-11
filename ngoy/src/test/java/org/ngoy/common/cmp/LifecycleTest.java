@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Inject;
+import org.ngoy.core.NgModule;
 import org.ngoy.core.OnDestroy;
 import org.ngoy.core.OnInit;
 
@@ -39,7 +40,8 @@ public class LifecycleTest extends ANgoyTest {
 	public static class PersonCmp extends ACmp {
 	}
 
-	@Component(selector = "test", template = "<person></person><person></person>", declarations = { PersonCmp.class })
+	@Component(selector = "test", template = "<person></person><person></person>")
+	@NgModule(declarations = { PersonCmp.class })
 	public static class Lifecycle extends ACmp {
 	}
 

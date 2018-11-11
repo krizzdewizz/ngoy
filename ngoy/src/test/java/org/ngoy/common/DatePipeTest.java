@@ -7,12 +7,13 @@ import java.util.Locale;
 
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
-import org.ngoy.common.DatePipe;
 import org.ngoy.core.Component;
+import org.ngoy.core.NgModule;
 
 public class DatePipeTest extends ANgoyTest {
 
-	@Component(selector = "test", declarations = { DatePipe.class }, template = "{{ T(java.time.LocalDateTime).of(2018, 10, 28, 12, 44) | date:'MMMM' }}")
+	@Component(selector = "test", template = "{{ T(java.time.LocalDateTime).of(2018, 10, 28, 12, 44) | date:'MMMM' }}")
+	@NgModule(declarations = { DatePipe.class })
 	public static class Cmp {
 	}
 

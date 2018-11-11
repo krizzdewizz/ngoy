@@ -36,6 +36,11 @@ public class DefaultInjector implements Injector {
 		Map<Class<?>, Provider> all = new LinkedHashMap<>();
 		for (Provider p : providers) {
 			all.put(p.getProvide(), p);
+//			Provider existing = all.put(p.getProvide(), p);
+//			if (existing != null) {
+//				throw new NgoyException("More than one provider for %s: %s, %s", p.getProvide()
+//						.getName(), existing, p);
+//			}
 		}
 		all.put(Injector.class, useValue(Injector.class, this));
 		this.providers = all;

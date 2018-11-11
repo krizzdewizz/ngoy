@@ -10,6 +10,7 @@ import org.ngoy.core.Directive;
 import org.ngoy.core.HostBinding;
 import org.ngoy.core.Inject;
 import org.ngoy.core.Input;
+import org.ngoy.core.NgModule;
 import org.ngoy.service.OkService;
 
 public class DirectiveInputTest extends ANgoyTest {
@@ -33,7 +34,8 @@ public class DirectiveInputTest extends ANgoyTest {
 		public boolean upper = false;
 	}
 
-	@Component(selector = "test", declarations = { SomeDirective.class }, template = "<a [upper]=\"ok\" [makeIt]=\"'bi'\">XX</a>")
+	@Component(selector = "test", template = "<a [upper]=\"ok\" [makeIt]=\"'bi'\">XX</a>")
+	@NgModule(declarations = { SomeDirective.class })
 	public static class Cmp {
 		@Inject
 		public OkService okService;

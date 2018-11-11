@@ -9,6 +9,7 @@ import org.junit.rules.ExpectedException;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Input;
+import org.ngoy.core.NgModule;
 import org.ngoy.core.NgoyException;
 
 public class RuntimeErrorsTest extends ANgoyTest {
@@ -22,7 +23,8 @@ public class RuntimeErrorsTest extends ANgoyTest {
 		public int age;
 	}
 
-	@Component(selector = "test", template = "<person [age]=\"a\"></person>", declarations = { PersonIntCmp.class })
+	@Component(selector = "test", template = "<person [age]=\"a\"></person>")
+	@NgModule(declarations = { PersonIntCmp.class })
 	public static class Cmp {
 	}
 
@@ -43,7 +45,8 @@ public class RuntimeErrorsTest extends ANgoyTest {
 		};
 	}
 
-	@Component(selector = "test", template = "<person [age]=\"2\"></person>", declarations = { PersonSetterCmp.class })
+	@Component(selector = "test", template = "<person [age]=\"2\"></person>")
+	@NgModule(declarations = { PersonSetterCmp.class })
 	public static class CmpSetter {
 	}
 
@@ -63,7 +66,8 @@ public class RuntimeErrorsTest extends ANgoyTest {
 		public int age;
 	}
 
-	@Component(selector = "test", template = "<person [age]=\"ageString\"></person>", declarations = { PersonInputWrongTypeCmp.class })
+	@Component(selector = "test", template = "<person [age]=\"ageString\"></person>")
+	@NgModule(declarations = { PersonInputWrongTypeCmp.class })
 	public static class CmpInputWrongType {
 		public String ageString = "49";
 	}

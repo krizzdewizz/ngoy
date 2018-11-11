@@ -9,6 +9,7 @@ import org.junit.rules.ExpectedException;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Input;
+import org.ngoy.core.NgModule;
 import org.ngoy.core.NgoyException;
 
 public class AttrBindingTest extends ANgoyTest {
@@ -22,7 +23,8 @@ public class AttrBindingTest extends ANgoyTest {
 		public String title;
 	}
 
-	@Component(selector = "test", declarations = { PersonCmp.class }, template = "<person name=\"x\" [title]=\"'abc'\"></person>")
+	@Component(selector = "test", template = "<person name=\"x\" [title]=\"'abc'\"></person>")
+	@NgModule(declarations = { PersonCmp.class })
 	public static class Attr {
 	}
 
@@ -48,7 +50,8 @@ public class AttrBindingTest extends ANgoyTest {
 		public String title4;
 	}
 
-	@Component(selector = "test", declarations = { Person2Cmp.class }, template = "<person title=\"abc\" [title2]=\"'def'\" q=\"ghi\" [r]=\"'jkl'\"></person>")
+	@Component(selector = "test", template = "<person title=\"abc\" [title2]=\"'def'\" q=\"ghi\" [r]=\"'jkl'\"></person>")
+	@NgModule(declarations = { Person2Cmp.class })
 	public static class Attr2 {
 	}
 
@@ -68,7 +71,8 @@ public class AttrBindingTest extends ANgoyTest {
 		public int number;
 	}
 
-	@Component(selector = "test", declarations = { PersonNonStringCmp.class }, template = "<person number=\"0\"></person>")
+	@Component(selector = "test", template = "<person number=\"0\"></person>")
+	@NgModule(declarations = { PersonNonStringCmp.class })
 	public static class AttrNonString {
 	}
 

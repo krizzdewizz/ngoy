@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Input;
+import org.ngoy.core.NgModule;
 
 public class SubclassTest extends ANgoyTest {
 
@@ -18,7 +19,8 @@ public class SubclassTest extends ANgoyTest {
 	public static class PersonCmp extends ACmpBase {
 	}
 
-	@Component(selector = "test", template = "<person [name]=\"'a'\"></person><person [name]=\"'b'\"></person>", declarations = { PersonCmp.class })
+	@Component(selector = "test", template = "<person [name]=\"'a'\"></person><person [name]=\"'b'\"></person>")
+	@NgModule(declarations = { PersonCmp.class })
 	public static class Cmp extends ACmpBase {
 	}
 

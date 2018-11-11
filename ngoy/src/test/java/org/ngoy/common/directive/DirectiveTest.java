@@ -9,6 +9,7 @@ import org.ngoy.core.Component;
 import org.ngoy.core.Directive;
 import org.ngoy.core.ElementRef;
 import org.ngoy.core.HostBinding;
+import org.ngoy.core.NgModule;
 import org.ngoy.core.OnCompile;
 
 public class DirectiveTest extends ANgoyTest {
@@ -21,7 +22,8 @@ public class DirectiveTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", declarations = { MakeBoldCompileDirective.class }, template = "<a makeBold>XX</a>")
+	@Component(selector = "test", template = "<a makeBold>XX</a>")
+	@NgModule(declarations = { MakeBoldCompileDirective.class })
 	public static class Cmp {
 	}
 
@@ -44,7 +46,8 @@ public class DirectiveTest extends ANgoyTest {
 		public String href = "http://x";
 	}
 
-	@Component(selector = "test", declarations = { AddBoldDirective.class, AddHRefAttributeDirective.class }, template = "<a addBold addHref>XX</a>")
+	@Component(selector = "test", template = "<a addBold addHref>XX</a>")
+	@NgModule(declarations = { AddBoldDirective.class, AddHRefAttributeDirective.class })
 	public static class CmpHostBinding {
 	}
 
