@@ -4,9 +4,6 @@ import org.ngoy.core.Directive;
 import org.ngoy.core.HostBinding;
 import org.ngoy.core.Input;
 
-/**
- * experimental.
- */
 @Directive(selector = "[routerLink]")
 public class RouterLinkDirective {
 

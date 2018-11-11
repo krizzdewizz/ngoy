@@ -38,7 +38,7 @@ public class RouterTest extends ANgoyTest {
 		Location location = mock(Location.class);
 		when(location.getPath()).thenReturn("/app");
 
-		Config routerConfig = Config //
+		RouterConfig routerConfig = RouterConfig //
 				.baseHref("/app")
 				.location(useValue(Location.class, location))
 				.route("home", HomeCmp.class)

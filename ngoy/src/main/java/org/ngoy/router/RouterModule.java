@@ -10,14 +10,14 @@ import org.ngoy.router.internal.OutletComponent;
 @NgModule(declarations = { OutletComponent.class, RouterLinkDirective.class }, providers = { Router.class })
 public class RouterModule {
 
-	public static ModuleWithProviders<RouterModule> forRoot(Config config) {
+	public static ModuleWithProviders<RouterModule> forRoot(RouterConfig config) {
 		return ModuleWithProviders.<RouterModule>of(RouterModule.class)
-				.providers(useValue(Config.class, config), config.getLocationProvider())
+				.providers(useValue(RouterConfig.class, config), config.getLocationProvider())
 				.declarations(routeComponents(config))
 				.build();
 	}
 
-	private static Class<?>[] routeComponents(Config config) {
+	private static Class<?>[] routeComponents(RouterConfig config) {
 		return config.getRoutes()
 				.stream()
 				.map(Route::getComponent)

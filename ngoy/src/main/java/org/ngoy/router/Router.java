@@ -10,7 +10,7 @@ public class Router {
 	public Location location;
 
 	@Inject
-	public Config config;
+	public RouterConfig config;
 
 	public boolean isActive(Route route) {
 		return getRoutes().indexOf(route) == getActiveRoute();

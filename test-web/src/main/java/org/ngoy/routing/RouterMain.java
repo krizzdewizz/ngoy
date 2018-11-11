@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.ngoy.Ngoy;
 import org.ngoy.core.Provider;
 import org.ngoy.core.TemplateCache;
-import org.ngoy.router.Config;
 import org.ngoy.router.Location;
+import org.ngoy.router.RouterConfig;
 import org.ngoy.router.RouterModule;
 import org.ngoy.routing.home.HomeComponent;
 import org.ngoy.routing.settings.SettingsComponent;
@@ -37,7 +37,7 @@ public class RouterMain implements InitializingBean {
 		// do not disable in production
 		TemplateCache.DEFAULT.setDisabled(true);
 
-		Config routerConfig = Config //
+		RouterConfig routerConfig = RouterConfig //
 				.baseHref("/router")
 				.location(Provider.useValue(Location.class, () -> request.getRequestURI()))
 				.route("home", HomeComponent.class)

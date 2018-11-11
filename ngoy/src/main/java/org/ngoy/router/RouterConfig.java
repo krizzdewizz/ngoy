@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.Provider;
-import org.ngoy.router.Config.Builder.LocationBuilder;
+import org.ngoy.router.RouterConfig.Builder.LocationBuilder;
 
-public class Config {
+public class RouterConfig {
 
 	public static class Builder {
 
@@ -38,8 +38,8 @@ public class Config {
 			return new LocationBuilder();
 		}
 
-		public Config build() {
-			return new Config(baseHref, locationProvider, routes);
+		public RouterConfig build() {
+			return new RouterConfig(baseHref, locationProvider, routes);
 		}
 	}
 
@@ -60,7 +60,7 @@ public class Config {
 	private final List<Route> routes;
 	private final Provider locationProvider;
 
-	private Config(String baseHref, Provider locationProvider, List<Route> routes) {
+	private RouterConfig(String baseHref, Provider locationProvider, List<Route> routes) {
 		this.locationProvider = locationProvider;
 		this.baseHref = checkHref(baseHref);
 		this.routes = routes;
