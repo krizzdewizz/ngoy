@@ -1,4 +1,4 @@
-package org.ngoy.q.settings;
+package org.ngoy.routing.settings;
 
 import org.ngoy.core.Component;
 

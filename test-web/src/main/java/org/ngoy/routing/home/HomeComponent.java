@@ -1,4 +1,4 @@
-package org.ngoy.q.home;
+package org.ngoy.routing.home;
 
 import org.ngoy.core.Component;
 

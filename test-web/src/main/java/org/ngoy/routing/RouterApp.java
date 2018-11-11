@@ -1,19 +1,17 @@
-package org.ngoy.q;
+package org.ngoy.routing;
 
 import java.util.List;
 
 import org.ngoy.core.Component;
 import org.ngoy.core.Inject;
 import org.ngoy.core.NgModule;
-import org.ngoy.q.home.HomeComponent;
-import org.ngoy.q.settings.SettingsComponent;
 import org.ngoy.router.Route;
 import org.ngoy.router.Router;
-import org.springframework.stereotype.Controller;
+import org.ngoy.routing.home.HomeComponent;
+import org.ngoy.routing.settings.SettingsComponent;
 
 @Component(selector = "", templateUrl = "app.component.html")
 @NgModule(declarations = { HomeComponent.class, SettingsComponent.class })
-@Controller
 public class RouterApp {
 	public final String appName = "Router";
 

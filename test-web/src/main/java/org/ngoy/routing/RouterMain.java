@@ -1,4 +1,4 @@
-package org.ngoy.q;
+package org.ngoy.routing;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -6,11 +6,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.ngoy.Ngoy;
 import org.ngoy.core.Provider;
 import org.ngoy.core.TemplateCache;
-import org.ngoy.q.home.HomeComponent;
-import org.ngoy.q.settings.SettingsComponent;
 import org.ngoy.router.Config;
 import org.ngoy.router.Location;
 import org.ngoy.router.RouterModule;
+import org.ngoy.routing.home.HomeComponent;
+import org.ngoy.routing.settings.SettingsComponent;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

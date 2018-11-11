@@ -9,16 +9,11 @@ import org.ngoy.core.ElementRef;
 import org.ngoy.core.Inject;
 import org.ngoy.core.OnCompile;
 import org.ngoy.core.OnInit;
-import org.ngoy.router.Config;
 import org.ngoy.router.Route;
 import org.ngoy.router.Router;
 
 @Component(selector = "router-outlet", template = "<ng-content scope></ng-content>")
 public class OutletComponent implements OnCompile, OnInit {
-
-	@Inject
-	public Config config;
-
 	@Inject
 	public Router router;
 
@@ -36,7 +31,7 @@ public class OutletComponent implements OnCompile, OnInit {
 		Document doc = el.ownerDocument();
 
 		int i = 0;
-		for (Route route : config.getRoutes()) {
+		for (Route route : router.getRoutes()) {
 			Element routeEl = doc.createElement(getSelector(route.getComponent()));
 			routeEl.attr("*ngIf", format("activeRoute == %s", i));
 			el.appendChild(routeEl);
