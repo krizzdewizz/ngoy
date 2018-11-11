@@ -23,7 +23,6 @@ public class RouterTest extends ANgoyTest {
 
 	@Component(selector = "test", template = "router test:<router-outlet></router-outlet>")
 	public static class Cmp {
-		public int activeRoute = 0;
 	}
 
 	@Test

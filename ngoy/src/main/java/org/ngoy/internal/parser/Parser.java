@@ -153,7 +153,7 @@ public class Parser {
 	private void replaceCData(Node node) {
 		String text = ((CDataNode) node).text();
 
-		Element c = node.ownerDocument()
+		Element el = node.ownerDocument()
 				.createElement("ng-container");
 		String content;
 		Matcher matcher = NG_CONTAINER_PATTERN.matcher(text);
@@ -161,18 +161,18 @@ public class Parser {
 			content = matcher.group(2);
 			Matcher forMatcher = NG_FOR_PATTERN.matcher(matcher.group(1));
 			if (forMatcher.find()) {
-				c.attr("*ngFor", forMatcher.group(1));
+				el.attr("*ngFor", forMatcher.group(1));
 			}
 		} else {
 			content = text;
 		}
 
-		replaceElement(c, false);
+		replaceElement(el, false);
 		replaceExpr(content);
 
 		handler.componentEnd();
 		handler.ngContentEnd();
-		visitor.tail(c, -1);
+		visitor.tail(el, -1);
 	}
 
 	private void replaceElement(Node node, boolean acceptChildren) {
@@ -198,7 +198,7 @@ public class Parser {
 
 		JSoupElementRef domEl = new JSoupElementRef(el);
 		List<CmpRef> cmpRefs = resolver.resolveCmps(domEl);
-		compileDirectives(cmpRefs, el);
+		compileCmps(cmpRefs, el);
 
 		if (cmpRefs.isEmpty()) {
 			handler.elementHead(el.nodeName());
@@ -213,10 +213,14 @@ public class Parser {
 			Set<String> excludeBindings = new HashSet<>();
 
 			if (directive) {
+				List<List<String>> cmpInputs = cmpRefs.stream()
+						.map(ref -> cmpInputs(domEl, ref.clazz, excludeBindings))
+						.collect(toList());
+
 				handler.elementHead(el.nodeName());
 				for (int i = 0; i < countCmpRefs; i++) {
 					CmpRef cmpRef = cmpRefs.get(i);
-					handler.componentStart(cmpRef.clazz.getName(), cmpInputs(domEl, cmpRef.clazz, excludeBindings));
+					handler.componentStart(cmpRef.clazz.getName(), cmpInputs.get(i));
 					replaceAttrExpr(el, excludeBindings, cmpRef.clazz, i == 0);
 				}
 				handler.elementHeadEnd();
@@ -411,7 +415,7 @@ public class Parser {
 			}
 
 			if (m.getParameterCount() > 0) {
-				throw new ParseException("host binding method must not have parameters: %s.%s", cmpClass.getName(), m.getName());
+				throw new ParseException("Host binding method must not have parameters: %s.%s", cmpClass.getName(), m.getName());
 			}
 
 			attributeBinding(format("[%s]", hb.value()), format("%s()", m.getName()), classNames, attrNames, excludeBindings);
@@ -420,7 +424,7 @@ public class Parser {
 
 	private void attributeBinding(String name, String value, List<String[]> classNames, List<String[]> attrNames, Set<String> exclude) {
 		if (!name.endsWith("]")) {
-			throw new ParseException("attribute binding malformed: missing ]");
+			throw new ParseException("Attribute binding malformed: missing ]");
 		}
 		String rawName = name.substring(1, name.length() - 1);
 
@@ -482,7 +486,7 @@ public class Parser {
 
 			Class<?> resolvedPipe = resolver.resolvePipe(pipe);
 			if (resolvedPipe == null) {
-				throw new ParseException("pipe not found for name '%s'", pipe);
+				throw new ParseException("Pipe not found for name '%s'", pipe);
 			}
 
 			pipes.add(param.isEmpty() ? new String[] { resolvedPipe.getName() } : new String[] { resolvedPipe.getName(), param });
@@ -508,17 +512,16 @@ public class Parser {
 		}
 	}
 
-	private void compileDirectives(List<CmpRef> cmpRefs, Element el) {
+	private void compileCmps(List<CmpRef> cmpRefs, Element el) {
 		for (CmpRef cmpRef : cmpRefs) {
-			Object dir = resolver.getInjector()
+			Object cmp = resolver.getInjector()
 					.get(cmpRef.clazz);
 
-			if (dir instanceof OnCompile) {
+			if (cmp instanceof OnCompile) {
 				String cmpClass = resolver.resolveCmpClass(handler.cmpClassesStack.peek());
-				((OnCompile) dir).ngOnCompile(new JSoupElementRef(el), cmpClass);
+				((OnCompile) cmp).ngOnCompile(new JSoupElementRef(el), cmpClass);
 			}
 		}
-
 	}
 
 	private boolean inlineComponent(Element el) {
