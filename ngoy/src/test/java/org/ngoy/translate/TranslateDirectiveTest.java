@@ -13,9 +13,12 @@ import org.ngoy.core.NgModule;
 
 public class TranslateDirectiveTest extends ANgoyTest {
 
-	@Component(selector = "test", template = "<a translate=\"MSG_HELLO\">x</a>")
+	@Component(selector = "test", template = "<a translate=\"MSG_HELLO\">x</a><a [translate]=\"msg\">x</a>")
 	@NgModule(imports = { TranslateModule.class })
 	public static class Cmp {
+
+		public String msg = "MSG_HELLO";
+
 		public Cmp(TranslateService service) {
 			service.setBundle(TranslateDirectiveTest.class.getPackage()
 					.getName() + ".messages");
@@ -24,6 +27,6 @@ public class TranslateDirectiveTest extends ANgoyTest {
 
 	@Test
 	public void test() {
-		assertThat(render(Cmp.class, useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.GERMAN)))).isEqualTo("<a>hallo</a>");
+		assertThat(render(Cmp.class, useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.GERMAN)))).isEqualTo("<a>hallo</a><a>hallo</a>");
 	}
 }

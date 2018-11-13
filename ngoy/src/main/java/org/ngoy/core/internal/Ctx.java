@@ -160,7 +160,9 @@ public class Ctx {
 					root = rootClass.getName();
 				}
 			}
-			throw new NgoyException(format("Error while evaluating expression '%s'. modelRoot: %s. templateUrl: %s, message: %s", expr, root, templateUrl, NgoyException.realException(e)));
+			throw new NgoyException(
+					format("Error while evaluating expression '%s'. modelRoot: %s. templateUrl: %s, message: %s. Reason can also be a missing @Input annotation on a component's field or setter.",
+							expr, root, templateUrl, NgoyException.realException(e)));
 		}
 	}
 

@@ -30,7 +30,7 @@ import org.ngoy.internal.parser.visitor.SkipSubTreeVisitor;
 
 public class Parser {
 
-	List<Node> parseBody(String template, boolean forceNoText) {
+	List<Node> parse(String template, boolean forceNoText) {
 		try {
 			boolean text = "text/plain".equals(contentType);
 			if (text && !forceNoText) {
@@ -124,7 +124,7 @@ public class Parser {
 
 		this.handler = new MyHandler(handler);
 		visitor = new SkipSubTreeVisitor(new Visitor());
-		List<Node> nodes = parseBody(template, false);
+		List<Node> nodes = parse(template, false);
 
 		acceptDocument(nodes);
 	}

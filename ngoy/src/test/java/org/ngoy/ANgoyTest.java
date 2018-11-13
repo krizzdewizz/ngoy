@@ -39,8 +39,7 @@ public abstract class ANgoyTest {
 		try {
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			Builder builder = app(clazz).parseBody(true)
-					.providers(providers);
+			Builder builder = app(clazz).providers(providers);
 			Ngoy app = onBuild.apply(builder)
 					.build();
 			app.render(baos);

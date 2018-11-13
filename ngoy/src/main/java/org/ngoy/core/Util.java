@@ -110,6 +110,9 @@ public class Util {
 	 */
 	public static String getTemplate(Class<?> clazz) {
 		Component cmp = clazz.getAnnotation(Component.class);
+		if (cmp == null) {
+			throw new NgoyException("Annotation %s not found on class %s", Component.class.getName(), clazz.getName());
+		}
 		String templateUrl = cmp.templateUrl();
 		String tpl;
 		if (isSet(templateUrl)) {
@@ -126,6 +129,6 @@ public class Util {
 			tpl = cmp.template();
 		}
 		return tpl;
-	
+
 	}
 }

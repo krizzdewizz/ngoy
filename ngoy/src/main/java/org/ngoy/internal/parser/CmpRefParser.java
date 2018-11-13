@@ -122,7 +122,7 @@ public class CmpRefParser {
 	}
 
 	private void acceptCmpRef(Element el, CmpRef ref, boolean acceptChildren) {
-		List<Node> cmpNodes = parser.parseBody(ref.template, true);
+		List<Node> cmpNodes = parser.parse(ref.template, true);
 
 		Element ngContentEl = findNgContent(cmpNodes);
 

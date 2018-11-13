@@ -84,11 +84,6 @@ public class Ngoy implements Renderer {
 			return this;
 		}
 
-		public Builder parseBody(boolean parseBody) {
-			config.parseBody = parseBody;
-			return this;
-		}
-
 		public Builder inlineComponents(boolean inlineComponents) {
 			config.inlineComponents = inlineComponents;
 			return this;
@@ -176,7 +171,6 @@ public class Ngoy implements Renderer {
 
 	public static class Config {
 		public Locale locale;
-		public boolean parseBody;
 		public String translateBundle;
 		public boolean inlineComponents;
 		public String contentType;
