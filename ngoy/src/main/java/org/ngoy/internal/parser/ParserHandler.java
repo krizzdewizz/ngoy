@@ -1,6 +1,7 @@
 package org.ngoy.internal.parser;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ParserHandler {
 	void documentStart();
@@ -29,7 +30,7 @@ public interface ParserHandler {
 
 	void elementConditionalEnd();
 
-	void elementRepeatedStart(String expr);
+	void elementRepeatedStart(String[] itemAndListName, Map<ForOfVariable, String> variables);
 
 	void elementRepeatedEnd();
 
@@ -96,7 +97,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void elementRepeatedStart(String expr) {
+		public void elementRepeatedStart(String[] itemAndListName, Map<ForOfVariable, String> variables) {
 		}
 
 		@Override
@@ -179,8 +180,8 @@ public interface ParserHandler {
 			target.elementConditionalEnd();
 		}
 
-		public void elementRepeatedStart(String expr) {
-			target.elementRepeatedStart(expr);
+		public void elementRepeatedStart(String[] itemAndListName, Map<ForOfVariable, String> variables) {
+			target.elementRepeatedStart(itemAndListName, variables);
 		}
 
 		public void elementRepeatedEnd() {

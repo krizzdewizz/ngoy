@@ -1,6 +1,7 @@
 package org.ngoy.core.internal;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 import static org.ngoy.core.NgoyException.wrap;
 import static org.ngoy.core.Util.escape;
@@ -12,9 +13,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.ngoy.core.Component;
@@ -24,6 +27,8 @@ import org.ngoy.core.Nullable;
 import org.ngoy.core.OnDestroy;
 import org.ngoy.core.OnInit;
 import org.ngoy.core.PipeTransform;
+import org.ngoy.core.internal.IterableWithVariables.IterVariable;
+import org.ngoy.internal.parser.ForOfVariable;
 import org.ngoy.internal.parser.Inputs;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
@@ -51,8 +56,9 @@ public class Ctx {
 	private final LinkedList<EvaluationContext> spelCtxs = new LinkedList<>();
 	private final Set<String> variables = new HashSet<>();
 	private final Object modelRoot;
-	private ExpressionParser exprParser;
+	private final ExpressionParser exprParser;
 	private final Injector injector;
+	private final LinkedList<Map<String, Object>> iterationVars = new LinkedList<>();
 	private PrintStream out;
 	private String contentType;
 
@@ -63,11 +69,11 @@ public class Ctx {
 	private Ctx(@Nullable Object modelRoot, @Nullable Injector injector) {
 		this.modelRoot = modelRoot;
 		this.injector = injector;
-		spelCtxs.push(createContext(modelRoot));
+		spelCtxs.push(createContext(modelRoot, emptyMap()));
 		exprParser = new SpelExpressionParser();
 	}
 
-	private EvaluationContext createContext(Object modelRoot) {
+	private EvalContext createContext(Object modelRoot, Map<String, Object> variables) {
 		DataBindingPropertyAccessor defaultAccessor = DataBindingPropertyAccessor.forReadOnlyAccess();
 
 		PropertyAccessor accessor = new PropertyAccessor() {
@@ -110,7 +116,7 @@ public class Ctx {
 		SimpleEvaluationContext evalCtx = SimpleEvaluationContext.forPropertyAccessors(accessor)
 				.withRootObject(modelRoot)
 				.build();
-		return new EvalContext(evalCtx);
+		return new EvalContext(evalCtx, variables);
 	}
 
 	public Ctx variable(String variableName, @Nullable Object variableValue) {
@@ -162,8 +168,17 @@ public class Ctx {
 		return ((Boolean) eval(expr)).booleanValue();
 	}
 
-	@SuppressWarnings("rawtypes")
-	public Iterable evalIterable(String expr) {
+	@SuppressWarnings({ "rawtypes" })
+	public Iterable forOfStart(String expr, String[] variables) {
+		Map<String, Object> vars = new HashMap<>();
+		IterVariable iterVars = (variable, value) -> vars.put(variable, value);
+		iterationVars.push(vars);
+
+		return new IterableWithVariables(evalIterable(expr), ForOfVariable.valueOf(variables), iterVars);
+	}
+
+	@SuppressWarnings({ "rawtypes" })
+	private Iterable evalIterable(String expr) {
 		Object obj = eval(expr);
 
 		if (obj == null) {
@@ -202,6 +217,10 @@ public class Ctx {
 		}
 	}
 
+	public void forOfEnd() {
+		iterationVars.pop();
+	}
+
 	public void popContext() {
 		spelCtxs.pop();
 	}
@@ -211,50 +230,12 @@ public class Ctx {
 			Class<?> clazz = loadClass(className);
 			Object cmp = injector.get(clazz);
 
-			for (int i = 0, n = paramPairs.length; i < n; i += 2) {
-				String input = paramPairs[i];
-				char inputType = input.charAt(0);
-				char inputValueType = input.charAt(1);
-				input = input.substring(2);
-				String expr = paramPairs[i + 1];
+			setInputs(clazz, cmp, paramPairs);
 
-				Object value = inputValueType == Inputs.VALUE_EXPR ? eval(expr) : expr;
-				switch (inputType) {
-				case Inputs.FIELD_INPUT: {
-					Field field = clazz.getField(input);
-					try {
-						field.set(cmp, value);
-					} catch (Exception e) {
-						String fieldType = field.getType()
-								.getName();
-						Object valueType = value == null ? null
-								: value.getClass()
-										.getName();
-						throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", className, field.getName(), expr,
-								fieldType, valueType);
-					}
-				}
-					break;
-				case Inputs.METHOD_INPUT: {
-					Method setter = findSetter(clazz, input);
-					try {
-						setter.invoke(cmp, value);
-					} catch (Exception e) {
-						String parameterType = setter.getParameterTypes()[0].getName();
-						Object valueType = value == null ? null
-								: value.getClass()
-										.getName();
-						throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", className,
-								setter.getName(), expr, parameterType, valueType);
-					}
-				}
-					break;
-				default:
-					throw new NgoyException("Unknown input type: %s", inputType);
-				}
-			}
+			// *ngFor on a component
+			Map<String, Object> vars = iterationVars.isEmpty() ? emptyMap() : iterationVars.peek();
 
-			spelCtxs.push(createContext(cmp));
+			spelCtxs.push(createContext(cmp, vars));
 
 			if (cmp instanceof OnInit) {
 				((OnInit) cmp).ngOnInit();
@@ -264,12 +245,63 @@ public class Ctx {
 		}
 	}
 
-	public void pushContext(String variableName, Object variableValue) {
-		EvaluationContext tmpCtx = createContext(modelRoot);
+	private void setInputs(Class<?> clazz, Object cmp, String... paramPairs) throws NoSuchFieldException {
+		for (int i = 0, n = paramPairs.length; i < n; i += 2) {
+			String input = paramPairs[i];
+			char inputType = input.charAt(0);
+			char inputValueType = input.charAt(1);
+			input = input.substring(2);
+			String expr = paramPairs[i + 1];
+
+			Object value = inputValueType == Inputs.VALUE_EXPR ? eval(expr) : expr;
+			switch (inputType) {
+			case Inputs.FIELD_INPUT: {
+				Field field = clazz.getField(input);
+				try {
+					field.set(cmp, value);
+				} catch (Exception e) {
+					String fieldType = field.getType()
+							.getName();
+					Object valueType = value == null ? null
+							: value.getClass()
+									.getName();
+					throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", clazz.getName(), field.getName(), expr,
+							fieldType, valueType);
+				}
+			}
+				break;
+			case Inputs.METHOD_INPUT: {
+				Method setter = findSetter(clazz, input);
+				try {
+					setter.invoke(cmp, value);
+				} catch (Exception e) {
+					String parameterType = setter.getParameterTypes()[0].getName();
+					Object valueType = value == null ? null
+							: value.getClass()
+									.getName();
+					throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", clazz.getName(),
+							setter.getName(), expr, parameterType, valueType);
+				}
+			}
+				break;
+			default:
+				throw new NgoyException("Unknown input type: %s", inputType);
+			}
+		}
+	}
+
+	public void pushForOfContext(String itemName, Object item) {
+		EvaluationContext iterCtx = createContext(modelRoot, emptyMap());
 		EvaluationContext parentCtx = spelCtxs.peek();
-		variables.forEach(name -> tmpCtx.setVariable(name, parentCtx.lookupVariable(name)));
-		tmpCtx.setVariable(variableName, variableValue);
-		spelCtxs.push(tmpCtx);
+		variables.forEach(name -> iterCtx.setVariable(name, parentCtx.lookupVariable(name)));
+
+		Map<String, Object> iterVars = iterationVars.peek();
+		for (Map.Entry<String, Object> e : iterVars.entrySet()) {
+			iterCtx.setVariable(e.getKey(), e.getValue());
+		}
+
+		iterCtx.setVariable(itemName, item);
+		spelCtxs.push(iterCtx);
 	}
 
 	public void pushParentContext() {

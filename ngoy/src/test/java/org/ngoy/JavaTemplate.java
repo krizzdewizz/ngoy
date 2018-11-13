@@ -6,21 +6,20 @@ import static org.ngoy.core.Util.escapeJava;
 
 import java.io.PrintStream;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.ngoy.core.Util;
 import org.ngoy.core.internal.Ctx;
-import org.ngoy.internal.parser.ParseException;
+import org.ngoy.internal.parser.ForOfVariable;
 import org.ngoy.internal.parser.ParserHandler;
 import org.ngoy.parser.TextOutput;
 import org.ngoy.util.CodeBuilder;
 import org.ngoy.util.PrintStreamPrinter;
 
 public class JavaTemplate extends CodeBuilder implements ParserHandler {
-
-	private static final Pattern FOR_OF_PATTERN = Pattern.compile("let\\s*(.*)\\s*of\\s*(.*)");
 
 	private final TextOutput out;
 	private int nextLocalVarIndex;
@@ -133,7 +132,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private String createLocalVar() {
 		flushOut();
-		String localVar = format("_$$l%s", nextLocalVarIndex++);
+		String localVar = format("_$l%s", nextLocalVarIndex++);
 		return localVar;
 	}
 
@@ -170,24 +169,30 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		flushOut();
 		$("ctx.popContext();");
 		$("}");
+
+		$("ctx.forOfEnd();");
 	}
 
-	public void elementRepeatedStart(String expr) {
-		Matcher matcher = FOR_OF_PATTERN.matcher(expr);
-		if (!matcher.find()) {
-			throw new ParseException("*ngFor expression malformed: %s", expr);
-		}
+	public void elementRepeatedStart(String[] itemAndListName, Map<ForOfVariable, String> variables) {
 
 		flushOut();
 
-		String itemName = matcher.group(1)
-				.trim();
-		String listName = matcher.group(2)
-				.trim();
+		String itemName = itemAndListName[0];
+		String listName = itemAndListName[1];
+
+		String arr = createLocalVar();
+		$("String []", arr, " = new String[", 2 * variables.size(), "];");
+		int i = 0;
+		Set<Entry<ForOfVariable, String>> entries = variables.entrySet();
+		for (Map.Entry<ForOfVariable, String> e : entries) {
+			$(arr, "[", i, "] = \"", e.getKey(), "\";");
+			$(arr, "[", i + 1, "] = \"", e.getValue(), "\";");
+			i += 2;
+		}
 
 		String itemVar = createLocalVar();
-		$("for (Object ", itemVar, ": ctx.evalIterable(\"", listName, "\")) {");
-		$("  ctx.pushContext(\"", itemName, "\", ", itemVar, ");");
+		$("for (Object ", itemVar, ": ctx.forOfStart(\"", listName, "\", ", arr, ")) {");
+		$("  ctx.pushForOfContext(\"", itemName, "\", ", itemVar, ");");
 	}
 
 	private void flushOut() {

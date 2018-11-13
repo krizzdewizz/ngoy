@@ -185,7 +185,7 @@ public class Parser {
 		String ngFor = el.attr("*ngFor");
 		if (!ngFor.isEmpty()) {
 			elementRepeated.push(el);
-			handler.elementRepeatedStart(ngFor);
+			handler.elementRepeatedStart(ForOfVariable.parseNgFor(ngFor), ForOfVariable.parse(ngFor));
 		}
 
 		List<CmpRef> cmpRefs = resolver.resolveCmps(new JSoupElementRef(el));

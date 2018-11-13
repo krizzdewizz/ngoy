@@ -3,6 +3,7 @@ package org.ngoy.core.internal;
 import static java.util.Arrays.asList;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.expression.BeanResolver;
 import org.springframework.expression.ConstructorResolver;
@@ -24,9 +25,11 @@ public class EvalContext implements EvaluationContext {
 	private final EvaluationContext target;
 	private final StandardTypeLocator typeLocator;
 	private final List<MethodResolver> methodResolvers;
+	private final Map<String, Object> variables;
 
-	public EvalContext(EvaluationContext target) {
+	public EvalContext(EvaluationContext target, Map<String, Object> variables) {
 		this.target = target;
+		this.variables = variables;
 		ctorResolvers = asList(new ReflectiveConstructorResolver());
 		typeLocator = new StandardTypeLocator();
 		methodResolvers = asList(new ReflectiveMethodResolver());
@@ -75,7 +78,8 @@ public class EvalContext implements EvaluationContext {
 	}
 
 	public Object lookupVariable(String name) {
-		return target.lookupVariable(name);
+		Object val = variables.get(name);
+		return val != null ? val : target.lookupVariable(name);
 	}
 
 }

@@ -25,7 +25,7 @@ public class ForOfTest extends ANgoyTest {
 		personService = TestService.of(asList(new Person("peter"), new Person("paul"), new Person("mary")));
 	}
 
-	@Component(selector = "test", template = "<person *ngFor=\"let it of persons\" [person]=\"it\"></person>")
+	@Component(selector = "test", template = "<person *ngFor=\"let it of persons; index as i; first  as f; last as l; even as e; odd as o\" [person]=\"it\" [pi]=\"i\" [pf]=\"f\" [pl]=\"l\" [pe]=\"e\" [po]=\"o\"></person>")
 	@NgModule(declarations = { PersonCmp.class })
 	public static class CmpForOf {
 		@Inject
@@ -38,6 +38,7 @@ public class ForOfTest extends ANgoyTest {
 
 	@Test
 	public void testForOf() {
-		assertThat(render(CmpForOf.class, useValue(TestService.class, personService))).isEqualTo("<person>hello: peter</person><person>hello: paul</person><person>hello: mary</person>");
+		assertThat(render(CmpForOf.class, useValue(TestService.class, personService))).isEqualTo(
+				"<person pi=\"0\" pf=\"true\" pl=\"false\" pe=\"true\" po=\"false\">hello: peter</person><person pi=\"1\" pf=\"false\" pl=\"false\" pe=\"false\" po=\"true\">hello: paul</person><person pi=\"2\" pf=\"false\" pl=\"true\" pe=\"true\" po=\"false\">hello: mary</person>");
 	}
 }

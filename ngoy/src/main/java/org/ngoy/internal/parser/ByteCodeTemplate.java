@@ -7,8 +7,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.cojen.classfile.CodeBuilder;
@@ -73,8 +74,6 @@ public class ByteCodeTemplate implements ParserHandler {
 		}
 	}
 
-	private static final Pattern FOR_OF_PATTERN = Pattern.compile("let\\s*(.*)\\s*of\\s*(.*)");
-
 	private static final TypeDesc ctxType = TypeDesc.forClass(Ctx.class);
 	private static final TypeDesc iterableType = TypeDesc.forClass(Iterable.class);
 	private static final TypeDesc iteratorType = TypeDesc.forClass(Iterator.class);
@@ -82,9 +81,9 @@ public class ByteCodeTemplate implements ParserHandler {
 	private static final TypeDesc stringTableType = stringArrayType.toArrayType();
 	private static final TypeDesc[] pushCmpContextParamTypes = new TypeDesc[] { TypeDesc.STRING, stringArrayType };
 	private static final TypeDesc[] evalParamTypes = new TypeDesc[] { TypeDesc.STRING, stringTableType };
-	private static final TypeDesc[] evalIterableParamTypes = new TypeDesc[] { TypeDesc.STRING };
+	private static final TypeDesc[] forOfStartParamTypes = new TypeDesc[] { TypeDesc.STRING, stringArrayType };
 	private static final TypeDesc[] evalClassesParamTypes = new TypeDesc[] { stringTableType };
-	private static final TypeDesc[] pushContextParamsTypes = new TypeDesc[] { TypeDesc.STRING, TypeDesc.OBJECT };
+	private static final TypeDesc[] pushForOfContextParamsTypes = new TypeDesc[] { TypeDesc.STRING, TypeDesc.OBJECT };
 	private static final TypeDesc[] singleStringParamType = new TypeDesc[] { TypeDesc.STRING };
 	private static final TypeDesc[] singleObjectParamType = new TypeDesc[] { TypeDesc.OBJECT };
 	private static final TypeDesc[] runParamTypes = new TypeDesc[] { ctxType };
@@ -99,6 +98,7 @@ public class ByteCodeTemplate implements ParserHandler {
 	private RuntimeClassFile classFile;
 	private LocalVariable ctxParam;
 	private LocalVariable emptyExprParams;
+	private LocalVariable emptyStringArray;
 
 	public ByteCodeTemplate(String className, String contentType) {
 		this.className = className;
@@ -117,6 +117,11 @@ public class ByteCodeTemplate implements ParserHandler {
 		run.loadConstant(0);
 		run.newObject(stringTableType);
 		run.storeLocal(emptyExprParams);
+
+		emptyStringArray = run.createLocalVariable(stringArrayType);
+		run.loadConstant(0);
+		run.newObject(stringArrayType);
+		run.storeLocal(emptyStringArray);
 	}
 
 	@Override
@@ -272,24 +277,47 @@ public class ByteCodeTemplate implements ParserHandler {
 		run.loadLocal(rep.iter);
 		run.invokeInterface(iteratorType, "hasNext", TypeDesc.BOOLEAN, null);
 		run.ifZeroComparisonBranch(rep.label2, "!=");
+
+		run.loadLocal(ctxParam);
+		run.invokeVirtual(ctxType, "forOfEnd", null, null);
 	}
 
-	public void elementRepeatedStart(String expr) {
-		Matcher matcher = FOR_OF_PATTERN.matcher(expr);
-		if (!matcher.find()) {
-			throw new ParseException("*ngFor expression malformed: %s", expr);
-		}
-
+	public void elementRepeatedStart(String[] itemAndListName, Map<ForOfVariable, String> variables) {
 		flushOut();
 
-		String itemName = matcher.group(1)
-				.trim();
-		String listName = matcher.group(2)
-				.trim();
+		String listName = itemAndListName[1];
+
+		LocalVariable arr;
+
+		if (variables.isEmpty()) {
+			arr = emptyStringArray;
+		} else {
+			arr = run.createLocalVariable(stringArrayType);
+			run.loadConstant(2 * variables.size());
+			run.newObject(stringArrayType);
+			run.storeLocal(arr);
+		}
+
+		int i = 0;
+		Set<Entry<ForOfVariable, String>> entries = variables.entrySet();
+		for (Map.Entry<ForOfVariable, String> e : entries) {
+			run.loadLocal(arr);
+			run.loadConstant(i);
+			run.loadConstant(e.getKey()
+					.name());
+			run.storeToArray(TypeDesc.OBJECT);
+
+			run.loadLocal(arr);
+			run.loadConstant(i + 1);
+			run.loadConstant(e.getValue());
+			run.storeToArray(TypeDesc.OBJECT);
+			i += 2;
+		}
 
 		run.loadLocal(ctxParam);
 		run.loadConstant(listName);
-		run.invokeVirtual(ctxType, "evalIterable", iterableType, evalIterableParamTypes);
+		run.loadLocal(arr);
+		run.invokeVirtual(ctxType, "forOfStart", iterableType, forOfStartParamTypes);
 
 		run.invokeInterface(iterableType, "iterator", iteratorType, null);
 
@@ -304,10 +332,11 @@ public class ByteCodeTemplate implements ParserHandler {
 		LocalVariable item = run.createLocalVariable(null, TypeDesc.OBJECT);
 		run.storeLocal(item);
 
+		String itemName = itemAndListName[0];
 		run.loadLocal(ctxParam);
 		run.loadConstant(itemName);
 		run.loadLocal(item);
-		run.invokeVirtual(ctxType, "pushContext", null, pushContextParamsTypes);
+		run.invokeVirtual(ctxType, "pushForOfContext", null, pushForOfContextParamsTypes);
 
 		elementRepeated.push(new Repeat(label1, label2, iter));
 	}
