@@ -88,7 +88,7 @@ public class AttrBindingTest extends ANgoyTest {
 	@Component(selector = "person", template = "hello: {{title}}{{title2}}{{title3}}{{title4}}")
 	public static class PersonNonStringParamCmp {
 		@Input()
-		public void setNumber(int n) {
+		public void setNumber(@SuppressWarnings("unused") int n) {
 		}
 	}
 

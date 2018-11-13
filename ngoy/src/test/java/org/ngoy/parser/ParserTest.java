@@ -21,14 +21,12 @@ import org.ngoy.ANgoyTest;
 import org.ngoy.JavaTemplate;
 import org.ngoy.Ngoy;
 import org.ngoy.core.Directive;
-import org.ngoy.core.ElementRef;
 import org.ngoy.core.Injector;
 import org.ngoy.core.LocaleProvider;
 import org.ngoy.core.Provider;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.Ctx;
 import org.ngoy.core.internal.DefaultInjector;
-import org.ngoy.core.internal.JSoupElementRef;
 import org.ngoy.core.internal.Resolver;
 import org.ngoy.internal.parser.ByteCodeTemplate;
 import org.ngoy.internal.parser.Parser;
@@ -58,12 +56,11 @@ public class ParserTest {
 
 	@Test
 	public void parseJavaToJava() throws Exception {
-		DefaultInjector injector = new DefaultInjector(Provider.of(TranslateDirective.class), Provider.of(TranslateService.class), Provider.useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)));
+		DefaultInjector injector = new DefaultInjector(Provider.of(TranslateDirective.class), Provider.of(TranslateService.class),
+				Provider.useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)));
 		Parser parser = new Parser(new Resolver() {
 			@Override
-			public List<CmpRef> resolveCmps(ElementRef element) {
-
-				Element el = ((JSoupElementRef) element).getNativeElement();
+			public List<CmpRef> resolveCmps(Element el) {
 
 				List<CmpRef> all = new ArrayList<>();
 

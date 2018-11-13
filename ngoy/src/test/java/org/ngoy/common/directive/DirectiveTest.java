@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.core.Directive;
-import org.ngoy.core.ElementRef;
 import org.ngoy.core.HostBinding;
 import org.ngoy.core.NgModule;
 import org.ngoy.core.OnCompile;
@@ -17,8 +16,8 @@ public class DirectiveTest extends ANgoyTest {
 	@Directive(selector = "[makeBold]")
 	public static class MakeBoldCompileDirective implements OnCompile {
 		@Override
-		public void ngOnCompile(ElementRef elRef, String cmpClass) {
-			((Element) elRef.getNativeElement()).attr("style", "font-weight:bold");
+		public void ngOnCompile(Element el, String cmpClass) {
+			el.attr("style", "font-weight:bold");
 		}
 	}
 

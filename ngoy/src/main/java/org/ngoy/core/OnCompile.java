@@ -1,5 +1,7 @@
 package org.ngoy.core;
 
+import org.jsoup.nodes.Element;
+
 public interface OnCompile {
-	void ngOnCompile(ElementRef elRef, String cmpClass);
+	void ngOnCompile(Element el, String cmpClass);
 }

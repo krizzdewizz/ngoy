@@ -25,7 +25,6 @@ import org.ngoy.core.Nullable;
 import org.ngoy.core.OnCompile;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.ContainerComponent;
-import org.ngoy.core.internal.JSoupElementRef;
 import org.ngoy.core.internal.Resolver;
 import org.ngoy.internal.parser.visitor.SkipSubTreeVisitor;
 
@@ -121,8 +120,7 @@ public class Parser {
 	}
 
 	/**
-	 * @param resolver
-	 *            if null, uses {@link Resolver#DEFAULT}
+	 * @param resolver if null, uses {@link Resolver#DEFAULT}
 	 */
 	public Parser(@Nullable Resolver resolver) {
 		this.cmpRefParser = new CmpRefParser(this);
@@ -202,7 +200,7 @@ public class Parser {
 			handler.elementRepeatedStart(ForOfVariable.parseNgFor(ngFor), ForOfVariable.parse(ngFor));
 		}
 
-		List<CmpRef> cmpRefs = resolver.resolveCmps(new JSoupElementRef(el));
+		List<CmpRef> cmpRefs = resolver.resolveCmps(el);
 		compileCmps(cmpRefs, el);
 
 		if (!cmpRefParser.acceptCmpRefs(el, cmpRefs, acceptChildren)) {
@@ -309,7 +307,7 @@ public class Parser {
 
 			if (cmp instanceof OnCompile) {
 				String cmpClass = resolver.resolveCmpClass(handler.cmpClassesStack.peek());
-				((OnCompile) cmp).ngOnCompile(new JSoupElementRef(el), cmpClass);
+				((OnCompile) cmp).ngOnCompile(el, cmpClass);
 			}
 		}
 	}

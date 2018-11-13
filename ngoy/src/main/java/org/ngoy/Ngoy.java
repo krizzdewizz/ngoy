@@ -26,11 +26,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.Element;
 import org.ngoy.common.PipesModule;
 import org.ngoy.core.Component;
 import org.ngoy.core.Context;
 import org.ngoy.core.Directive;
-import org.ngoy.core.ElementRef;
 import org.ngoy.core.Events;
 import org.ngoy.core.Injector;
 import org.ngoy.core.LocaleProvider;
@@ -137,8 +137,7 @@ public class Ngoy implements Renderer {
 	/**
 	 * Renders the given template
 	 * 
-	 * @param templatePath
-	 *            see {@link Class#getResourceAsStream(String)}
+	 * @param templatePath see {@link Class#getResourceAsStream(String)}
 	 */
 	public static void render(String templatePath, Context context, OutputStream out, Config... config) {
 		new Ngoy(optionalConfig(config)).renderTemplate(templatePath, true, (Ctx) context.internal(), out);
@@ -289,7 +288,7 @@ public class Ngoy implements Renderer {
 	private Resolver createResolver(Map<String, Provider> cmpDecls, Map<String, Provider> pipeDecls) {
 		return new Resolver() {
 			@Override
-			public List<CmpRef> resolveCmps(ElementRef node) {
+			public List<CmpRef> resolveCmps(Element node) {
 				return cmpDecls.entrySet()
 						.stream()
 						.filter(entry -> {
@@ -424,8 +423,10 @@ public class Ngoy implements Renderer {
 			if (cmp != null) {
 				Provider existing = targetCmps.put(cmp.selector(), p);
 				if (existing != null) {
-					throw new NgoyException("More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s", cmp.selector(), existing.getProvide()
-							.getName(),
+					throw new NgoyException(
+							"More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
+							cmp.selector(), existing.getProvide()
+									.getName(),
 							p.getProvide()
 									.getName());
 				}

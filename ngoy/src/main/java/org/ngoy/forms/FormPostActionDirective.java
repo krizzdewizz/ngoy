@@ -10,19 +10,16 @@ import java.util.stream.Stream;
 
 import org.jsoup.nodes.Element;
 import org.ngoy.core.Directive;
-import org.ngoy.core.ElementRef;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.OnCompile;
 import org.ngoy.core.Util;
-import org.ngoy.core.internal.JSoupElementRef;
 
 @Directive(selector = "[ngoyFormPost]")
 public class FormPostActionDirective implements OnCompile {
 
 	@Override
-	public void ngOnCompile(ElementRef elRef, String cmpClass) {
+	public void ngOnCompile(Element el, String cmpClass) {
 		try {
-			Element el = ((JSoupElementRef) elRef).getNativeElement();
 			String controllerMethod = el.attr("ngoyFormPost");
 
 			if (controllerMethod.isEmpty()) {

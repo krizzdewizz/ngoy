@@ -5,7 +5,6 @@ import static java.lang.String.format;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.ngoy.core.Component;
-import org.ngoy.core.ElementRef;
 import org.ngoy.core.Inject;
 import org.ngoy.core.OnCompile;
 import org.ngoy.core.OnInit;
@@ -25,9 +24,7 @@ public class OutletComponent implements OnCompile, OnInit {
 	}
 
 	@Override
-	public void ngOnCompile(ElementRef elRef, String cmpClass) {
-		Element el = (Element) elRef.getNativeElement();
-
+	public void ngOnCompile(Element el, String cmpClass) {
 		Document doc = el.ownerDocument();
 
 		int i = 0;

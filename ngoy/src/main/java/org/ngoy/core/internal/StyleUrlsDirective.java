@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import org.jsoup.nodes.Element;
 import org.ngoy.core.Component;
 import org.ngoy.core.Directive;
-import org.ngoy.core.ElementRef;
 import org.ngoy.core.Inject;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.OnCompile;
@@ -26,10 +25,8 @@ public class StyleUrlsDirective implements OnCompile {
 	public Resolver resolver;
 
 	@Override
-	public void ngOnCompile(ElementRef elRef, String cmpClass) {
+	public void ngOnCompile(Element el, String cmpClass) {
 		try {
-			Element el = ((JSoupElementRef) elRef).getNativeElement();
-
 			Set<Class<?>> cmpClasses = resolver.getCmpClasses();
 			String styles = cmpClasses.stream()
 					.map(this::getStyles)
