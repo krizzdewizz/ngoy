@@ -2,6 +2,11 @@ form {
 	margin-top: 20px;
 }
 
+.todos {
+	display: grid;
+	grid-template-columns: auto auto auto;
+}
+
 .todo-text {
 	width: 20rem;
 }

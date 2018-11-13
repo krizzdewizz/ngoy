@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class TodoService {
 
 	// the 'database' or 'repository'
-	private final List<Todo> todos = new ArrayList<>(asList(new Todo("rauche noch einen letzten joint"), new Todo("gehe in's bett")));
+	private final List<Todo> todos = new ArrayList<>(asList(new Todo("wash car"), new Todo("cook dinner")));
 
 	public List<Todo> getTodos() {
 		return todos;

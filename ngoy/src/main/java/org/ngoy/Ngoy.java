@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.ngoy.common.PipesModule;
 import org.ngoy.common.TranslateModule;
 import org.ngoy.common.TranslateService;
 import org.ngoy.core.Component;
@@ -235,6 +236,7 @@ public class Ngoy implements Renderer {
 		}
 
 		addModuleDecls(CoreInternalModule.class, cmpDecls, pipeDecls, cmpProviders);
+		addModuleDecls(PipesModule.class, cmpDecls, pipeDecls, cmpProviders);
 		addModuleDecls(appRoot, cmpDecls, pipeDecls, cmpProviders);
 
 		List<Provider> all = new ArrayList<>();
