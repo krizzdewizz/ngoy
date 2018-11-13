@@ -39,15 +39,15 @@ public class ByteCodeTemplate implements ParserHandler {
 			run.invokeVirtual(ctxType, "print", null, singleObjectParamType);
 		}
 
-		void printOutExpr(String text, List<String[]> pipes) {
+		void printOutExpr(String text, List<List<String>> pipes) {
 			flush();
 			LocalVariable pipesArray;
 			if (pipes.isEmpty()) {
 				pipesArray = emptyExprParams;
 			} else {
 				List<LocalVariable> ps = new ArrayList<>();
-				for (String[] pipe : pipes) {
-					ps.add(toArray(asList(pipe)));
+				for (List<String> pipe : pipes) {
+					ps.add(toArray(pipe));
 				}
 				pipesArray = toStringTable(ps);
 			}
@@ -135,7 +135,7 @@ public class ByteCodeTemplate implements ParserHandler {
 	}
 
 	@Override
-	public void text(String text, boolean textIsExpr, List<String[]> pipes) {
+	public void text(String text, boolean textIsExpr, List<List<String>> pipes) {
 		if (text.isEmpty()) {
 			return;
 		}
@@ -376,8 +376,8 @@ public class ByteCodeTemplate implements ParserHandler {
 	}
 
 	/**
-	 * Flushes must occur before 'non-print-text code' like if, else, method
-	 * calls etc.
+	 * Flushes must occur before 'non-print-text code' like if, else, method calls
+	 * etc.
 	 */
 	private void flushOut() {
 		out.flush();

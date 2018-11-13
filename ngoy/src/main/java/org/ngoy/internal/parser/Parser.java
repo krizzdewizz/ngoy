@@ -23,6 +23,7 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.NodeVisitor;
 import org.ngoy.core.Nullable;
 import org.ngoy.core.OnCompile;
+import org.ngoy.core.PipeTransform;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.ContainerComponent;
 import org.ngoy.core.internal.Resolver;
@@ -65,7 +66,6 @@ public class Parser {
 		}
 	}
 
-	private static final Pattern PIPE_PARAM_PATTERN = Pattern.compile("(.*?):(.*)");
 	private static final Pattern EXPR_PATTERN = Pattern.compile("\\{\\{(.*?)\\}\\}", Pattern.MULTILINE);
 	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
 	private static final Pattern NG_CONTAINER_PATTERN = Pattern.compile("<ng-container(.*)>((.|\\s)*)</ng-container>", Pattern.MULTILINE);
@@ -258,26 +258,23 @@ public class Parser {
 		matcher.find();
 		String exprHead = matcher.group(1)
 				.trim();
-		List<String[]> pipes = new ArrayList<>();
+		List<List<String>> pipes = new ArrayList<>();
 		while (matcher.find()) {
 			String pipe = matcher.group(1)
 					.trim();
 
-			Matcher paramMatcher = PIPE_PARAM_PATTERN.matcher(pipe);
-			String param;
-			if (paramMatcher.find()) {
-				pipe = paramMatcher.group(1);
-				param = paramMatcher.group(2);
-			} else {
-				param = "";
-			}
+			List<String> pipeAndParams = new ArrayList<>();
+			pipe = PipeParser.parsePipe(pipe, pipeAndParams);
 
 			Class<?> resolvedPipe = resolver.resolvePipe(pipe);
 			if (resolvedPipe == null) {
 				throw new ParseException("Pipe not found for name '%s'", pipe);
+			} else if (!PipeTransform.class.isAssignableFrom(resolvedPipe)) {
+				throw new ParseException("Pipe %s must implement %s", resolvedPipe.getName(), PipeTransform.class.getName());
 			}
 
-			pipes.add(param.isEmpty() ? new String[] { resolvedPipe.getName() } : new String[] { resolvedPipe.getName(), param });
+			pipeAndParams.add(0, resolvedPipe.getName());
+			pipes.add(pipeAndParams);
 		}
 		handler.text(exprHead, true, pipes);
 	}

@@ -49,7 +49,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
-	public void text(String text, boolean textIsExpr, List<String[]> pipes) {
+	public void text(String text, boolean textIsExpr, List<List<String>> pipes) {
 		if (text.isEmpty()) {
 			return;
 		}
@@ -58,8 +58,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			if (!pipes.isEmpty()) {
 				String pp = pipes.stream()
 						.map(p -> {
-							String ppa = p.length > 1 ? format(",\"%s\"", escapeJava(p[1])) : "";
-							String s = format("new String[]{\"%s\"%s}", p[0], ppa);
+							String ppa = p.size() > 1 ? format(",\"%s\"", escapeJava(p.get(1))) : "";
+							String s = format("new String[]{\"%s\"%s}", p.get(0), ppa);
 							return s;
 						})
 						.collect(joining(","));
