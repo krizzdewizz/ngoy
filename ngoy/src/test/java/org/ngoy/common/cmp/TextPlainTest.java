@@ -5,12 +5,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
 import org.ngoy.model.Person;
 
 public class TextPlainTest extends ANgoyTest {
+
+	@Before
+	public void beforeEach() {
+		parseForJUnit = false;
+	}
+
+	@Before
+	public void afterEach() {
+		parseForJUnit = null;
+	}
 
 	@Component(selector = "test", contentType = "text/plain", template = "\nage of {{person.name}}:\t {{person.age}}\n")
 	public static class Cmp {

@@ -26,6 +26,7 @@ public abstract class ANgoyTest {
 	}
 
 	protected boolean debugPrint;
+	protected Boolean parseForJUnit;
 
 	@Rule
 	public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -36,6 +37,7 @@ public abstract class ANgoyTest {
 
 	protected String render(Class<?> clazz, Function<Ngoy.Builder, Ngoy.Builder> onBuild, Provider... providers) {
 		try {
+
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			Builder builder = app(clazz).parseBody(true)
 					.providers(providers);

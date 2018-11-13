@@ -43,11 +43,14 @@ public class CmpRefParser {
 		List<String[]> attrNames = new ArrayList<>();
 
 		if (cmpRefs.isEmpty()) {
-			parser.handler.elementHead(el.nodeName());
-			AttributeBinding.replaceAttrs(parser, el, emptySet(), classNames, attrNames);
-			AttributeBinding.replaceAttrExpr(parser, classNames, attrNames);
-			parser.handler.elementHeadEnd();
-
+			if (parser.inlineComponent(el)) {
+				parser.cmpElements.add(el);
+			} else {
+				parser.handler.elementHead(el.nodeName());
+				AttributeBinding.replaceAttrs(parser, el, emptySet(), classNames, attrNames);
+				AttributeBinding.replaceAttrExpr(parser, classNames, attrNames);
+				parser.handler.elementHeadEnd();
+			}
 			return false;
 		}
 

@@ -293,7 +293,11 @@ public class Ctx {
 	public void pushForOfContext(String itemName, Object item) {
 		EvaluationContext iterCtx = createContext(modelRoot, emptyMap());
 		EvaluationContext parentCtx = spelCtxs.peek();
-		variables.forEach(name -> iterCtx.setVariable(name, parentCtx.lookupVariable(name)));
+		if (parentCtx != null) {
+			variables.forEach(name -> {
+				iterCtx.setVariable(name, parentCtx.lookupVariable(name));
+			});
+		}
 
 		Map<String, Object> iterVars = iterationVars.peek();
 		for (Map.Entry<String, Object> e : iterVars.entrySet()) {

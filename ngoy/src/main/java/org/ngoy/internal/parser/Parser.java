@@ -1,7 +1,6 @@
 package org.ngoy.internal.parser;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static org.ngoy.core.NgoyException.wrap;
 import static org.ngoy.core.Util.isSet;
 
@@ -31,17 +30,10 @@ import org.ngoy.internal.parser.visitor.SkipSubTreeVisitor;
 
 public class Parser {
 
-	public static Document parseHtml(String template) {
+	List<Node> parseBody(String template, boolean forceNoText) {
 		try {
-			return Jsoup.parse(template, "");
-		} catch (Exception e) {
-			throw wrap(e);
-		}
-	}
-
-	List<Node> parseBody(String template, boolean forceHtmlContentType) {
-		try {
-			if (!forceHtmlContentType && "text/plain".equals(contentType)) {
+			boolean text = "text/plain".equals(contentType);
+			if (text && !forceNoText) {
 				template = format("<![CDATA[%s]]>", template);
 			}
 			Document doc = Jsoup.parseBodyFragment(template);
@@ -73,7 +65,6 @@ public class Parser {
 
 	private final LinkedList<Element> elementConditionals = new LinkedList<>();
 	private final LinkedList<Element> elementRepeated = new LinkedList<>();
-	public boolean parseBody;
 	public boolean inlineComponents;
 	public String contentType;
 
@@ -133,7 +124,7 @@ public class Parser {
 
 		this.handler = new MyHandler(handler);
 		visitor = new SkipSubTreeVisitor(new Visitor());
-		List<Node> nodes = parseBody ? parseBody(template, false) : asList(parseHtml(template));
+		List<Node> nodes = parseBody(template, false);
 
 		acceptDocument(nodes);
 	}
@@ -157,11 +148,14 @@ public class Parser {
 	private void replaceCData(Node node) {
 		String text = ((CDataNode) node).text();
 
-		Element el = node.ownerDocument()
-				.createElement("ng-container");
+		text = ForOfMicroParser.parse(text);
+
+		Element el;
 		String content;
 		Matcher matcher = NG_CONTAINER_PATTERN.matcher(text);
 		if (matcher.find()) {
+			el = node.ownerDocument()
+					.createElement("ng-container");
 			content = matcher.group(2);
 			Matcher forMatcher = NG_FOR_PATTERN.matcher(matcher.group(1));
 			if (forMatcher.find()) {
@@ -169,17 +163,22 @@ public class Parser {
 			}
 		} else {
 			content = text;
+			el = null;
 		}
 
-		replaceElement(el, false);
+		boolean cmpEnd = el != null && replaceElement(el, false);
 		replaceExpr(content);
 
-		handler.componentEnd();
-		handler.ngContentEnd();
-		visitor.tail(el, -1);
+		if (el != null) {
+			if (cmpEnd) {
+				handler.componentEnd();
+				handler.ngContentEnd();
+			}
+			visitor.tail(el, -1);
+		}
 	}
 
-	private void replaceElement(Node node, boolean acceptChildren) {
+	private boolean replaceElement(Node node, boolean acceptChildren) {
 		Element el = (Element) node;
 
 		String ngIf = el.attr("*ngIf");
@@ -203,7 +202,8 @@ public class Parser {
 		List<CmpRef> cmpRefs = resolver.resolveCmps(el);
 		compileCmps(cmpRefs, el);
 
-		if (!cmpRefParser.acceptCmpRefs(el, cmpRefs, acceptChildren)) {
+		boolean hasCmps = cmpRefParser.acceptCmpRefs(el, cmpRefs, acceptChildren);
+		if (!hasCmps) {
 			acceptSpecialElementsContent(el);
 		}
 
@@ -211,6 +211,8 @@ public class Parser {
 			visitor.skipSubTree(el);
 			handler.textOverrideExpr = null;
 		}
+
+		return hasCmps;
 	}
 
 	void accept(List<Node> nodes) {

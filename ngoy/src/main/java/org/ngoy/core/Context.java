@@ -19,6 +19,10 @@ public final class Context {
 		return new Context(Ctx.of(modelRoot));
 	}
 
+	public static Context of(String variableName, Object variableValue) {
+		return of().variable(variableName, variableValue);
+	}
+
 	private final Ctx ctx;
 
 	private Context(Ctx ctx) {

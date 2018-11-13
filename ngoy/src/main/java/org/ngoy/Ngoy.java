@@ -132,6 +132,9 @@ public class Ngoy implements Renderer {
 	 * Renders the given string.
 	 */
 	public static void renderString(String template, Context context, OutputStream out, Config... config) {
+		if (context == null) {
+			context = Context.of();
+		}
 		new Ngoy(optionalConfig(config)).renderTemplate(template, false, (Ctx) context.internal(), out);
 	}
 
@@ -141,6 +144,9 @@ public class Ngoy implements Renderer {
 	 * @param templatePath see {@link Class#getResourceAsStream(String)}
 	 */
 	public static void render(String templatePath, Context context, OutputStream out, Config... config) {
+		if (context == null) {
+			context = Context.of();
+		}
 		new Ngoy(optionalConfig(config)).renderTemplate(templatePath, true, (Ctx) context.internal(), out);
 	}
 
@@ -453,7 +459,6 @@ public class Ngoy implements Renderer {
 
 	private static Parser createParser(@Nullable Class<?> appRoot, @Nullable Resolver r, Config config) {
 		Parser parser = new Parser(r);
-		parser.parseBody = config.parseBody;
 		parser.inlineComponents = config.inlineComponents;
 
 		parser.contentType = getContentType(appRoot, config);
