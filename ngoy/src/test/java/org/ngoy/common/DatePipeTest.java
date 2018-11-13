@@ -8,6 +8,7 @@ import java.util.Locale;
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
+import org.ngoy.core.LocaleProvider;
 
 public class DatePipeTest extends ANgoyTest {
 
@@ -16,14 +17,20 @@ public class DatePipeTest extends ANgoyTest {
 	}
 
 	@Test
-	public void test() {
-		assertThat(render(Cmp.class)).isEqualTo("October");
+	public void testDefault() {
+		Locale prevLocale = Locale.getDefault();
+		try {
+			Locale.setDefault(Locale.ENGLISH);
+			assertThat(render(Cmp.class)).isEqualTo("October");
+		} finally {
+			Locale.setDefault(prevLocale);
+		}
 	}
 
 	//
 
 	@Test
 	public void testGerman() {
-		assertThat(render(Cmp.class, useValue(Locale.class, Locale.GERMAN))).isEqualTo("Oktober");
+		assertThat(render(Cmp.class, useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.FRENCH)))).isEqualTo("octobre");
 	}
 }

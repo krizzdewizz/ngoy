@@ -35,6 +35,7 @@ import org.ngoy.core.Directive;
 import org.ngoy.core.ElementRef;
 import org.ngoy.core.Events;
 import org.ngoy.core.Injector;
+import org.ngoy.core.LocaleProvider;
 import org.ngoy.core.ModuleWithProviders;
 import org.ngoy.core.NgModule;
 import org.ngoy.core.NgoyException;
@@ -136,7 +137,8 @@ public class Ngoy implements Renderer {
 	/**
 	 * Renders the given template
 	 * 
-	 * @param templatePath see {@link Class#getResourceAsStream(String)}
+	 * @param templatePath
+	 *            see {@link Class#getResourceAsStream(String)}
 	 */
 	public static void render(String templatePath, Context context, OutputStream out, Config... config) {
 		new Ngoy(optionalConfig(config)).renderTemplate(templatePath, true, (Ctx) context.internal(), out);
@@ -198,8 +200,6 @@ public class Ngoy implements Renderer {
 		public String contentType;
 	}
 
-	public static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
-
 	private final Config config;
 	private final Class<?> appRoot;
 	private Object appInstance;
@@ -225,8 +225,8 @@ public class Ngoy implements Renderer {
 		Map<String, Provider> cmpDecls = new LinkedHashMap<>(); // order of css
 		Map<String, Provider> pipeDecls = new HashMap<>();
 
-		if (provides(Locale.class, rootProviders) == null) {
-			cmpProviders.add(useValue(Locale.class, config.locale != null ? config.locale : DEFAULT_LOCALE));
+		if (provides(LocaleProvider.class, rootProviders) == null) {
+			cmpProviders.add(useValue(LocaleProvider.class, new LocaleProvider.Default(config.locale != null ? config.locale : Locale.getDefault())));
 		}
 
 		String translateBundle = config.translateBundle;
@@ -299,7 +299,11 @@ public class Ngoy implements Renderer {
 							}
 
 							if (key.startsWith("[")) {
-								return node.is(format("[%s]", key)); // directive name same as @Input
+								return node.is(format("[%s]", key)); // directive
+																		// name
+																		// same
+																		// as
+																		// @Input
 							}
 
 							return false;
@@ -420,10 +424,8 @@ public class Ngoy implements Renderer {
 			if (cmp != null) {
 				Provider existing = targetCmps.put(cmp.selector(), p);
 				if (existing != null) {
-					throw new NgoyException(
-							"More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
-							cmp.selector(), existing.getProvide()
-									.getName(),
+					throw new NgoyException("More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s", cmp.selector(), existing.getProvide()
+							.getName(),
 							p.getProvide()
 									.getName());
 				}

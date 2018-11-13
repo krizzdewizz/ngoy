@@ -4,7 +4,7 @@
 		<span>{{todo.created | date:'dd MMM, HH:mm'}}</span>
 		<form [action]="deleteAction" method="post">
 			<input hidden name="id" [value]="todo.id">
-			<button type="submit" class="btn">Done</button>
+			<button type="submit" class="btn">{{ 'TODO_DONE' | translate }}</button>
 		</form>
 	</div>
 </div>

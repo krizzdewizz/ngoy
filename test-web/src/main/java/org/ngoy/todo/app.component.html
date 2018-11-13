@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>ngoy - {{appName}}</title>
+	<title>ngoy - {{ 'TODO_TITLE' | translate }}</title>
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
 	 crossorigin="anonymous">
@@ -20,7 +20,7 @@
 <body>
 
 	<div class="container">
-		<h1>{{appName}}</h1>
+		<h1>{{ 'TODO_TITLE' | translate }}</h1>
 
 		<div>
 			<span class="message" [class.deleted]="deletedTodo != null">Todo <span>{{deletedTodo}}</span> has been deleted.</span>
@@ -32,7 +32,7 @@
 				<label>Text</label>
 				<input autofocus autocomplete="off" type="text" class="todo-text form-control" name="text">
 			</div>
-			<button type="submit" class="btn btn-primary">Add</button>
+			<button type="submit" class="btn btn-primary">{{ 'TODO_ADD' | translate }}</button>
 		</form>
 
 		<div class="todos">

@@ -6,16 +6,21 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 import org.ngoy.core.Inject;
+import org.ngoy.core.LocaleProvider;
 
 public class TranslateService {
 
 	@Inject
-	public Locale locale;
+	public LocaleProvider locale;
 
 	private ResourceBundle bundle;
 	private boolean hadMissingBundleWarning;
 
+	private String bundleBaseName;
+	private Locale prevLocale;
+
 	public String translate(String msg, Object... params) {
+		loadBundle();
 		missingBundleWarning();
 		return bundle != null && bundle.containsKey(msg) ? format(bundle.getString(msg), params) : msg;
 	}
@@ -39,6 +44,14 @@ public class TranslateService {
 	}
 
 	public void setBundle(String baseName) {
-		this.bundle = PropertyResourceBundle.getBundle(baseName, locale);
+		this.bundleBaseName = baseName;
+	}
+
+	private void loadBundle() {
+		Locale localeNow = locale.get();
+		if (bundle == null || !localeNow.equals(prevLocale)) {
+			bundle = PropertyResourceBundle.getBundle(bundleBaseName, localeNow);
+			prevLocale = localeNow;
+		}
 	}
 }

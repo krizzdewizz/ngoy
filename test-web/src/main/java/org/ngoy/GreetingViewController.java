@@ -13,7 +13,6 @@ import org.ngoy.testapp.TestApp;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class GreetingViewController {
@@ -21,7 +20,6 @@ public class GreetingViewController {
 	private static Ngoy ngoy;
 
 	@GetMapping(path = "/")
-	@ResponseBody
 	public void greeting(@RequestParam(name = "name", required = false, defaultValue = "world") String name, HttpServletResponse response) throws Exception {
 
 		// simply render a template, bind to variables. No 'app' needed
@@ -32,7 +30,6 @@ public class GreetingViewController {
 	}
 
 	@GetMapping(path = "/p")
-	@ResponseBody
 	public void persons(HttpServletResponse response) throws Exception {
 		// do not disable in production
 		TemplateCache.DEFAULT.setDisabled(true);

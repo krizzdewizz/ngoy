@@ -1,8 +1,7 @@
 package org.ngoy.common;
 
-import java.util.Locale;
-
 import org.ngoy.core.Inject;
+import org.ngoy.core.LocaleProvider;
 import org.ngoy.core.Nullable;
 import org.ngoy.core.Pipe;
 import org.ngoy.core.PipeTransform;
@@ -11,7 +10,7 @@ import org.ngoy.core.PipeTransform;
 public class UpperCasePipe implements PipeTransform {
 
 	@Inject
-	public Locale locale;
+	public LocaleProvider locale;
 
 	@Override
 	public Object transform(@Nullable Object obj, Object... params) {
@@ -20,7 +19,7 @@ public class UpperCasePipe implements PipeTransform {
 		}
 
 		return obj.toString()
-				.toUpperCase(locale);
+				.toUpperCase(locale.get());
 	}
 
 }
