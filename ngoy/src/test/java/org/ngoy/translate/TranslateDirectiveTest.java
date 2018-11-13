@@ -8,6 +8,7 @@ import java.util.Locale;
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
+import org.ngoy.core.LocaleProvider;
 import org.ngoy.core.NgModule;
 
 public class TranslateDirectiveTest extends ANgoyTest {
@@ -23,6 +24,6 @@ public class TranslateDirectiveTest extends ANgoyTest {
 
 	@Test
 	public void test() {
-		assertThat(render(Cmp.class, useValue(Locale.class, Locale.GERMAN))).isEqualTo("<a>hallo</a>");
+		assertThat(render(Cmp.class, useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.GERMAN)))).isEqualTo("<a>hallo</a>");
 	}
 }
