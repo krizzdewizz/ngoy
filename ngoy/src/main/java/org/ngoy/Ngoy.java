@@ -8,6 +8,7 @@ import static org.ngoy.core.Provider.of;
 import static org.ngoy.core.Provider.useClass;
 import static org.ngoy.core.Provider.useValue;
 import static org.ngoy.core.Util.copyToString;
+import static org.ngoy.core.Util.getTemplate;
 import static org.ngoy.core.Util.isSet;
 import static org.ngoy.core.Util.newPrintStream;
 
@@ -141,30 +142,6 @@ public class Ngoy implements Renderer {
 	 */
 	public static void render(String templatePath, Context context, OutputStream out, Config... config) {
 		new Ngoy(optionalConfig(config)).renderTemplate(templatePath, true, (Ctx) context.internal(), out);
-	}
-
-	/**
-	 * non-api
-	 */
-	public static String getTemplate(Class<?> clazz) {
-		Component cmp = clazz.getAnnotation(Component.class);
-		String templateUrl = cmp.templateUrl();
-		String tpl;
-		if (isSet(templateUrl)) {
-			InputStream in = clazz.getResourceAsStream(templateUrl);
-			if (in == null) {
-				throw new NgoyException("Template could not be found: '%s'", templateUrl);
-			}
-			try (InputStream inn = in) {
-				tpl = copyToString(inn);
-			} catch (Exception e) {
-				throw wrap(e);
-			}
-		} else {
-			tpl = cmp.template();
-		}
-		return tpl;
-
 	}
 
 	private void renderTemplate(String templateOrPath, boolean templateIsPath, Ctx ctx, OutputStream out) {

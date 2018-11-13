@@ -104,4 +104,28 @@ public class Util {
 				.findFirst()
 				.orElseThrow(() -> new NgoyException("Setter method %s%s could not be found or has not exactly 1 parameter", clazz.getName(), name));
 	}
+
+	/**
+	 * non-api
+	 */
+	public static String getTemplate(Class<?> clazz) {
+		Component cmp = clazz.getAnnotation(Component.class);
+		String templateUrl = cmp.templateUrl();
+		String tpl;
+		if (isSet(templateUrl)) {
+			InputStream in = clazz.getResourceAsStream(templateUrl);
+			if (in == null) {
+				throw new NgoyException("Template could not be found: '%s'", templateUrl);
+			}
+			try (InputStream inn = in) {
+				tpl = copyToString(inn);
+			} catch (Exception e) {
+				throw wrap(e);
+			}
+		} else {
+			tpl = cmp.template();
+		}
+		return tpl;
+	
+	}
 }

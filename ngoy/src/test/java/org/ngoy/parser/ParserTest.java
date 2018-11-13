@@ -19,11 +19,11 @@ import org.jsoup.nodes.Element;
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.JavaTemplate;
-import org.ngoy.Ngoy;
 import org.ngoy.core.Directive;
 import org.ngoy.core.Injector;
 import org.ngoy.core.LocaleProvider;
 import org.ngoy.core.Provider;
+import org.ngoy.core.Util;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.Ctx;
 import org.ngoy.core.internal.DefaultInjector;
@@ -72,7 +72,7 @@ public class ParserTest {
 				String nodeName = el.nodeName();
 
 				if (nodeName.equals("person")) {
-					all.add(new CmpRef(PersonDetailComponent.class, Ngoy.getTemplate(PersonDetailComponent.class), false, ""));
+					all.add(new CmpRef(PersonDetailComponent.class, Util.getTemplate(PersonDetailComponent.class), false, ""));
 				}
 
 				return all;

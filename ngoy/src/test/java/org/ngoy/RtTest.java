@@ -15,6 +15,7 @@ import org.ngoy.Ngoy.Config;
 import org.ngoy.core.Injector;
 import org.ngoy.core.ModuleWithProviders;
 import org.ngoy.core.Provider;
+import org.ngoy.core.Util;
 import org.ngoy.core.internal.Ctx;
 import org.ngoy.internal.parser.Parser;
 import org.ngoy.testapp.PersonService;
@@ -29,7 +30,7 @@ public class RtTest {
 			protected void parseAndRender(Class<?> appRoot, Parser parser, Ctx ctx, PrintStream out) {
 				try {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					parser.parse(Ngoy.getTemplate(appRoot), new JavaTemplate(newPrintStream(out)));
+					parser.parse(Util.getTemplate(appRoot), new JavaTemplate(newPrintStream(out)));
 
 					String html = new String(baos.toByteArray(), "UTF-8");
 					Path src = getTestPath().resolve("X.java");
