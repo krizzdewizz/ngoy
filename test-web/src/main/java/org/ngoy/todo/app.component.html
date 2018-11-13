@@ -23,8 +23,8 @@
 		<h1>{{ 'TODO_TITLE' | translate }}</h1>
 
 		<div>
-			<span class="message" [class.deleted]="deletedTodo != null">Todo <span>{{deletedTodo}}</span> has been deleted.</span>
-			<span class="message" [class.text-required]="textRequired">Text required.</span>
+			<span class="message" [class.deleted]="deletedTodo != null">{{'TODO' | translate}} <span>{{deletedTodo}}</span> {{'HAS_BEEN_DELETED' | translate}}</span>
+			<span class="message" [class.text-required]="textRequired" translate="TEXT_REQUIRED"></span>
 		</div>
 
 		<form ngoyFormPost="addTodo">

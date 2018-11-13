@@ -1,4 +1,4 @@
-package org.ngoy.common;
+package org.ngoy.translate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.ngoy.core.Provider.useValue;
@@ -7,8 +7,6 @@ import java.util.Locale;
 
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
-import org.ngoy.common.TranslateModule;
-import org.ngoy.common.TranslateService;
 import org.ngoy.core.Component;
 import org.ngoy.core.NgModule;
 
@@ -24,7 +22,7 @@ public class TranslatePipeTest extends ANgoyTest {
 		assertThat(render(CmpNotFound.class)).isEqualTo("MSG_HELLO");
 	}
 
-//
+	//
 
 	@Component(selector = "test", template = "{{ 'MSG_HELLO' | translate }} {{ 'MSG_QBERT' | translate:'cool' }}")
 	@NgModule(imports = { TranslateModule.class })

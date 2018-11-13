@@ -15,6 +15,7 @@ public class AttributeBinding {
 
 	private static final String BINDING_CLASS = "class.";
 	private static final String BINDING_ATTR = "attr.";
+	private static final String BINDING_TEXT = "text";
 
 	static void addAttributeBinding(ParserHandler handler, String name, String value, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames) {
 		if (!name.endsWith("]")) {
@@ -35,6 +36,8 @@ public class AttributeBinding {
 		} else if (rawName.startsWith(BINDING_ATTR)) {
 			String attrName = rawName.substring(BINDING_ATTR.length());
 			targetAttrNames.add(new String[] { attrName, value });
+		} else if (rawName.equals(BINDING_TEXT)) {
+			handler.textOverride(value);
 		} else {
 			handler.attributeExpr(rawName, value);
 		}

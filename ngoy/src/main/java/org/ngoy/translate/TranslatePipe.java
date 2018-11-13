@@ -1,4 +1,4 @@
-package org.ngoy.common;
+package org.ngoy.translate;
 
 import org.ngoy.core.Inject;
 import org.ngoy.core.Nullable;

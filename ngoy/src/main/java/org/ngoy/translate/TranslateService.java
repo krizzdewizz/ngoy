@@ -1,4 +1,4 @@
-package org.ngoy.common;
+package org.ngoy.translate;
 
 import java.text.MessageFormat;
 import java.util.Locale;
@@ -48,6 +48,11 @@ public class TranslateService {
 	}
 
 	private void loadBundle() {
+
+		if (bundleBaseName == null) {
+			return;
+		}
+
 		Locale localeNow = locale.get();
 		if (bundle == null || !localeNow.equals(prevLocale)) {
 			bundle = PropertyResourceBundle.getBundle(bundleBaseName, localeNow);

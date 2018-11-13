@@ -119,6 +119,10 @@ public interface ParserHandler {
 		@Override
 		public void ngContentEnd() {
 		}
+
+		@Override
+		public void textOverride(String expr) {
+		}
 	}
 
 	class Delegate implements ParserHandler {
@@ -203,5 +207,12 @@ public interface ParserHandler {
 		public void ngContentEnd() {
 			target.ngContentEnd();
 		}
+
+		@Override
+		public void textOverride(String expr) {
+			target.textOverride(expr);
+		}
 	}
+
+	void textOverride(String expr);
 }

@@ -14,6 +14,9 @@ import org.ngoy.core.NgoyException;
 
 public class AttrBindingTest extends ANgoyTest {
 
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
 	@Component(selector = "person", template = "hello: {{name}}{{title}}")
 	public static class PersonCmp {
 		@Input()
@@ -62,9 +65,6 @@ public class AttrBindingTest extends ANgoyTest {
 
 	//
 
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
-
 	@Component(selector = "person", template = "hello: {{title}}{{title2}}{{title3}}{{title4}}")
 	public static class PersonNonStringCmp {
 		@Input()
@@ -81,5 +81,26 @@ public class AttrBindingTest extends ANgoyTest {
 		expectedEx.expect(NgoyException.class);
 		expectedEx.expectMessage(containsString("but would receive a string"));
 		render(AttrNonString.class);
+	}
+
+	//
+
+	@Component(selector = "person", template = "hello: {{title}}{{title2}}{{title3}}{{title4}}")
+	public static class PersonNonStringParamCmp {
+		@Input()
+		public void setNumber(int n) {
+		}
+	}
+
+	@Component(selector = "test", template = "<person number=\"0\"></person>")
+	@NgModule(declarations = { PersonNonStringParamCmp.class })
+	public static class AttrNonStringParam {
+	}
+
+	@Test
+	public void testAttrNonStringParam() {
+		expectedEx.expect(NgoyException.class);
+		expectedEx.expectMessage(containsString("but would receive a string"));
+		render(AttrNonStringParam.class);
 	}
 }

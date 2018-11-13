@@ -27,8 +27,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.ngoy.common.PipesModule;
-import org.ngoy.common.TranslateModule;
-import org.ngoy.common.TranslateService;
 import org.ngoy.core.Component;
 import org.ngoy.core.Context;
 import org.ngoy.core.Directive;
@@ -54,6 +52,8 @@ import org.ngoy.core.internal.DefaultInjector;
 import org.ngoy.core.internal.Resolver;
 import org.ngoy.internal.parser.ByteCodeTemplate;
 import org.ngoy.internal.parser.Parser;
+import org.ngoy.translate.TranslateModule;
+import org.ngoy.translate.TranslateService;
 
 public class Ngoy implements Renderer {
 	public static class Builder {

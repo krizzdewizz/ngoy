@@ -3,6 +3,7 @@ package org.ngoy.internal.parser;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.ngoy.core.NgoyException.wrap;
+import static org.ngoy.core.Util.isSet;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -85,6 +86,7 @@ public class Parser {
 
 	static class MyHandler extends ParserHandler.Delegate {
 		final LinkedList<String> cmpClassesStack = new LinkedList<>();
+		private String textOverrideExpr;
 
 		public MyHandler(ParserHandler target) {
 			super(target);
@@ -97,9 +99,20 @@ public class Parser {
 		}
 
 		@Override
+		public void elementHead(String name) {
+			super.elementHead(name);
+		}
+
+		@Override
 		public void componentEnd() {
 			super.componentEnd();
 			cmpClassesStack.pop();
+		}
+
+		@Override
+		public void textOverride(String expr) {
+			super.textOverride(expr);
+			textOverrideExpr = expr;
 		}
 	}
 
@@ -108,7 +121,8 @@ public class Parser {
 	}
 
 	/**
-	 * @param resolver if null, uses {@link Resolver#DEFAULT}
+	 * @param resolver
+	 *            if null, uses {@link Resolver#DEFAULT}
 	 */
 	public Parser(@Nullable Resolver resolver) {
 		this.cmpRefParser = new CmpRefParser(this);
@@ -193,6 +207,11 @@ public class Parser {
 
 		if (!cmpRefParser.acceptCmpRefs(el, cmpRefs, acceptChildren)) {
 			acceptSpecialElementsContent(el);
+		}
+
+		if (isSet(handler.textOverrideExpr)) {
+			visitor.skipSubTree(el);
+			handler.textOverrideExpr = null;
 		}
 	}
 

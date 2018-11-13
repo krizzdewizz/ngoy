@@ -57,8 +57,9 @@ public class Inputs {
 				binding = fieldName(methodName);
 			}
 
-			addInput(METHOD_INPUT, VALUE_TEXT, result, el, binding, methodName, m.getReturnType(), clazz, excludeBindings);
-			addInput(METHOD_INPUT, VALUE_EXPR, result, el, binding, methodName, m.getReturnType(), clazz, excludeBindings);
+			Class<?> paramType = m.getParameters()[0].getType();
+			addInput(METHOD_INPUT, VALUE_TEXT, result, el, binding, methodName, paramType, clazz, excludeBindings);
+			addInput(METHOD_INPUT, VALUE_EXPR, result, el, binding, methodName, paramType, clazz, excludeBindings);
 		}
 		return result;
 	}
@@ -69,8 +70,7 @@ public class Inputs {
 		if (!inp.isEmpty()) {
 
 			if (valueType == VALUE_TEXT && !fieldType.equals(String.class)) {
-				throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(),
-						fieldType.getName(), format("[%s]", input));
+				throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(), fieldType.getName(), format("[%s]", input));
 			}
 
 			result.add(format("%s%s%s", inputType, valueType, fieldName));

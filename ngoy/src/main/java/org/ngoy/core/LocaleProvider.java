@@ -3,7 +3,7 @@ package org.ngoy.core;
 import java.util.Locale;
 
 public interface LocaleProvider {
-	public class Default implements LocaleProvider {
+	class Default implements LocaleProvider {
 		private final Locale locale;
 
 		public Default(Locale locale) {

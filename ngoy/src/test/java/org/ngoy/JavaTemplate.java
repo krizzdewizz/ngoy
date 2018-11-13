@@ -23,6 +23,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private final TextOutput out;
 	private int nextLocalVarIndex;
+	private String textOverrideVar;
+	private boolean hadTextOverride;
 
 	public JavaTemplate(PrintStream prn) {
 		super(new PrintStreamPrinter(prn));
@@ -34,6 +36,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("package org.ngoy;");
 		$("public class X {");
 		$("  public static void render(", Ctx.class, " ctx) throws Exception {");
+
+		textOverrideVar = createLocalVar();
+		$("String ", textOverrideVar, ";");
 	}
 
 	@Override
@@ -79,8 +84,23 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
+	public void textOverride(String expr) {
+		$(textOverrideVar, "=", "(String)ctx.eval(\"", expr, "\");");
+		hadTextOverride = true;
+	}
+
+	@Override
 	public void elementHeadEnd() {
 		printOut(">");
+
+		if (hadTextOverride) {
+			flushOut();
+
+			out.printEscaped(textOverrideVar, true);
+			$(textOverrideVar, "= null;");
+
+			hadTextOverride = false;
+		}
 	}
 
 	@Override
@@ -219,7 +239,13 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	@Override
 	public void componentStart(String clazz, List<String> params) {
-		$("ctx.pushCmpContext(\"", clazz, "\",", flattenStrings(params), ");");
+		String ps = flattenStrings(params);
+		$$("ctx.pushCmpContext(\"", clazz, "\"");
+		if (!ps.isEmpty()) {
+			$$(",");
+			$$(ps);
+		}
+		$(");");
 	}
 
 	private String flattenStrings(List<String> params) {

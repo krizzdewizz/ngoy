@@ -99,6 +99,8 @@ public class ByteCodeTemplate implements ParserHandler {
 	private LocalVariable ctxParam;
 	private LocalVariable emptyExprParams;
 	private LocalVariable emptyStringArray;
+	private LocalVariable textOverrideVar;
+	private boolean hadTextOverride;
 
 	public ByteCodeTemplate(String className, String contentType) {
 		this.className = className;
@@ -122,6 +124,8 @@ public class ByteCodeTemplate implements ParserHandler {
 		run.loadConstant(0);
 		run.newObject(stringArrayType);
 		run.storeLocal(emptyStringArray);
+
+		textOverrideVar = run.createLocalVariable(TypeDesc.STRING);
 	}
 
 	@Override
@@ -150,6 +154,20 @@ public class ByteCodeTemplate implements ParserHandler {
 	@Override
 	public void elementHeadEnd() {
 		printOut(">");
+
+		if (hadTextOverride) {
+			flushOut();
+
+			run.loadLocal(ctxParam);
+			run.loadLocal(ctxParam);
+			run.loadLocal(textOverrideVar);
+			run.invokeVirtual(ctxType, "printEscaped", null, singleObjectParamType);
+
+			run.loadNull();
+			run.storeLocal(textOverrideVar);
+
+			hadTextOverride = false;
+		}
 	}
 
 	@Override
@@ -223,6 +241,17 @@ public class ByteCodeTemplate implements ParserHandler {
 	@Override
 	public void attributeEnd() {
 		printOut("\"");
+	}
+
+	@Override
+	public void textOverride(String expr) {
+		run.loadLocal(ctxParam);
+		run.loadConstant(expr);
+		run.loadLocal(emptyExprParams);
+		run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
+		run.storeLocal(textOverrideVar);
+
+		hadTextOverride = true;
 	}
 
 	@Override
@@ -347,8 +376,8 @@ public class ByteCodeTemplate implements ParserHandler {
 	}
 
 	/**
-	 * Flushes must occur before 'non-print-text code' like if, else, method calls
-	 * etc.
+	 * Flushes must occur before 'non-print-text code' like if, else, method
+	 * calls etc.
 	 */
 	private void flushOut() {
 		out.flush();

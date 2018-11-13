@@ -1,7 +1,6 @@
 package org.ngoy.parser;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static org.ngoy.core.Util.copyToString;
 import static org.ngoy.core.Util.newPrintStream;
@@ -11,23 +10,32 @@ import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
+import org.jsoup.nodes.Element;
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.JavaTemplate;
 import org.ngoy.Ngoy;
+import org.ngoy.core.Directive;
 import org.ngoy.core.ElementRef;
 import org.ngoy.core.Injector;
+import org.ngoy.core.LocaleProvider;
+import org.ngoy.core.Provider;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.Ctx;
+import org.ngoy.core.internal.DefaultInjector;
 import org.ngoy.core.internal.JSoupElementRef;
 import org.ngoy.core.internal.Resolver;
 import org.ngoy.internal.parser.ByteCodeTemplate;
 import org.ngoy.internal.parser.Parser;
 import org.ngoy.model.Person;
 import org.ngoy.testapp.PersonDetailComponent;
+import org.ngoy.translate.TranslateDirective;
+import org.ngoy.translate.TranslateService;
 
 public class ParserTest {
 
@@ -50,13 +58,27 @@ public class ParserTest {
 
 	@Test
 	public void parseJavaToJava() throws Exception {
+		DefaultInjector injector = new DefaultInjector(Provider.of(TranslateDirective.class), Provider.of(TranslateService.class), Provider.useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)));
 		Parser parser = new Parser(new Resolver() {
-
 			@Override
 			public List<CmpRef> resolveCmps(ElementRef element) {
-				return ((JSoupElementRef) element).getNativeElement()
-						.nodeName()
-						.equals("person") ? asList(new CmpRef(PersonDetailComponent.class, Ngoy.getTemplate(PersonDetailComponent.class), false, "")) : emptyList();
+
+				Element el = ((JSoupElementRef) element).getNativeElement();
+
+				List<CmpRef> all = new ArrayList<>();
+
+				if (el.is(TranslateDirective.class.getAnnotation(Directive.class)
+						.selector())) {
+					all.add(new CmpRef(TranslateDirective.class, "", true, ""));
+				}
+
+				String nodeName = el.nodeName();
+
+				if (nodeName.equals("person")) {
+					all.add(new CmpRef(PersonDetailComponent.class, Ngoy.getTemplate(PersonDetailComponent.class), false, ""));
+				}
+
+				return all;
 			}
 
 			@Override
@@ -66,7 +88,7 @@ public class ParserTest {
 
 			@Override
 			public Injector getInjector() {
-				return null;
+				return injector;
 			}
 
 			@Override
