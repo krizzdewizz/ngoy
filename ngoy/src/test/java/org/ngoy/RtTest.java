@@ -30,7 +30,7 @@ public class RtTest {
 			protected void parseAndRender(Class<?> appRoot, Parser parser, Ctx ctx, PrintStream out) {
 				try {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					parser.parse(Util.getTemplate(appRoot), new JavaTemplate(newPrintStream(out)));
+					parser.parse(Util.getTemplate(appRoot), new JavaTemplate(newPrintStream(out)), true);
 
 					String html = new String(baos.toByteArray(), "UTF-8");
 					Path src = getTestPath().resolve("X.java");

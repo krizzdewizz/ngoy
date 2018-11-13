@@ -42,6 +42,7 @@ public abstract class ANgoyTest {
 			Builder builder = app(clazz).providers(providers);
 			Ngoy app = onBuild.apply(builder)
 					.build();
+			app.parseBody = true;
 			app.render(baos);
 			app.destroy();
 			String html = new String(baos.toByteArray(), "UTF-8");

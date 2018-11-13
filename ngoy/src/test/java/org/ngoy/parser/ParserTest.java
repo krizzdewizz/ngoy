@@ -41,7 +41,7 @@ public class ParserTest {
 	public void parseToByteCode() throws Exception {
 		Parser parser = new Parser();
 		ByteCodeTemplate bb = new ByteCodeTemplate("org.ngoy.XByteCode", null);
-		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), bb);
+		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), bb, true);
 
 		Class<?> clazz = bb.getClassFile()
 				.defineClass();
@@ -100,7 +100,7 @@ public class ParserTest {
 		});
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = newPrintStream(baos);
-		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), new JavaTemplate(out));
+		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), new JavaTemplate(out), true);
 		out.flush();
 		out.close();
 		// System.out.println(flatten(html));

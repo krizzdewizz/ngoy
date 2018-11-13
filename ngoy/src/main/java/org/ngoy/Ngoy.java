@@ -183,6 +183,7 @@ public class Ngoy implements Renderer {
 	private Injector injector;
 	private final TemplateCache cache;
 	private final Events events = new Events();
+	Boolean parseBody; // configurable for unit tests
 
 	protected Ngoy(Config config) {
 		this(Object.class, config, null, new Injector[0], new ModuleWithProviders[0]);
@@ -435,7 +436,7 @@ public class Ngoy implements Renderer {
 
 	private Class<?> createTemplate(String className, Parser parser, String template, String contentType) {
 		ByteCodeTemplate bct = new ByteCodeTemplate(className, contentType);
-		parser.parse(template, bct);
+		parser.parse(template, bct, parseBody);
 		return bct.getClassFile()
 				.defineClass();
 	}

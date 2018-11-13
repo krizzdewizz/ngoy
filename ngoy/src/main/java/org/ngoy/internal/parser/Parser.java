@@ -1,6 +1,7 @@
 package org.ngoy.internal.parser;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static org.ngoy.core.NgoyException.wrap;
 import static org.ngoy.core.Util.isSet;
 
@@ -29,6 +30,14 @@ import org.ngoy.core.internal.Resolver;
 import org.ngoy.internal.parser.visitor.SkipSubTreeVisitor;
 
 public class Parser {
+
+	static Document parseHtml(String template) {
+		try {
+			return Jsoup.parse(template, "");
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
 
 	List<Node> parse(String template, boolean forceNoText) {
 		try {
@@ -118,13 +127,16 @@ public class Parser {
 		this.resolver = resolver == null ? Resolver.DEFAULT : resolver;
 	}
 
-	public void parse(String template, ParserHandler handler) {
+	public void parse(String template, ParserHandler handler, Boolean parseBody) {
 
 		Objects.requireNonNull(template, "template must not be null.");
 
 		this.handler = new MyHandler(handler);
 		visitor = new SkipSubTreeVisitor(new Visitor());
-		List<Node> nodes = parse(template, false);
+
+		boolean body = parseBody == null ? "text/plain".equals(contentType) : parseBody.booleanValue();
+
+		List<Node> nodes = body ? parse(template, false) : asList(parseHtml(template));
 
 		acceptDocument(nodes);
 	}
