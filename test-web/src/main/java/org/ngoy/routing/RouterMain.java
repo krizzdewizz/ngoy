@@ -13,10 +13,12 @@ import org.ngoy.routing.home.HomeComponent;
 import org.ngoy.routing.settings.SettingsComponent;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-//@Controller
-//@RequestMapping("/router/*")
+@Controller
+@RequestMapping("/router/*")
 public class RouterMain implements InitializingBean {
 
 	private Ngoy ngoy;

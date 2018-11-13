@@ -10,14 +10,15 @@ import org.ngoy.core.Context;
 import org.ngoy.core.TemplateCache;
 import org.ngoy.testapp.PersonService;
 import org.ngoy.testapp.TestApp;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-public class GreetingViewController {
+public class GreetingViewController implements InitializingBean {
 
-	private static Ngoy ngoy;
+	private Ngoy ngoy;
 
 	@GetMapping(path = "/")
 	public void greeting(@RequestParam(name = "name", required = false, defaultValue = "world") String name, HttpServletResponse response) throws Exception {
@@ -29,23 +30,21 @@ public class GreetingViewController {
 		Ngoy.render("/templates/greeting.html", ctx, response.getOutputStream());
 	}
 
-	@GetMapping(path = "/p")
+	@GetMapping(path = "/more")
 	public void persons(HttpServletResponse response) throws Exception {
 		// do not disable in production
 		TemplateCache.DEFAULT.setDisabled(true);
 
-		app().render(response.getOutputStream());
+		ngoy.render(response.getOutputStream());
 	}
 
-	private Ngoy app() {
-		if (ngoy == null) {
-			PersonService personService = new PersonService();
-			ngoy = Ngoy.app(TestApp.class)
-					.providers(useValue(PersonService.class, personService))
-					.locale(Locale.GERMAN)
-					.translateBundle("messages")
-					.build();
-		}
-		return ngoy;
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		PersonService personService = new PersonService();
+		ngoy = Ngoy.app(TestApp.class)
+				.providers(useValue(PersonService.class, personService))
+				.locale(Locale.GERMAN)
+				.translateBundle("org.ngoy.testapp.messages")
+				.build();
 	}
 }
