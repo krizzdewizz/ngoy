@@ -27,9 +27,12 @@ import org.ngoy.core.PipeTransform;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.ContainerComponent;
 import org.ngoy.core.internal.Resolver;
+import org.ngoy.internal.parser.visitor.DefaultVisitor;
+import org.ngoy.internal.parser.visitor.MicroSyntaxVisitor;
 import org.ngoy.internal.parser.visitor.SkipSubTreeVisitor;
 
 public class Parser {
+
 
 	static Document parseHtml(String template) {
 		try {
@@ -39,7 +42,7 @@ public class Parser {
 		}
 	}
 
-	List<Node> parse(String template, boolean forceNoText) {
+	public List<Node> parse(String template, boolean forceNoText) {
 		try {
 			boolean text = "text/plain".equals(contentType);
 			if (text && !forceNoText) {
@@ -67,6 +70,8 @@ public class Parser {
 		}
 	}
 
+	public static final String NG_TEMPLATE = "ng-template";
+
 	private static final Pattern EXPR_PATTERN = Pattern.compile("\\{\\{(.*?)\\}\\}", Pattern.MULTILINE);
 	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
 	private static final Pattern NG_CONTAINER_PATTERN = Pattern.compile("<ng-container(.*)>((.|\\s)*)</ng-container>", Pattern.MULTILINE);
@@ -79,9 +84,11 @@ public class Parser {
 
 	final Set<Element> cmpElements = new HashSet<>();
 	MyHandler handler;
-	SkipSubTreeVisitor visitor;
 	private Resolver resolver;
 	private final CmpRefParser cmpRefParser;
+
+	NodeVisitor visitor;
+	SkipSubTreeVisitor skipSubTreeVisitor;
 
 	static class MyHandler extends ParserHandler.Delegate {
 		final LinkedList<String> cmpClassesStack = new LinkedList<>();
@@ -132,7 +139,8 @@ public class Parser {
 		Objects.requireNonNull(template, "template must not be null.");
 
 		this.handler = new MyHandler(handler);
-		visitor = new SkipSubTreeVisitor(new Visitor());
+		skipSubTreeVisitor = new SkipSubTreeVisitor(new Visitor());
+		visitor = new MicroSyntaxVisitor(skipSubTreeVisitor);
 
 		boolean body = parseBody == null ? "text/plain".equals(contentType) : parseBody.booleanValue();
 
@@ -167,12 +175,14 @@ public class Parser {
 		Matcher matcher = NG_CONTAINER_PATTERN.matcher(text);
 		if (matcher.find()) {
 			el = node.ownerDocument()
-					.createElement("ng-container");
+					.createElement(NG_TEMPLATE);
 			content = matcher.group(2);
 			Matcher forMatcher = NG_FOR_PATTERN.matcher(matcher.group(1));
 			if (forMatcher.find()) {
 				el.attr("*ngFor", forMatcher.group(1));
 			}
+
+			el.traverse(new MicroSyntaxVisitor(new DefaultVisitor()));
 		} else {
 			content = text;
 			el = null;
@@ -193,22 +203,19 @@ public class Parser {
 	private boolean replaceElement(Node node, boolean acceptChildren) {
 		Element el = (Element) node;
 
-		String ngIf = el.attr("*ngIf");
-		if (!ngIf.isEmpty()) {
-			elementConditionals.push(el);
-
-			int pos = ngIf.lastIndexOf(";");
-			if (pos >= 0) {
-				ngIf = ngIf.substring(0, pos);
+		if (el.nodeName()
+				.equals(NG_TEMPLATE)) {
+			String ngIf = el.attr("[ngIf]");
+			if (!ngIf.isEmpty()) {
+				elementConditionals.push(el);
+				handler.elementConditionalStart(ngIf);
+			} else if (ForOfVariable.parse(el, handler::elementRepeatedStart)) {
+				elementRepeated.push(el);
+			} else {
+				skipSubTreeVisitor.skipSubTree(el);
 			}
 
-			handler.elementConditionalStart(ngIf);
-		}
-
-		String ngFor = el.attr("*ngFor");
-		if (!ngFor.isEmpty()) {
-			elementRepeated.push(el);
-			handler.elementRepeatedStart(ForOfVariable.parseNgFor(ngFor), ForOfVariable.parse(ngFor));
+			return false;
 		}
 
 		List<CmpRef> cmpRefs = resolver.resolveCmps(el);
@@ -220,7 +227,7 @@ public class Parser {
 		}
 
 		if (isSet(handler.textOverrideExpr)) {
-			visitor.skipSubTree(el);
+			skipSubTreeVisitor.skipSubTree(el);
 			handler.textOverrideExpr = null;
 		}
 
@@ -240,9 +247,9 @@ public class Parser {
 	}
 
 	private Element findTemplate(String ref, Document document) {
-		Element template = document.selectFirst(format("ng-template[#%s]", ref));
+		Element template = document.selectFirst(format("%s[#%s]", NG_TEMPLATE, ref));
 		if (template == null) {
-			throw new ParseException("No <ng-template> found for name %s", ref);
+			throw new ParseException("No <%s> found for name %s", NG_TEMPLATE, ref);
 		}
 
 		return template;
@@ -294,21 +301,14 @@ public class Parser {
 	}
 
 	private void elementConditionalElse(Element el) {
-		String ngIf = el.attr("*ngIf");
-		int pos = ngIf.lastIndexOf(";");
-		if (pos < 0) {
+		String ngElse = el.attr("ngElse");
+		if (ngElse.isEmpty()) {
 			return;
 		}
-
-		String right = ngIf.substring(pos + 1)
-				.trim();
-		if (right.startsWith("else")) {
-			String templateRef = right.substring("else".length())
-					.trim();
-			Element template = findTemplate(templateRef, el.ownerDocument());
-			handler.elementConditionalElse();
-			accept(template.childNodes());
-		}
+		Element template = findTemplate(ngElse, el.ownerDocument());
+		handler.elementConditionalElse();
+		skipSubTreeVisitor.skipSubTree(null);
+		accept(template.childNodes());
 	}
 
 	private void compileCmps(List<CmpRef> cmpRefs, Element el) {
@@ -329,7 +329,9 @@ public class Parser {
 
 	private void endElement(Element el) {
 		if (!el.tag()
-				.isSelfClosing()) {
+				.isSelfClosing()
+				&& !el.nodeName()
+						.equals(NG_TEMPLATE)) {
 
 			if (inlineComponent(el)) {
 				if (!cmpElements.remove(el)) {

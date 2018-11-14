@@ -50,6 +50,7 @@ import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.CoreInternalModule;
 import org.ngoy.core.internal.Ctx;
 import org.ngoy.core.internal.DefaultInjector;
+import org.ngoy.core.internal.MinimalEnv;
 import org.ngoy.core.internal.Resolver;
 import org.ngoy.internal.parser.ByteCodeTemplate;
 import org.ngoy.internal.parser.Parser;
@@ -161,7 +162,7 @@ public class Ngoy implements Renderer {
 			tpl = templateOrPath;
 		}
 
-		Class<?> clazz = createTemplate(cache.key(templateOrPath), createParser(null, null, config), tpl, config.contentType);
+		Class<?> clazz = createTemplate(cache.key(templateOrPath), createParser(null, MinimalEnv.RESOLVER, config), tpl, config.contentType);
 		invokeRender(clazz, ctx, newPrintStream(out));
 	}
 
@@ -289,8 +290,7 @@ public class Ngoy implements Renderer {
 						.map(Provider::getProvide)
 						.map(clazz -> {
 							boolean directive = clazz.getAnnotation(Directive.class) != null;
-							Component cmp = clazz.getAnnotation(Component.class);
-							return new CmpRef(clazz, directive ? null : getTemplate(clazz), directive, cmp == null ? "" : cmp.contentType());
+							return new CmpRef(clazz, directive ? null : getTemplate(clazz), directive);
 						})
 						.collect(toList());
 			}

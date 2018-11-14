@@ -66,13 +66,13 @@ public class ParserTest {
 
 				if (el.is(TranslateDirective.class.getAnnotation(Directive.class)
 						.selector())) {
-					all.add(new CmpRef(TranslateDirective.class, "", true, ""));
+					all.add(new CmpRef(TranslateDirective.class, "", true));
 				}
 
 				String nodeName = el.nodeName();
 
 				if (nodeName.equals("person")) {
-					all.add(new CmpRef(PersonDetailComponent.class, Util.getTemplate(PersonDetailComponent.class), false, ""));
+					all.add(new CmpRef(PersonDetailComponent.class, Util.getTemplate(PersonDetailComponent.class), false));
 				}
 
 				return all;

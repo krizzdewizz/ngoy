@@ -115,7 +115,7 @@ public class CmpRefParser {
 				parser.handler.componentEnd();
 			}
 
-			parser.visitor.skipSubTree(el);
+			parser.skipSubTreeVisitor.skipSubTree(el);
 		}
 
 		return true;

@@ -23,8 +23,7 @@ public class SkipSubTreeVisitor implements NodeVisitor {
 	}
 
 	public boolean shallSkip(Node node) {
-		return node.nodeName()
-				.equals("ng-template") || skipNode != null && skipNode.equals(node.parent());
+		return skipNode != null && skipNode.equals(node.parent());
 	}
 
 	@Override
