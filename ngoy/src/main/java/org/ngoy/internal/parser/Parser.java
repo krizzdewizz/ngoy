@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.CDataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -32,7 +33,6 @@ import org.ngoy.internal.parser.visitor.MicroSyntaxVisitor;
 import org.ngoy.internal.parser.visitor.SkipSubTreeVisitor;
 
 public class Parser {
-
 
 	static Document parseHtml(String template) {
 		try {
@@ -71,6 +71,8 @@ public class Parser {
 	}
 
 	public static final String NG_TEMPLATE = "ng-template";
+	private static final String NG_ELSE = "ngElse";
+	private static final String NG_ELSE_IF = "ngElseIf-";
 
 	private static final Pattern EXPR_PATTERN = Pattern.compile("\\{\\{(.*?)\\}\\}", Pattern.MULTILINE);
 	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
@@ -301,7 +303,7 @@ public class Parser {
 	}
 
 	private void elementConditionalElse(Element el) {
-		String ngElse = el.attr("ngElse");
+		String ngElse = el.attr(NG_ELSE);
 		if (ngElse.isEmpty()) {
 			return;
 		}
@@ -309,6 +311,23 @@ public class Parser {
 		handler.elementConditionalElse();
 		skipSubTreeVisitor.skipSubTree(null);
 		accept(template.childNodes());
+	}
+
+	private void elementConditionalElseIf(Element el) {
+		for (Attribute attr : el.attributes()) {
+			String name = attr.getKey();
+			if (!name.startsWith(NG_ELSE_IF)) {
+				continue;
+			}
+
+			String tpl = name.substring(NG_ELSE_IF.length());
+			String expr = attr.getValue();
+
+			Element template = findTemplate(tpl, el.ownerDocument());
+			handler.elementConditionalElseIf(expr);
+			skipSubTreeVisitor.skipSubTree(null);
+			accept(template.childNodes());
+		}
 	}
 
 	private void compileCmps(List<CmpRef> cmpRefs, Element el) {
@@ -344,6 +363,7 @@ public class Parser {
 
 		if (el.equals(elementConditionals.peek())) {
 			elementConditionals.pop();
+			elementConditionalElseIf(el);
 			elementConditionalElse(el);
 			handler.elementConditionalEnd();
 		}

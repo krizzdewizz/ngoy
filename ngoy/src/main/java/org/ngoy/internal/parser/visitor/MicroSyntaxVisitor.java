@@ -1,13 +1,16 @@
 package org.ngoy.internal.parser.visitor;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 import static org.ngoy.internal.parser.Parser.NG_TEMPLATE;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -68,30 +71,33 @@ public class MicroSyntaxVisitor extends DefaultVisitor {
 		if (ngIf.isEmpty()) {
 			return;
 		}
-		el.removeAttr("*ngIf");
 
-		String ngElse = "";
-		int pos = ngIf.lastIndexOf(";");
-		if (pos >= 0) {
-			String right = ngIf.substring(pos + 1)
-					.trim();
-			if (right.startsWith("else")) {
-				ngElse = right.substring("else".length())
-						.trim();
-			}
-			ngIf = ngIf.substring(0, pos)
-					.trim();
-		}
+		el.removeAttr("*ngIf");
 
 		Element elClone = el.clone();
 
+		String[] splits = ngIf.split(";");
+		for (int i = 0, n = splits.length; i < n; i++) {
+			String split = splits[i].trim();
+			if (i == 0) {
+				el.attr("[ngIf]", split);
+			} else if (split.startsWith("elseIf")) {
+				List<String> elseIf = Stream.of(split.split("\\s"))
+						.map(String::trim)
+						.filter(s -> !s.isEmpty())
+						.collect(toList());
+				if (elseIf.size() != 3) {
+					throw new ParseException("Malformed elseIf: %s", split);
+				}
+				el.attr(format("ngElseIf-%s", elseIf.get(2)), elseIf.get(1));
+			} else if (split.startsWith("else")) {
+				el.attr("ngElse", split.substring("else".length())
+						.trim());
+			}
+		}
+
 		el.tagName(NG_TEMPLATE);
 		new ArrayList<>(el.childNodes()).forEach(Node::remove);
-
-		el.attr("[ngIf]", ngIf);
-		if (!ngElse.isEmpty()) {
-			el.attr("ngElse", ngElse);
-		}
 		el.appendChild(elClone);
 	}
 

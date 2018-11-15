@@ -26,6 +26,8 @@ public interface ParserHandler {
 
 	void elementConditionalStart(String expr);
 
+	void elementConditionalElseIf(String expr);
+
 	void elementConditionalElse();
 
 	void elementConditionalEnd();
@@ -90,6 +92,10 @@ public interface ParserHandler {
 
 		@Override
 		public void elementConditionalElse() {
+		}
+
+		@Override
+		public void elementConditionalElseIf(String expr) {
 		}
 
 		@Override
@@ -178,6 +184,11 @@ public interface ParserHandler {
 
 		public void elementConditionalElse() {
 			target.elementConditionalElse();
+		}
+
+		@Override
+		public void elementConditionalElseIf(String expr) {
+			target.elementConditionalElseIf(expr);
 		}
 
 		public void elementConditionalEnd() {

@@ -179,6 +179,13 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
+	public void elementConditionalElseIf(String expr) {
+		flushOut();
+		$("} else ");
+		ifExprIsTrue(expr);
+	}
+
+	@Override
 	public void elementConditionalEnd() {
 		flushOut();
 		$("}");
@@ -271,4 +278,5 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		flushOut();
 		$("ctx.popContext();");
 	}
+
 }

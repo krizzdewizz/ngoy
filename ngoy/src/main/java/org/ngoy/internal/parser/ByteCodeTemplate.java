@@ -259,39 +259,53 @@ public class ByteCodeTemplate implements ParserHandler {
 		printOut("</", name, ">");
 	}
 
-	private Label ifExprIsTrue(String expr) {
-		flushOut();
+	private Label ifExprIsFalse(String expr) {
+		Label label = run.createLabel();
 		run.loadLocal(ctxParam);
 		run.loadConstant(expr);
 		run.invokeVirtual(ctxType, "evalBool", TypeDesc.BOOLEAN, singleStringParamType);
-		Label ifTrue = run.createLabel();
-		run.ifZeroComparisonBranch(ifTrue, "==");
-		return ifTrue;
+		run.ifZeroComparisonBranch(label, "==");
+		return label;
 	}
 
 	@Override
 	public void elementConditionalStart(String expr) {
 		flushOut();
-		elementConditionals.push(ifExprIsTrue(expr));
+
+		Label labelEnd = run.createLabel();
+		elementConditionals.push(labelEnd);
+
+		Label label = ifExprIsFalse(expr);
+
+		elementConditionals.push(label);
+	}
+
+	@Override
+	public void elementConditionalElseIf(String expr) {
+		flushOut();
+
+		Label pop = elementConditionals.pop();
+		run.branch(elementConditionals.peek()); // goto labelEnd
+		pop.setLocation();
+
+		Label label = ifExprIsFalse(expr);
+		elementConditionals.push(label);
 	}
 
 	@Override
 	public void elementConditionalElse() {
 		flushOut();
-		Label ifFalse = run.createLabel();
-		run.branch(ifFalse);
 
-		elementConditionals.pop()
-				.setLocation();
-
-		elementConditionals.push(ifFalse);
+		Label pop = elementConditionals.pop();
+		run.branch(elementConditionals.peek()); // goto labelEnd
+		pop.setLocation();
 	}
 
 	@Override
 	public void elementConditionalEnd() {
 		flushOut();
-		elementConditionals.pop()
-				.setLocation();
+		Label labelEnd = elementConditionals.pop();
+		labelEnd.setLocation();
 	}
 
 	@Override
