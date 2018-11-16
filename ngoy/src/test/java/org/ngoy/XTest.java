@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ngoy.common.DatePipe;
 import org.ngoy.common.LowerCasePipe;
@@ -19,6 +20,7 @@ import org.ngoy.testapp.PersonDetailComponent;
 import org.ngoy.testapp.PersonService;
 import org.ngoy.testapp.TestApp;
 
+@Ignore
 public class XTest {
 
 	@Test

@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 import static org.ngoy.core.Util.escapeJava;
 
 import java.io.PrintStream;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,6 +26,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private int nextLocalVarIndex;
 	private String textOverrideVar;
 	private boolean hadTextOverride;
+	private LinkedList<String> switchVars = new LinkedList<>();
+	private LinkedList<Boolean> switchHadElseIf = new LinkedList<>();
 
 	public JavaTemplate(PrintStream prn) {
 		super(new PrintStreamPrinter(prn));
@@ -167,9 +170,38 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
-	public void elementConditionalStart(String expr) {
+	public void elementConditionalStart(String expr, String switchFirstCase) {
 		flushOut();
-		ifExprIsTrue(expr);
+		String switchVar;
+		if (Util.isSet(switchFirstCase)) {
+			switchVar = createLocalVar();
+			$("Object ", switchVar, " = ctx.eval(\"", expr, "\");");
+		} else {
+			switchVar = "";
+			ifExprIsTrue(expr);
+		}
+		switchVars.push(switchVar);
+		switchHadElseIf.push(false);
+	}
+
+	@Override
+	public void elementConditionalElseIf(String expr) {
+		flushOut();
+
+		String switchVar = switchVars.peek();
+		if (switchVar.isEmpty()) {
+			$("} else ");
+			ifExprIsTrue(expr);
+		} else {
+			if (switchHadElseIf.peek()) {
+				$("} else ");
+			} else {
+				switchHadElseIf.pop();
+				switchHadElseIf.push(true);
+			}
+
+			$("if (java.util.Objects.equals(", switchVar, ", ctx.eval(\"", expr, "\"))) {");
+		}
 	}
 
 	@Override
@@ -179,16 +211,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
-	public void elementConditionalElseIf(String expr) {
-		flushOut();
-		$("} else ");
-		ifExprIsTrue(expr);
-	}
-
-	@Override
 	public void elementConditionalEnd() {
 		flushOut();
 		$("}");
+		switchVars.pop();
+		switchHadElseIf.pop();
 	}
 
 	@Override

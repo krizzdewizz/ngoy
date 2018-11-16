@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.ngoy.core.Component;
@@ -126,6 +127,10 @@ public class Ctx {
 		return this;
 	}
 
+	public static boolean eq(Object a, Object b) {
+		return Objects.equals(a, b);
+	}
+
 	public Object eval(String expr, String[]... pipes) {
 		EvaluationContext peek = spelCtxs.peek();
 		try {
@@ -165,7 +170,29 @@ public class Ctx {
 	}
 
 	public boolean evalBool(String expr) {
-		return ((Boolean) eval(expr)).booleanValue();
+		Boolean result = (Boolean) eval(expr);
+		if (result != null) {
+			return result.booleanValue();
+		}
+
+		TypedValue rootObject = spelCtxs.peek()
+				.getRootObject();
+		String root = "null";
+		String templateUrl = "none";
+		if (rootObject != null) {
+			Object value = rootObject.getValue();
+			if (value != null) {
+				Class<?> rootClass = value.getClass();
+				Component cmpAnn = rootClass.getAnnotation(Component.class);
+				if (cmpAnn != null) {
+					templateUrl = format("'%s'", cmpAnn.templateUrl());
+				}
+
+				root = rootClass.getName();
+			}
+		}
+		throw new NgoyException(format("Error while converting result of expression '%s' to boolean: the result was null and null cannot be converted to boolean.  modelRoot: %s. templateUrl: %s.",
+				expr, root, templateUrl));
 	}
 
 	@SuppressWarnings({ "rawtypes" })

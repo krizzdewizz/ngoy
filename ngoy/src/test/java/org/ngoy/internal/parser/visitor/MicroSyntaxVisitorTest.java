@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
-import org.jsoup.select.NodeVisitor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,16 +24,7 @@ public class MicroSyntaxVisitorTest {
 
 	@Before
 	public void beforeEach() {
-		visitor = new MicroSyntaxVisitor(new NodeVisitor() {
-
-			@Override
-			public void tail(Node node, int depth) {
-			}
-
-			@Override
-			public void head(Node node, int depth) {
-			}
-		});
+		visitor = new MicroSyntaxVisitor(new DefaultNodeVisitor());
 	}
 
 	@Test
@@ -62,6 +52,38 @@ public class MicroSyntaxVisitorTest {
 		assertThat(el.toString()).isEqualTo("<ng-template [ngIf]=\"true\" ngElse=\"qbert\">\n" + //
 				" <div>\n" + //
 				"  xx\n" + //
+				" </div>\n" + //
+				"</ng-template>");
+	}
+
+	@Test
+	public void testSwitchCase() {
+		Parser parser = new Parser();
+
+		List<Node> nodes = parser.parse("<div *ngSwitchCase=\"'happy'\">HAPPY</div>", false);
+
+		nodes.forEach(n -> n.traverse(visitor));
+		assertThat(nodes).hasSize(1);
+		Element el = (Element) nodes.get(0);
+		assertThat(el.toString()).isEqualTo("<ng-template [ngSwitchCase]=\"'happy'\">\n" + //
+				" <div>\n" + //
+				"  HAPPY\n" + //
+				" </div>\n" + //
+				"</ng-template>");
+	}
+
+	@Test
+	public void testSwitchDefault() {
+		Parser parser = new Parser();
+
+		List<Node> nodes = parser.parse("<div *ngSwitchDefault>HAPPY</div>", false);
+
+		nodes.forEach(n -> n.traverse(visitor));
+		assertThat(nodes).hasSize(1);
+		Element el = (Element) nodes.get(0);
+		assertThat(el.toString()).isEqualTo("<ng-template ngSwitchDefault>\n" + //
+				" <div>\n" + //
+				"  HAPPY\n" + //
 				" </div>\n" + //
 				"</ng-template>");
 	}

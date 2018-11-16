@@ -2,6 +2,7 @@ package org.ngoy.internal.parser;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
+import static org.ngoy.core.Util.isSet;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -87,12 +88,14 @@ public class ByteCodeTemplate implements ParserHandler {
 	private static final TypeDesc[] singleStringParamType = new TypeDesc[] { TypeDesc.STRING };
 	private static final TypeDesc[] singleObjectParamType = new TypeDesc[] { TypeDesc.OBJECT };
 	private static final TypeDesc[] runParamTypes = new TypeDesc[] { ctxType };
+	private static final TypeDesc[] objectsEqualsParamTypes = new TypeDesc[] { TypeDesc.OBJECT, TypeDesc.OBJECT };
 
 	private final LinkedList<Label> elementConditionals = new LinkedList<>();
 	private final LinkedList<Repeat> elementRepeated = new LinkedList<>();
 	private final Out out = new Out();
 	private final String className;
 	private final String contentType;
+	private LinkedList<LocalVariable> switchVars = new LinkedList<>();
 
 	private CodeBuilder run;
 	private RuntimeClassFile classFile;
@@ -101,6 +104,7 @@ public class ByteCodeTemplate implements ParserHandler {
 	private LocalVariable emptyStringArray;
 	private LocalVariable textOverrideVar;
 	private boolean hadTextOverride;
+	private LocalVariable noSwitchVar;
 
 	public ByteCodeTemplate(String className, String contentType) {
 		this.className = className;
@@ -126,6 +130,8 @@ public class ByteCodeTemplate implements ParserHandler {
 		run.storeLocal(emptyStringArray);
 
 		textOverrideVar = run.createLocalVariable(TypeDesc.STRING);
+
+		noSwitchVar = run.createLocalVariable(TypeDesc.OBJECT); // used on stack only, never in run code
 	}
 
 	@Override
@@ -269,15 +275,39 @@ public class ByteCodeTemplate implements ParserHandler {
 	}
 
 	@Override
-	public void elementConditionalStart(String expr) {
+	public void elementConditionalStart(String expr, String switchFirstCase) {
 		flushOut();
 
 		Label labelEnd = run.createLabel();
 		elementConditionals.push(labelEnd);
 
-		Label label = ifExprIsFalse(expr);
+		LocalVariable switchVar;
+		if (isSet(switchFirstCase)) {
+			switchVar = run.createLocalVariable(TypeDesc.OBJECT);
+			run.loadLocal(ctxParam);
+			run.loadConstant(expr);
+			run.loadLocal(emptyExprParams);
+			run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
+			run.storeLocal(switchVar);
 
-		elementConditionals.push(label);
+			run.loadLocal(ctxParam);
+			run.loadConstant(switchFirstCase);
+			run.loadLocal(emptyExprParams);
+			run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
+
+			run.loadLocal(switchVar);
+			run.invokeStatic(ctxType, "eq", TypeDesc.BOOLEAN, objectsEqualsParamTypes);
+			Label label = run.createLabel();
+			run.ifZeroComparisonBranch(label, "==");
+			elementConditionals.push(label);
+		} else {
+			switchVar = noSwitchVar;
+
+			Label label = ifExprIsFalse(expr);
+			elementConditionals.push(label);
+		}
+
+		switchVars.push(switchVar);
 	}
 
 	@Override
@@ -288,13 +318,31 @@ public class ByteCodeTemplate implements ParserHandler {
 		run.branch(elementConditionals.peek()); // goto labelEnd
 		pop.setLocation();
 
-		Label label = ifExprIsFalse(expr);
-		elementConditionals.push(label);
+		LocalVariable switchVar = switchVars.peek();
+		if (switchVar == noSwitchVar) {
+			Label label = ifExprIsFalse(expr);
+			elementConditionals.push(label);
+		} else {
+			run.loadLocal(switchVar);
+
+			run.loadLocal(ctxParam);
+			run.loadConstant(expr);
+			run.loadLocal(emptyExprParams);
+			run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
+
+			run.invokeStatic(ctxType, "eq", TypeDesc.BOOLEAN, objectsEqualsParamTypes);
+			Label label = run.createLabel();
+			run.ifZeroComparisonBranch(label, "==");
+			elementConditionals.push(label);
+		}
 	}
+
+	private boolean hadElse;
 
 	@Override
 	public void elementConditionalElse() {
 		flushOut();
+		hadElse = true;
 
 		Label pop = elementConditionals.pop();
 		run.branch(elementConditionals.peek()); // goto labelEnd
@@ -304,8 +352,13 @@ public class ByteCodeTemplate implements ParserHandler {
 	@Override
 	public void elementConditionalEnd() {
 		flushOut();
+
+		if (!hadElse) {
+			elementConditionalElse();
+		}
 		Label labelEnd = elementConditionals.pop();
 		labelEnd.setLocation();
+		switchVars.pop();
 	}
 
 	@Override

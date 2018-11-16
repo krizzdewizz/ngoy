@@ -1,8 +1,10 @@
 package org.ngoy;
 
 import org.cojen.classfile.DisassemblyTool;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class XDisassemble {
 
 	@Test

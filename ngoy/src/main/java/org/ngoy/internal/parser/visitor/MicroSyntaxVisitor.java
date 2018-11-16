@@ -36,9 +36,19 @@ public class MicroSyntaxVisitor extends DefaultVisitor {
 			Element el = (Element) node;
 			replaceNgIf(el);
 			replaceNgFor(el);
+			replaceSwitchCase(el);
+			replaceSwitchDefault(el);
 		}
 
 		src.head(node, depth);
+	}
+
+	private void replaceSwitchCase(Element el) {
+		replaceWithTemplate(el, "*ngSwitchCase", "[ngSwitchCase]");
+	}
+
+	private void replaceSwitchDefault(Element el) {
+		replaceWithTemplate(el, "*ngSwitchDefault", "ngSwitchDefault");
 	}
 
 	private void replaceNgFor(Element el) {
@@ -161,5 +171,21 @@ public class MicroSyntaxVisitor extends DefaultVisitor {
 		}
 
 		return result;
+	}
+
+	private void replaceWithTemplate(Element el, String microAttr, String replacedAttr) {
+		if (!el.hasAttr(microAttr)) {
+			return;
+		}
+		String value = el.attr(microAttr);
+		el.removeAttr(microAttr);
+
+		Element elClone = el.clone();
+
+		el.attr(replacedAttr, value.isEmpty() ? null : value);
+
+		el.tagName(NG_TEMPLATE);
+		new ArrayList<>(el.childNodes()).forEach(Node::remove);
+		el.appendChild(elClone);
 	}
 }

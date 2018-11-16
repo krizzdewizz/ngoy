@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.jsoup.nodes.Element;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.JavaTemplate;
@@ -35,6 +36,7 @@ import org.ngoy.testapp.PersonDetailComponent;
 import org.ngoy.translate.TranslateDirective;
 import org.ngoy.translate.TranslateService;
 
+@Ignore
 public class ParserTest {
 
 	@Test

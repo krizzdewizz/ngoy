@@ -22,6 +22,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.NodeVisitor;
+import org.ngoy.core.NgoyException;
 import org.ngoy.core.Nullable;
 import org.ngoy.core.OnCompile;
 import org.ngoy.core.PipeTransform;
@@ -31,6 +32,7 @@ import org.ngoy.core.internal.Resolver;
 import org.ngoy.internal.parser.visitor.DefaultVisitor;
 import org.ngoy.internal.parser.visitor.MicroSyntaxVisitor;
 import org.ngoy.internal.parser.visitor.SkipSubTreeVisitor;
+import org.ngoy.internal.parser.visitor.SwitchToElseIfVisitor;
 
 public class Parser {
 
@@ -72,7 +74,6 @@ public class Parser {
 
 	public static final String NG_TEMPLATE = "ng-template";
 	private static final String NG_ELSE = "ngElse";
-	private static final String NG_ELSE_IF = "ngElseIf-";
 
 	private static final Pattern EXPR_PATTERN = Pattern.compile("\\{\\{(.*?)\\}\\}", Pattern.MULTILINE);
 	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
@@ -142,7 +143,7 @@ public class Parser {
 
 		this.handler = new MyHandler(handler);
 		skipSubTreeVisitor = new SkipSubTreeVisitor(new Visitor());
-		visitor = new MicroSyntaxVisitor(skipSubTreeVisitor);
+		visitor = new MicroSyntaxVisitor(new SwitchToElseIfVisitor(skipSubTreeVisitor));
 
 		boolean body = parseBody == null ? "text/plain".equals(contentType) : parseBody.booleanValue();
 
@@ -209,8 +210,7 @@ public class Parser {
 				.equals(NG_TEMPLATE)) {
 			String ngIf = el.attr("[ngIf]");
 			if (!ngIf.isEmpty()) {
-				elementConditionals.push(el);
-				handler.elementConditionalStart(ngIf);
+				replaceNgIf(el, ngIf);
 			} else if (ForOfVariable.parse(el, handler::elementRepeatedStart)) {
 				elementRepeated.push(el);
 			} else {
@@ -234,6 +234,34 @@ public class Parser {
 		}
 
 		return hasCmps;
+	}
+
+	private void replaceNgIf(Element el, String ngIf) {
+		elementConditionals.push(el);
+
+		boolean isSwitch = el.hasAttr("ngIfForSwitch");
+		String firstCaseTpl = "";
+		String switchExpr = "";
+		if (isSwitch) {
+			for (Attribute a : el.attributes()) {
+				if (a.getKey()
+						.startsWith("ngElseIfFirst-")) {
+					firstCaseTpl = a.getKey()
+							.substring("ngElseIfFirst-".length());
+					switchExpr = a.getValue();
+					break;
+				}
+			}
+
+			if (switchExpr.isEmpty()) {
+				throw new NgoyException("ngSwitch must have at least one ngSwitchCase: %s", el.cssSelector());
+			}
+		}
+		handler.elementConditionalStart(ngIf, switchExpr);
+		if (!switchExpr.isEmpty()) {
+			skipSubTreeVisitor.skipSubTree(null);
+			accept(findTemplate(firstCaseTpl, el.ownerDocument()).childNodes());
+		}
 	}
 
 	void accept(List<Node> nodes) {
@@ -307,26 +335,24 @@ public class Parser {
 		if (ngElse.isEmpty()) {
 			return;
 		}
-		Element template = findTemplate(ngElse, el.ownerDocument());
 		handler.elementConditionalElse();
 		skipSubTreeVisitor.skipSubTree(null);
-		accept(template.childNodes());
+		accept(findTemplate(ngElse, el.ownerDocument()).childNodes());
 	}
 
 	private void elementConditionalElseIf(Element el) {
 		for (Attribute attr : el.attributes()) {
 			String name = attr.getKey();
-			if (!name.startsWith(NG_ELSE_IF)) {
+			if (!name.startsWith("ngElseIf-")) {
 				continue;
 			}
 
-			String tpl = name.substring(NG_ELSE_IF.length());
+			String tpl = name.substring(name.indexOf('-') + 1);
 			String expr = attr.getValue();
 
-			Element template = findTemplate(tpl, el.ownerDocument());
 			handler.elementConditionalElseIf(expr);
 			skipSubTreeVisitor.skipSubTree(null);
-			accept(template.childNodes());
+			accept(findTemplate(tpl, el.ownerDocument()).childNodes());
 		}
 	}
 

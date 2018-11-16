@@ -24,7 +24,7 @@ public interface ParserHandler {
 
 	void elementEnd(String name);
 
-	void elementConditionalStart(String expr);
+	void elementConditionalStart(String expr, String switchFirstCase);
 
 	void elementConditionalElseIf(String expr);
 
@@ -87,7 +87,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void elementConditionalStart(String expr) {
+		public void elementConditionalStart(String expr, String switchFirstCase) {
 		}
 
 		@Override
@@ -178,8 +178,8 @@ public interface ParserHandler {
 			target.elementEnd(name);
 		}
 
-		public void elementConditionalStart(String expr) {
-			target.elementConditionalStart(expr);
+		public void elementConditionalStart(String expr, String switchFirstCase) {
+			target.elementConditionalStart(expr, switchFirstCase);
 		}
 
 		public void elementConditionalElse() {
