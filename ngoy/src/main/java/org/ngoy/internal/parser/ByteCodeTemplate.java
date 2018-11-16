@@ -92,10 +92,11 @@ public class ByteCodeTemplate implements ParserHandler {
 
 	private final LinkedList<Label> elementConditionals = new LinkedList<>();
 	private final LinkedList<Repeat> elementRepeated = new LinkedList<>();
+	private final LinkedList<LocalVariable> switchVars = new LinkedList<>();
+	private final LinkedList<Boolean> hadElse = new LinkedList<>();
 	private final Out out = new Out();
 	private final String className;
 	private final String contentType;
-	private LinkedList<LocalVariable> switchVars = new LinkedList<>();
 
 	private CodeBuilder run;
 	private RuntimeClassFile classFile;
@@ -265,15 +266,6 @@ public class ByteCodeTemplate implements ParserHandler {
 		printOut("</", name, ">");
 	}
 
-	private Label ifExprIsFalse(String expr) {
-		Label label = run.createLabel();
-		run.loadLocal(ctxParam);
-		run.loadConstant(expr);
-		run.invokeVirtual(ctxType, "evalBool", TypeDesc.BOOLEAN, singleStringParamType);
-		run.ifZeroComparisonBranch(label, "==");
-		return label;
-	}
-
 	@Override
 	public void elementConditionalStart(String expr, String switchFirstCase) {
 		flushOut();
@@ -284,21 +276,14 @@ public class ByteCodeTemplate implements ParserHandler {
 		LocalVariable switchVar;
 		if (isSet(switchFirstCase)) {
 			switchVar = run.createLocalVariable(TypeDesc.OBJECT);
+
 			run.loadLocal(ctxParam);
 			run.loadConstant(expr);
 			run.loadLocal(emptyExprParams);
 			run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
 			run.storeLocal(switchVar);
 
-			run.loadLocal(ctxParam);
-			run.loadConstant(switchFirstCase);
-			run.loadLocal(emptyExprParams);
-			run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
-
-			run.loadLocal(switchVar);
-			run.invokeStatic(ctxType, "eq", TypeDesc.BOOLEAN, objectsEqualsParamTypes);
-			Label label = run.createLabel();
-			run.ifZeroComparisonBranch(label, "==");
+			Label label = ifSwitchCaseIsFalse(switchFirstCase, switchVar);
 			elementConditionals.push(label);
 		} else {
 			switchVar = noSwitchVar;
@@ -308,6 +293,7 @@ public class ByteCodeTemplate implements ParserHandler {
 		}
 
 		switchVars.push(switchVar);
+		hadElse.push(false);
 	}
 
 	@Override
@@ -323,26 +309,16 @@ public class ByteCodeTemplate implements ParserHandler {
 			Label label = ifExprIsFalse(expr);
 			elementConditionals.push(label);
 		} else {
-			run.loadLocal(switchVar);
-
-			run.loadLocal(ctxParam);
-			run.loadConstant(expr);
-			run.loadLocal(emptyExprParams);
-			run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
-
-			run.invokeStatic(ctxType, "eq", TypeDesc.BOOLEAN, objectsEqualsParamTypes);
-			Label label = run.createLabel();
-			run.ifZeroComparisonBranch(label, "==");
+			Label label = ifSwitchCaseIsFalse(expr, switchVar);
 			elementConditionals.push(label);
 		}
 	}
 
-	private boolean hadElse;
-
 	@Override
 	public void elementConditionalElse() {
 		flushOut();
-		hadElse = true;
+		hadElse.pop();
+		hadElse.push(true);
 
 		Label pop = elementConditionals.pop();
 		run.branch(elementConditionals.peek()); // goto labelEnd
@@ -353,12 +329,13 @@ public class ByteCodeTemplate implements ParserHandler {
 	public void elementConditionalEnd() {
 		flushOut();
 
-		if (!hadElse) {
+		if (!hadElse.peek()) {
 			elementConditionalElse();
 		}
 		Label labelEnd = elementConditionals.pop();
 		labelEnd.setLocation();
 		switchVars.pop();
+		hadElse.pop();
 	}
 
 	@Override
@@ -515,4 +492,28 @@ public class ByteCodeTemplate implements ParserHandler {
 		run.loadLocal(ctxParam);
 		run.invokeVirtual(ctxType, "popContext", null, null);
 	}
+
+	private Label ifExprIsFalse(String expr) {
+		Label label = run.createLabel();
+		run.loadLocal(ctxParam);
+		run.loadConstant(expr);
+		run.invokeVirtual(ctxType, "evalBool", TypeDesc.BOOLEAN, singleStringParamType);
+		run.ifZeroComparisonBranch(label, "==");
+		return label;
+	}
+
+	private Label ifSwitchCaseIsFalse(String switchCaseExpr, LocalVariable switchVar) {
+
+		run.loadLocal(ctxParam);
+		run.loadConstant(switchCaseExpr);
+		run.loadLocal(emptyExprParams);
+		run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
+
+		run.loadLocal(switchVar);
+		run.invokeStatic(ctxType, "eq", TypeDesc.BOOLEAN, objectsEqualsParamTypes);
+		Label label = run.createLabel();
+		run.ifZeroComparisonBranch(label, "==");
+		return label;
+	}
+
 }

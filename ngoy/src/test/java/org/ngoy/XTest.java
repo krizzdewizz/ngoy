@@ -47,7 +47,7 @@ public class XTest {
 				.toFile();
 		try (PrintStream out = newPrintStream(new FileOutputStream(target))) {
 			ctx.setOut(out, null);
-			X.render(ctx);
+//			X.render(ctx);
 		} finally {
 			ctx.resetOut();
 		}

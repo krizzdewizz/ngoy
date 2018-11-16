@@ -1,6 +1,7 @@
 package org.ngoy.internal.parser.visitor;
 
 import static java.lang.String.format;
+import static org.ngoy.internal.parser.Parser.NG_TEMPLATE;
 
 import java.util.ArrayList;
 
@@ -33,7 +34,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 			Element elClone = el.clone();
 
 			Element tpl = el.ownerDocument()
-					.createElement("ng-template");
+					.createElement(NG_TEMPLATE);
 			new ArrayList<>(el.childNodes()).forEach(Node::remove);
 			el.appendChild(tpl);
 
@@ -51,8 +52,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 				i++;
 			}
 
-			Element def = elClone.select("[ngSwitchDefault]")
-					.first();
+			Element def = elClone.selectFirst("[ngSwitchDefault]");
 			if (def != null) {
 				String ref = nextRef();
 				tpl.attr("ngElse", ref);
