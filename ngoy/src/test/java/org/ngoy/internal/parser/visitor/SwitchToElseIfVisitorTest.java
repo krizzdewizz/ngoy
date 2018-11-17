@@ -2,12 +2,11 @@ package org.ngoy.internal.parser.visitor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
-import org.jsoup.nodes.Node;
 import org.junit.Before;
 import org.junit.Test;
 import org.ngoy.internal.parser.Parser;
+
+import jodd.jerry.Jerry;
 
 public class SwitchToElseIfVisitorTest {
 
@@ -15,13 +14,11 @@ public class SwitchToElseIfVisitorTest {
 
 	@Before
 	public void beforeEach() {
-		visitor = new SwitchToElseIfVisitor(new DefaultNodeVisitor());
+		visitor = new SwitchToElseIfVisitor(new NodeVisitor.Default());
 	}
 
 	@Test
 	public void test() {
-
-		Parser parser = new Parser();
 
 		String template = "" //
 				+ "<div [ngSwitch]=\"emotion\">\n" + //
@@ -29,28 +26,13 @@ public class SwitchToElseIfVisitorTest {
 				"    <ng-template [ngSwitchCase]=\"'sad'\"><div>SAD</div></ng-template>\n" + //
 				"    <ng-template ngSwitchDefault><div>NONE</div></ng-template>" + //
 				"</div>";
-		List<Node> nodes = parser.parse(template, false);
+		Parser parser = new Parser();
+		Jerry nodes = parser.parse(template);
 
-		nodes.forEach(n -> n.traverse(visitor));
-		assertThat(nodes.get(0)
-				.toString()).isEqualTo("<div>\n" + //
-						" <ng-template ngIfForSwitch [ngIf]=\"emotion\" ngElseIfFirst-case0=\"'happy'\" ngElseIf-case1=\"'sad'\" ngElse=\"case2\"> \n" + //
-						"  <ng-template #case0>\n" + //
-						"   <div>\n" + //
-						"    HAPPY\n" + //
-						"   </div>\n" + //
-						"  </ng-template> \n" + //
-						"  <ng-template #case1>\n" + //
-						"   <div>\n" + //
-						"    SAD\n" + //
-						"   </div>\n" + //
-						"  </ng-template> \n" + //
-						"  <ng-template #case2>\n" + //
-						"   <div>\n" + //
-						"    NONE\n" + //
-						"   </div>\n" + //
-						"  </ng-template>\n" + //
-						" </ng-template>\n" + //
-						"</div>");
+		nodes.forEach(n -> XDom.traverse(n, visitor));
+		assertThat(XDom.getHtml(nodes)).isEqualTo("<div><ng-template ngIfForSwitch [ngIf]=\"emotion\" ngElseIfFirst-case0=\"'happy'\" ngElseIf-case1=\"'sad'\" ngElse=\"case2\"><div>\n" + //
+				"    <ng-template #case0><div>HAPPY</div></ng-template>\n" + //
+				"    <ng-template #case1><div>SAD</div></ng-template>\n" + //
+				"    <ng-template #case2><div>NONE</div></ng-template></div></ng-template></div>");
 	}
 }

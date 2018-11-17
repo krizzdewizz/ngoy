@@ -1,6 +1,5 @@
 package org.ngoy;
 
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.ngoy.core.NgoyException.wrap;
@@ -11,6 +10,7 @@ import static org.ngoy.core.Util.copyToString;
 import static org.ngoy.core.Util.getTemplate;
 import static org.ngoy.core.Util.isSet;
 import static org.ngoy.core.Util.newPrintStream;
+import static org.ngoy.internal.parser.visitor.XDom.matchesAttributeBinding;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.jsoup.nodes.Element;
 import org.ngoy.common.PipesModule;
 import org.ngoy.core.Component;
 import org.ngoy.core.Context;
@@ -56,6 +55,8 @@ import org.ngoy.internal.parser.ByteCodeTemplate;
 import org.ngoy.internal.parser.Parser;
 import org.ngoy.translate.TranslateModule;
 import org.ngoy.translate.TranslateService;
+
+import jodd.jerry.Jerry;
 
 public class Ngoy implements Renderer {
 	public static class Builder {
@@ -184,7 +185,6 @@ public class Ngoy implements Renderer {
 	private Injector injector;
 	private final TemplateCache cache;
 	private final Events events = new Events();
-	Boolean parseBody; // configurable for unit tests
 
 	protected Ngoy(Config config) {
 		this(Object.class, config, null, new Injector[0], new ModuleWithProviders[0]);
@@ -267,7 +267,7 @@ public class Ngoy implements Renderer {
 	private Resolver createResolver(Map<String, Provider> cmpDecls, Map<String, Provider> pipeDecls) {
 		return new Resolver() {
 			@Override
-			public List<CmpRef> resolveCmps(Element node) {
+			public List<CmpRef> resolveCmps(Jerry node) {
 				return cmpDecls.entrySet()
 						.stream()
 						.filter(entry -> {
@@ -277,11 +277,7 @@ public class Ngoy implements Renderer {
 							}
 
 							if (key.startsWith("[")) {
-								return node.is(format("[%s]", key)); // directive
-																		// name
-																		// same
-																		// as
-																		// @Input
+								return matchesAttributeBinding(node, key);
 							}
 
 							return false;
@@ -307,8 +303,8 @@ public class Ngoy implements Renderer {
 			}
 
 			@Override
-			public String resolveCmpClass(String cmpClass) {
-				return isSet(cmpClass) ? cmpClass : appRoot.getName();
+			public Class<?> resolveCmpClass(Class<?> cmpClass) {
+				return cmpClass != null ? cmpClass : appRoot;
 			}
 
 			@Override
@@ -436,7 +432,7 @@ public class Ngoy implements Renderer {
 
 	private Class<?> createTemplate(String className, Parser parser, String template, String contentType) {
 		ByteCodeTemplate bct = new ByteCodeTemplate(className, contentType);
-		parser.parse(template, bct, parseBody);
+		parser.parse(template, bct);
 		return bct.getClassFile()
 				.defineClass();
 	}

@@ -20,6 +20,7 @@ import org.cojen.classfile.Modifiers;
 import org.cojen.classfile.RuntimeClassFile;
 import org.cojen.classfile.TypeDesc;
 import org.ngoy.core.NgoyException;
+import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.Ctx;
 
 public class ByteCodeTemplate implements ParserHandler {
@@ -88,7 +89,7 @@ public class ByteCodeTemplate implements ParserHandler {
 	private static final TypeDesc[] singleStringParamType = new TypeDesc[] { TypeDesc.STRING };
 	private static final TypeDesc[] singleObjectParamType = new TypeDesc[] { TypeDesc.OBJECT };
 	private static final TypeDesc[] runParamTypes = new TypeDesc[] { ctxType };
-	private static final TypeDesc[] objectsEqualsParamTypes = new TypeDesc[] { TypeDesc.OBJECT, TypeDesc.OBJECT };
+	private static final TypeDesc[] ctxEqParamTypes = new TypeDesc[] { TypeDesc.OBJECT, TypeDesc.OBJECT };
 
 	private final LinkedList<Label> elementConditionals = new LinkedList<>();
 	private final LinkedList<Repeat> elementRepeated = new LinkedList<>();
@@ -432,10 +433,10 @@ public class ByteCodeTemplate implements ParserHandler {
 	}
 
 	@Override
-	public void componentStart(String clazz, List<String> params) {
+	public void componentStart(CmpRef cmpRef, List<String> params) {
 		LocalVariable paramsArray = toArray(params);
 		run.loadLocal(ctxParam);
-		run.loadConstant(clazz);
+		run.loadConstant(cmpRef.clazz.getName());
 		run.loadLocal(paramsArray);
 		run.invokeVirtual(ctxType, "pushCmpContext", null, pushCmpContextParamTypes);
 	}
@@ -510,7 +511,7 @@ public class ByteCodeTemplate implements ParserHandler {
 		run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
 
 		run.loadLocal(switchVar);
-		run.invokeStatic(ctxType, "eq", TypeDesc.BOOLEAN, objectsEqualsParamTypes);
+		run.invokeStatic(ctxType, "eq", TypeDesc.BOOLEAN, ctxEqParamTypes);
 		Label label = run.createLabel();
 		run.ifZeroComparisonBranch(label, "==");
 		return label;

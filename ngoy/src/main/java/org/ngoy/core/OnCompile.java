@@ -1,7 +1,7 @@
 package org.ngoy.core;
 
-import org.jsoup.nodes.Element;
+import jodd.jerry.Jerry;
 
 public interface OnCompile {
-	void ngOnCompile(Element el, String cmpClass);
+	void ngOnCompile(Jerry el, String cmpClass);
 }

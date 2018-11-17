@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.ngoy.core.Util;
+import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.Ctx;
 import org.ngoy.internal.parser.ForOfVariable;
 import org.ngoy.internal.parser.ParserHandler;
@@ -272,9 +273,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
-	public void componentStart(String clazz, List<String> params) {
+	public void componentStart(CmpRef cmpRef, List<String> params) {
 		String ps = flattenStrings(params);
-		$$("ctx.pushCmpContext(\"", clazz, "\"");
+		$$("ctx.pushCmpContext(\"", cmpRef.clazz.getName(), "\"");
 		if (!ps.isEmpty()) {
 			$$(",");
 			$$(ps);

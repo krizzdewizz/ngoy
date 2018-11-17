@@ -54,6 +54,10 @@ public class Ctx {
 		return new Ctx(modelRoot, injector);
 	}
 
+	public static boolean eq(Object a, Object b) {
+		return Objects.equals(a, b);
+	}
+
 	private final LinkedList<EvaluationContext> spelCtxs = new LinkedList<>();
 	private final Set<String> variables = new HashSet<>();
 	private final Object modelRoot;
@@ -127,10 +131,6 @@ public class Ctx {
 		return this;
 	}
 
-	public static boolean eq(Object a, Object b) {
-		return Objects.equals(a, b);
-	}
-
 	public Object eval(String expr, String[]... pipes) {
 		EvaluationContext peek = spelCtxs.peek();
 		try {
@@ -170,7 +170,8 @@ public class Ctx {
 	}
 
 	public boolean evalBool(String expr) {
-		Boolean result = (Boolean) eval(expr);
+		Object obj = eval(expr);
+		Boolean result = (Boolean) obj;
 		if (result != null) {
 			return result.booleanValue();
 		}
@@ -191,8 +192,7 @@ public class Ctx {
 				root = rootClass.getName();
 			}
 		}
-		throw new NgoyException(format("Error while converting result of expression '%s' to boolean: the result was null and null cannot be converted to boolean.  modelRoot: %s. templateUrl: %s.",
-				expr, root, templateUrl));
+		throw new NgoyException(format("Error while converting result of expression '%s' to boolean: the result was null and null cannot be converted to boolean.  modelRoot: %s. templateUrl: %s.", expr, root, templateUrl));
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -292,8 +292,7 @@ public class Ctx {
 					Object valueType = value == null ? null
 							: value.getClass()
 									.getName();
-					throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", clazz.getName(), field.getName(), expr,
-							fieldType, valueType);
+					throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", clazz.getName(), field.getName(), expr, fieldType, valueType);
 				}
 			}
 				break;
@@ -306,8 +305,7 @@ public class Ctx {
 					Object valueType = value == null ? null
 							: value.getClass()
 									.getName();
-					throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", clazz.getName(),
-							setter.getName(), expr, parameterType, valueType);
+					throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", clazz.getName(), setter.getName(), expr, parameterType, valueType);
 				}
 			}
 				break;

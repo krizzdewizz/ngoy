@@ -2,7 +2,6 @@ package org.ngoy.common.directive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.jsoup.nodes.Element;
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
 import org.ngoy.core.Component;
@@ -11,12 +10,14 @@ import org.ngoy.core.HostBinding;
 import org.ngoy.core.NgModule;
 import org.ngoy.core.OnCompile;
 
+import jodd.jerry.Jerry;
+
 public class DirectiveTest extends ANgoyTest {
 
 	@Directive(selector = "[makeBold]")
 	public static class MakeBoldCompileDirective implements OnCompile {
 		@Override
-		public void ngOnCompile(Element el, String cmpClass) {
+		public void ngOnCompile(Jerry el, String cmpClass) {
 			el.attr("style", "font-weight:bold");
 		}
 	}
@@ -28,7 +29,7 @@ public class DirectiveTest extends ANgoyTest {
 
 	@Test
 	public void testCompile() {
-		assertThat(render(Cmp.class)).isEqualTo("<a makebold style=\"font-weight:bold\">XX</a>");
+		assertThat(render(Cmp.class)).isEqualTo("<a makeBold style=\"font-weight:bold\">XX</a>");
 	}
 
 	//
@@ -52,7 +53,7 @@ public class DirectiveTest extends ANgoyTest {
 
 	@Test
 	public void testHostBinding() {
-		assertThat(render(CmpHostBinding.class)).isEqualTo("<a addbold addhref class=\"bold\" href=\"http://x\">XX</a>");
+		assertThat(render(CmpHostBinding.class)).isEqualTo("<a addBold addHref class=\"bold\" href=\"http://x\">XX</a>");
 	}
 
 }

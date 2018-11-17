@@ -4,12 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.ngoy.internal.parser.visitor.MicroSyntaxVisitor.parseVariables;
+import static org.ngoy.internal.parser.visitor.XDom.traverse;
 
-import java.util.List;
 import java.util.Map;
 
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,89 +16,70 @@ import org.ngoy.core.NgoyException;
 import org.ngoy.internal.parser.ForOfVariable;
 import org.ngoy.internal.parser.Parser;
 
+import jodd.jerry.Jerry;
+import jodd.lagarto.dom.Element;
+
 public class MicroSyntaxVisitorTest {
 
 	private MicroSyntaxVisitor visitor;
+	private Parser parser;
 
 	@Before
 	public void beforeEach() {
-		visitor = new MicroSyntaxVisitor(new DefaultNodeVisitor());
+		parser = new Parser();
+		visitor = new MicroSyntaxVisitor(new NodeVisitor.Default());
 	}
 
 	@Test
 	public void test() {
-		Parser parser = new Parser();
 
-		List<Node> nodes = parser.parse("<div *ngIf=\"true\">xx</div>", false);
+		Jerry nodes = parser.parse("<div *ngIf=\"true\">xx</div>");
 
-		nodes.forEach(n -> n.traverse(visitor));
+		traverse(nodes, visitor);
 		assertThat(nodes).hasSize(1);
-		Element el = (Element) nodes.get(0);
-		assertThat(el.nodeName()).isEqualTo("ng-template");
-		assertThat(el.attr("[ngIf]")).isEqualTo("true");
+		Element el = (Element) nodes.get(0)
+				.getChild(0);
+		assertThat(el.getNodeName()).isEqualTo("ng-template");
+		assertThat(el.getAttribute("[ngIf]")).isEqualTo("true");
 	}
 
 	@Test
 	public void testElse() {
-		Parser parser = new Parser();
+		Jerry nodes = parser.parse("<div *ngIf=\"true ; else qbert\">xx</div>");
 
-		List<Node> nodes = parser.parse("<div *ngIf=\"true ; else qbert\">xx</div>", false);
-
-		nodes.forEach(n -> n.traverse(visitor));
+		traverse(nodes, visitor);
 		assertThat(nodes).hasSize(1);
-		Element el = (Element) nodes.get(0);
-		assertThat(el.toString()).isEqualTo("<ng-template [ngIf]=\"true\" ngElse=\"qbert\">\n" + //
-				" <div>\n" + //
-				"  xx\n" + //
-				" </div>\n" + //
-				"</ng-template>");
+		assertThat(nodes.get(0)
+				.getHtml()).isEqualTo("<ng-template [ngIf]=\"true\" ngElse=\"qbert\"><div>xx</div></ng-template>");
 	}
 
 	@Test
 	public void testSwitchCase() {
-		Parser parser = new Parser();
+		Jerry nodes = parser.parse("<div *ngSwitchCase=\"'happy'\">HAPPY</div>");
 
-		List<Node> nodes = parser.parse("<div *ngSwitchCase=\"'happy'\">HAPPY</div>", false);
-
-		nodes.forEach(n -> n.traverse(visitor));
+		traverse(nodes, visitor);
 		assertThat(nodes).hasSize(1);
-		Element el = (Element) nodes.get(0);
-		assertThat(el.toString()).isEqualTo("<ng-template [ngSwitchCase]=\"'happy'\">\n" + //
-				" <div>\n" + //
-				"  HAPPY\n" + //
-				" </div>\n" + //
-				"</ng-template>");
+		assertThat(nodes.get(0)
+				.getHtml()).isEqualTo("<ng-template [ngSwitchCase]=\"'happy'\"><div>HAPPY</div></ng-template>");
 	}
 
 	@Test
 	public void testSwitchDefault() {
-		Parser parser = new Parser();
+		Jerry nodes = parser.parse("<div *ngSwitchDefault>HAPPY</div>");
 
-		List<Node> nodes = parser.parse("<div *ngSwitchDefault>HAPPY</div>", false);
-
-		nodes.forEach(n -> n.traverse(visitor));
+		traverse(nodes, visitor);
 		assertThat(nodes).hasSize(1);
-		Element el = (Element) nodes.get(0);
-		assertThat(el.toString()).isEqualTo("<ng-template ngSwitchDefault>\n" + //
-				" <div>\n" + //
-				"  HAPPY\n" + //
-				" </div>\n" + //
-				"</ng-template>");
+		assertThat(nodes.get(0)
+				.getHtml()).isEqualTo("<ng-template ngSwitchDefault><div>HAPPY</div></ng-template>");
 	}
 
 	@Test
 	public void testFor() {
-		Parser parser = new Parser();
+		Jerry nodes = parser.parse("<div *ngFor=\"let p of persons; index as i; first as f; last as l; even as e; odd as o\">xx</div>");
 
-		List<Node> nodes = parser.parse("<div *ngFor=\"let p of persons; index as i; first as f; last as l; even as e; odd as o\">xx</div>", false);
-
-		nodes.forEach(n -> n.traverse(visitor));
-		Element el = (Element) nodes.get(0);
-		assertThat(el.toString()).isEqualTo("<ng-template ngFor let-p [ngForOf]=\"persons\" let-i=\"index\" let-f=\"first\" let-l=\"last\" let-e=\"even\" let-o=\"odd\">\n" + //
-				" <div>\n" + //
-				"  xx\n" + //
-				" </div>\n" + //
-				"</ng-template>");
+		traverse(nodes, visitor);
+		assertThat(nodes.get(0)
+				.getHtml()).isEqualTo("<ng-template ngFor let-p [ngForOf]=\"persons\" let-i=\"index\" let-f=\"first\" let-l=\"last\" let-e=\"even\" let-o=\"odd\"><div>xx</div></ng-template>");
 	}
 
 	@Test

@@ -6,14 +6,15 @@ import static java.util.Collections.emptySet;
 import java.util.List;
 import java.util.Set;
 
-import org.jsoup.nodes.Element;
 import org.ngoy.core.Injector;
+
+import jodd.jerry.Jerry;
 
 public interface Resolver {
 	Resolver DEFAULT = new Resolver() {
 
 		@Override
-		public List<CmpRef> resolveCmps(Element element) {
+		public List<CmpRef> resolveCmps(Jerry element) {
 			return emptyList();
 		}
 
@@ -28,7 +29,7 @@ public interface Resolver {
 		}
 
 		@Override
-		public String resolveCmpClass(String cmpClass) {
+		public Class<?> resolveCmpClass(Class<?> cmpClass) {
 			return null;
 		}
 
@@ -40,11 +41,11 @@ public interface Resolver {
 
 	Injector getInjector();
 
-	List<CmpRef> resolveCmps(Element element);
+	List<CmpRef> resolveCmps(Jerry element);
 
 	Class<?> resolvePipe(String name);
 
-	String resolveCmpClass(String cmpClass);
+	Class<?> resolveCmpClass(Class<?> cmpClass);
 
 	Set<Class<?>> getCmpClasses();
 }

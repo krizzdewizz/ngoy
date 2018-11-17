@@ -37,12 +37,10 @@ public abstract class ANgoyTest {
 
 	protected String render(Class<?> clazz, Function<Ngoy.Builder, Ngoy.Builder> onBuild, Provider... providers) {
 		try {
-
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			Builder builder = app(clazz).providers(providers);
 			Ngoy app = onBuild.apply(builder)
 					.build();
-			app.parseBody = true;
 			app.render(baos);
 			app.destroy();
 			String html = new String(baos.toByteArray(), "UTF-8");

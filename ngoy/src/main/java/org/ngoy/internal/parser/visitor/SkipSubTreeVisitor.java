@@ -1,33 +1,34 @@
 package org.ngoy.internal.parser.visitor;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.NodeVisitor;
+import jodd.jerry.Jerry;
+import jodd.lagarto.dom.Document;
 
 public class SkipSubTreeVisitor implements NodeVisitor {
 
 	private final NodeVisitor target;
 	private boolean skip;
-	private Node skipNode;
+	private Jerry skipNode;
 
 	public SkipSubTreeVisitor(NodeVisitor target) {
 		this.target = target;
 	}
 
-	public void skipSubTree(Node node) {
+	public void skipSubTree(Jerry node) {
 		this.skipNode = node;
 	}
 
-	private boolean skip(Node node) {
-		return node instanceof Document || skip;
+	private boolean skip(Jerry node) {
+		return skip || node.get(0) instanceof Document;
 	}
 
-	public boolean shallSkip(Node node) {
-		return skipNode != null && skipNode.equals(node.parent());
+	public boolean shallSkip(Jerry node) {
+		return skipNode != null && skipNode.get(0)
+				.equals(node.parent()
+						.get(0));
 	}
 
 	@Override
-	public void head(Node node, int depth) {
+	public void head(Jerry node, int depth) {
 		if (skip(node)) {
 			return;
 		}
@@ -41,7 +42,7 @@ public class SkipSubTreeVisitor implements NodeVisitor {
 	}
 
 	@Override
-	public void tail(Node node, int depth) {
+	public void tail(Jerry node, int depth) {
 		if (shallSkip(node)) {
 			skip = false;
 			return;

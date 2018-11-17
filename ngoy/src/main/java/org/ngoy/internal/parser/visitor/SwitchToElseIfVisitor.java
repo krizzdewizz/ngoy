@@ -2,12 +2,10 @@ package org.ngoy.internal.parser.visitor;
 
 import static java.lang.String.format;
 import static org.ngoy.internal.parser.Parser.NG_TEMPLATE;
+import static org.ngoy.internal.parser.visitor.XDom.cloneNode;
 
-import java.util.ArrayList;
-
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.NodeVisitor;
+import jodd.jerry.Jerry;
+import jodd.lagarto.dom.Element;
 
 public class SwitchToElseIfVisitor implements NodeVisitor {
 
@@ -19,30 +17,28 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 	}
 
 	@Override
-	public void head(Node node, int depth) {
-		if (node instanceof Element) {
+	public void head(Jerry el, int depth) {
+		if (el.get(0) instanceof Element) {
 
-			Element el = (Element) node;
 			String ngSwitch = el.attr("[ngSwitch]");
-			if (ngSwitch.isEmpty()) {
-				src.head(node, depth);
+			if (ngSwitch == null) {
+				src.head(el, depth);
 				return;
 			}
 
 			el.removeAttr("[ngSwitch]");
 
-			Element elClone = el.clone();
+			Jerry elClone = cloneNode(el);
 
-			Element tpl = el.ownerDocument()
-					.createElement(NG_TEMPLATE);
-			new ArrayList<>(el.childNodes()).forEach(Node::remove);
-			el.appendChild(tpl);
+			Jerry tpl = XDom.createElement(NG_TEMPLATE);
+			XDom.removeContents(el);
+			XDom.appendChild(el, tpl);
 
 			tpl.attr("ngIfForSwitch", null);
 			tpl.attr("[ngIf]", ngSwitch);
 
 			int i = 0;
-			for (Element casee : elClone.select("[[ngSwitchCase]]")) {
+			for (Jerry casee : elClone.$("[\\[ngSwitchCase\\]]")) {
 				String caseExpr = casee.attr("[ngSwitchCase]");
 				String ref = nextRef();
 				String tag = i == 0 ? "ngElseIfFirst" : "ngElseIf";
@@ -52,18 +48,20 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 				i++;
 			}
 
-			Element def = elClone.selectFirst("[ngSwitchDefault]");
-			if (def != null) {
+			Jerry def = elClone.$("[ngSwitchDefault]")
+					.first();
+			if (def.length() > 0) {
 				String ref = nextRef();
 				tpl.attr("ngElse", ref);
 				def.attr(format("#%s", ref), null);
 				def.removeAttr("ngSwitchDefault");
 			}
 
-			tpl.insertChildren(0, elClone.childNodes());
+			tpl.get(0)
+					.insertChild(elClone.get(0), 0);
 		}
 
-		src.head(node, depth);
+		src.head(el, depth);
 	}
 
 	private String nextRef() {
@@ -71,7 +69,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 	}
 
 	@Override
-	public void tail(Node node, int depth) {
+	public void tail(Jerry node, int depth) {
 		src.tail(node, depth);
 	}
 

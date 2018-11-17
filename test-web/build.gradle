@@ -26,7 +26,8 @@ repositories {
 
 dependencies {
 	implementation('org.springframework.boot:spring-boot-starter-web')
- 	implementation 'org.jsoup:jsoup:1.11.3'
+	implementation 'org.jodd:jodd-lagarto:5.0.6'
+	implementation 'org.jodd:jodd-jerry:5.0.6'
 	implementation 'org.cojen:cojen:2.2.5'
 
 	testImplementation('org.springframework.boot:spring-boot-starter-test')

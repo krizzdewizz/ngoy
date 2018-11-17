@@ -8,22 +8,24 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.jsoup.nodes.Element;
 import org.ngoy.core.Directive;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.OnCompile;
 import org.ngoy.core.Util;
 
+import jodd.jerry.Jerry;
+
 @Directive(selector = "[ngoyFormPost]")
 public class FormPostActionDirective implements OnCompile {
 
 	@Override
-	public void ngOnCompile(Element el, String cmpClass) {
+	public void ngOnCompile(Jerry el, String cmpClass) {
 		try {
 			String controllerMethod = el.attr("ngoyFormPost");
 
 			if (controllerMethod.isEmpty()) {
-				throw new NgoyException("'ngoyFormPost' attribute must not be empty on '%s'", el.cssSelector());
+				throw new NgoyException("'ngoyFormPost' attribute must not be empty on '%s'", el.get(0)
+						.getCssPath());
 			}
 
 			Class<?> clazz = Thread.currentThread()

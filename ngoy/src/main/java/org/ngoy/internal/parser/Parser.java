@@ -1,9 +1,12 @@
 package org.ngoy.internal.parser;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static org.ngoy.core.NgoyException.wrap;
 import static org.ngoy.core.Util.isSet;
+import static org.ngoy.internal.parser.visitor.XDom.attributes;
+import static org.ngoy.internal.parser.visitor.XDom.createElement;
+import static org.ngoy.internal.parser.visitor.XDom.nodeName;
+import static org.ngoy.internal.parser.visitor.XDom.traverse;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,14 +17,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.CDataNode;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
-import org.jsoup.select.NodeVisitor;
+import org.ngoy.core.Component;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.Nullable;
 import org.ngoy.core.OnCompile;
@@ -29,46 +25,66 @@ import org.ngoy.core.PipeTransform;
 import org.ngoy.core.internal.CmpRef;
 import org.ngoy.core.internal.ContainerComponent;
 import org.ngoy.core.internal.Resolver;
-import org.ngoy.internal.parser.visitor.DefaultVisitor;
+import org.ngoy.internal.parser.lagarto.NgoyDomBuilder;
+import org.ngoy.internal.parser.lagarto.NgoyElement;
 import org.ngoy.internal.parser.visitor.MicroSyntaxVisitor;
+import org.ngoy.internal.parser.visitor.NodeVisitor;
 import org.ngoy.internal.parser.visitor.SkipSubTreeVisitor;
 import org.ngoy.internal.parser.visitor.SwitchToElseIfVisitor;
 
+import jodd.jerry.Jerry;
+import jodd.lagarto.dom.Attribute;
+import jodd.lagarto.dom.CData;
+import jodd.lagarto.dom.Element;
+import jodd.lagarto.dom.LagartoDOMBuilder;
+import jodd.lagarto.dom.Node;
+import jodd.lagarto.dom.Text;
+
 public class Parser {
 
-	static Document parseHtml(String template) {
+	public static Jerry parseHtml(String template) {
 		try {
-			return Jsoup.parse(template, "");
+			LagartoDOMBuilder domBuilder = new NgoyDomBuilder();
+
+			Jerry doc = Jerry.jerry(domBuilder)
+					.parse(template);
+			return doc;
 		} catch (Exception e) {
 			throw wrap(e);
 		}
 	}
 
-	public List<Node> parse(String template, boolean forceNoText) {
+	public Jerry parse(String template) {
 		try {
-			boolean text = "text/plain".equals(contentType);
-			if (text && !forceNoText) {
-				template = format("<![CDATA[%s]]>", template);
+			Jerry doc = parseHtml(template);
+
+			if ("text/plain".equals(contentType)) {
+				doc = parseHtml(ForOfMicroParser.parse(doc.get(0)
+						.getHtml()));
 			}
-			Document doc = Jsoup.parseBodyFragment(template);
-			return doc.body()
-					.childNodes();
+
+			return doc;
 		} catch (Exception e) {
 			throw wrap(e);
 		}
 	}
 
 	private class Visitor implements NodeVisitor {
+
+		Jerry currentEl;
+
 		@Override
-		public void head(Node node, int depth) {
+		public void head(Jerry node, int depth) {
+			currentEl = node;
 			replaceExprs(node);
 		}
 
 		@Override
-		public void tail(Node node, int depth) {
-			if (node instanceof Element) {
-				endElement((Element) node);
+		public void tail(Jerry node, int depth) {
+			if (node.get(0) instanceof Element) {
+				endElement(node);
 			}
+			currentEl = null;
 		}
 	}
 
@@ -80,21 +96,22 @@ public class Parser {
 	private static final Pattern NG_CONTAINER_PATTERN = Pattern.compile("<ng-container(.*)>((.|\\s)*)</ng-container>", Pattern.MULTILINE);
 	private static final Pattern NG_FOR_PATTERN = Pattern.compile("\\*ngFor=\"(.*)\"");
 
-	private final LinkedList<Element> elementConditionals = new LinkedList<>();
-	private final LinkedList<Element> elementRepeated = new LinkedList<>();
+	private final LinkedList<Jerry> elementConditionals = new LinkedList<>();
+	private final LinkedList<Jerry> elementRepeated = new LinkedList<>();
 	public boolean inlineComponents;
 	public String contentType;
 
-	final Set<Element> cmpElements = new HashSet<>();
+	final Set<Jerry> cmpElements = new HashSet<>();
 	MyHandler handler;
 	private Resolver resolver;
 	private final CmpRefParser cmpRefParser;
 
 	NodeVisitor visitor;
 	SkipSubTreeVisitor skipSubTreeVisitor;
+	Visitor replacingVisitor;
 
 	static class MyHandler extends ParserHandler.Delegate {
-		final LinkedList<String> cmpClassesStack = new LinkedList<>();
+		final LinkedList<CmpRef> cmpClassesStack = new LinkedList<>();
 		private String textOverrideExpr;
 
 		public MyHandler(ParserHandler target) {
@@ -102,9 +119,9 @@ public class Parser {
 		}
 
 		@Override
-		public void componentStart(String clazz, List<String> params) {
-			super.componentStart(clazz, params);
-			cmpClassesStack.push(clazz);
+		public void componentStart(CmpRef cmpRef, List<String> params) {
+			super.componentStart(cmpRef, params);
+			cmpClassesStack.push(cmpRef);
 		}
 
 		@Override
@@ -137,55 +154,60 @@ public class Parser {
 		this.resolver = resolver == null ? Resolver.DEFAULT : resolver;
 	}
 
-	public void parse(String template, ParserHandler handler, Boolean parseBody) {
+	public void parse(String template, ParserHandler handler) {
 
 		Objects.requireNonNull(template, "template must not be null.");
 
 		this.handler = new MyHandler(handler);
-		skipSubTreeVisitor = new SkipSubTreeVisitor(new Visitor());
+		replacingVisitor = new Visitor();
+		skipSubTreeVisitor = new SkipSubTreeVisitor(replacingVisitor);
 		visitor = new MicroSyntaxVisitor(new SwitchToElseIfVisitor(skipSubTreeVisitor));
 
-		boolean body = parseBody == null ? "text/plain".equals(contentType) : parseBody.booleanValue();
+		Jerry nodes = parse(template);
 
-		List<Node> nodes = body ? parse(template, false) : asList(parseHtml(template));
-
-		acceptDocument(nodes);
+		try {
+			acceptDocument(nodes);
+		} catch (Exception e) {
+			String message = e.getMessage();
+			throw new NgoyException(e, "Error while parsing: %s%s", isSet(message) ? message : e, exceptionInfo());
+		}
 	}
 
-	private void acceptDocument(List<Node> nodes) {
+	private void acceptDocument(Jerry nodes) {
 		this.handler.documentStart();
 		accept(nodes);
 		this.handler.documentEnd();
 	}
 
-	private void replaceExprs(Node node) {
-		if (node instanceof CDataNode) {
-			replaceCData(node);
-		} else if (node instanceof TextNode) {
-			replaceExpr(((TextNode) node).text());
-		} else if (node instanceof Element) {
+	private void replaceExprs(Jerry node) {
+		Node n = node.get(0);
+		if (n instanceof CData) {
+			replaceCData((CData) n);
+		} else if (n instanceof Text) {
+			replaceExpr(((Text) n).getTextContent());
+		} else if (n instanceof Element) {
 			replaceElement(node, true);
 		}
 	}
 
-	private void replaceCData(Node node) {
-		String text = ((CDataNode) node).text();
+	private void replaceCData(CData node) {
+		String text = node.getTextContent();
 
 		text = ForOfMicroParser.parse(text);
 
-		Element el;
+		Jerry el;
 		String content;
 		Matcher matcher = NG_CONTAINER_PATTERN.matcher(text);
 		if (matcher.find()) {
-			el = node.ownerDocument()
-					.createElement(NG_TEMPLATE);
+			el = createElement(NG_TEMPLATE);
 			content = matcher.group(2);
 			Matcher forMatcher = NG_FOR_PATTERN.matcher(matcher.group(1));
 			if (forMatcher.find()) {
 				el.attr("*ngFor", forMatcher.group(1));
 			}
 
-			el.traverse(new MicroSyntaxVisitor(new DefaultVisitor()));
+			traverse(el, new MicroSyntaxVisitor(new NodeVisitor.Default()));
+
 		} else {
 			content = text;
 			el = null;
@@ -203,13 +225,11 @@ public class Parser {
 		}
 	}
 
-	private boolean replaceElement(Node node, boolean acceptChildren) {
-		Element el = (Element) node;
+	private boolean replaceElement(Jerry el, boolean acceptChildren) {
 
-		if (el.nodeName()
-				.equals(NG_TEMPLATE)) {
+		if (nodeName(el).equals(NG_TEMPLATE)) {
 			String ngIf = el.attr("[ngIf]");
-			if (!ngIf.isEmpty()) {
+			if (ngIf != null) {
 				replaceNgIf(el, ngIf);
 			} else if (ForOfVariable.parse(el, handler::elementRepeatedStart)) {
 				elementRepeated.push(el);
@@ -224,9 +244,6 @@ public class Parser {
 		compileCmps(cmpRefs, el);
 
 		boolean hasCmps = cmpRefParser.acceptCmpRefs(el, cmpRefs, acceptChildren);
-		if (!hasCmps) {
-			acceptSpecialElementsContent(el);
-		}
 
 		if (isSet(handler.textOverrideExpr)) {
 			skipSubTreeVisitor.skipSubTree(el);
@@ -236,53 +253,51 @@ public class Parser {
 		return hasCmps;
 	}
 
-	private void replaceNgIf(Element el, String ngIf) {
+	private void replaceNgIf(Jerry el, String ngIf) {
 		elementConditionals.push(el);
 
-		boolean isSwitch = el.hasAttr("ngIfForSwitch");
+		Node ell = el.get(0);
+		boolean isSwitch = ell.hasAttribute("ngIfForSwitch");
 		String firstCaseTpl = "";
 		String switchExpr = "";
 		if (isSwitch) {
-			for (Attribute a : el.attributes()) {
-				if (a.getKey()
+			for (Attribute attr : attributes(el)) {
+				if (attr.getName()
 						.startsWith("ngElseIfFirst-")) {
-					firstCaseTpl = a.getKey()
+					firstCaseTpl = attr.getName()
 							.substring("ngElseIfFirst-".length());
-					switchExpr = a.getValue();
+					switchExpr = attr.getValue();
 					break;
 				}
 			}
 
 			if (switchExpr.isEmpty()) {
-				throw new NgoyException("ngSwitch must have at least one ngSwitchCase: %s", el.cssSelector());
+				throw new NgoyException("ngSwitch must have at least one ngSwitchCase: %s", ell.getCssPath());
 			}
 		}
 		handler.elementConditionalStart(ngIf, switchExpr);
 		if (!switchExpr.isEmpty()) {
-			skipSubTreeVisitor.skipSubTree(null);
-			accept(findTemplate(firstCaseTpl, el.ownerDocument()).childNodes());
+			acceptTemplate(firstCaseTpl, el.root());
 		}
 	}
 
-	void accept(List<Node> nodes) {
-		nodes.forEach(n -> n.traverse(visitor));
+	public void accept(List<Jerry> nodes) {
+		nodes.forEach(this::accept);
 	}
 
-	private void acceptSpecialElementsContent(Element el) {
-		String nodeName = el.nodeName();
-		if (nodeName.equals("script")) {
-			el.childNodes()
-					.forEach(c -> handler.text(c.toString(), false, null));
-		}
+	public void accept(Jerry nodes) {
+		traverse(nodes, visitor);
 	}
 
-	private Element findTemplate(String ref, Document document) {
-		Element template = document.selectFirst(format("%s[#%s]", NG_TEMPLATE, ref));
-		if (template == null) {
+	private void acceptTemplate(String ref, Jerry document) {
+		Jerry template = document.$(format("%s[\\#%s]", NG_TEMPLATE, ref))
+				.first();
+		if (template.length() == 0) {
 			throw new ParseException("No <%s> found for name %s", NG_TEMPLATE, ref);
 		}
 
-		return template;
+		skipSubTreeVisitor.skipSubTree(null);
+		accept(template.contents());
 	}
 
 	void replaceExpr(@Nullable String text) {
@@ -330,19 +345,18 @@ public class Parser {
 		handler.text(exprHead, true, pipes);
 	}
 
-	private void elementConditionalElse(Element el) {
+	private void elementConditionalElse(Jerry el) {
 		String ngElse = el.attr(NG_ELSE);
-		if (ngElse.isEmpty()) {
+		if (ngElse == null) {
 			return;
 		}
 		handler.elementConditionalElse();
-		skipSubTreeVisitor.skipSubTree(null);
-		accept(findTemplate(ngElse, el.ownerDocument()).childNodes());
+		acceptTemplate(ngElse, el.root());
 	}
 
-	private void elementConditionalElseIf(Element el) {
-		for (Attribute attr : el.attributes()) {
-			String name = attr.getKey();
+	private void elementConditionalElseIf(Jerry el) {
+		for (Attribute attr : attributes(el)) {
+			String name = attr.getName();
 			if (!name.startsWith("ngElseIf-")) {
 				continue;
 			}
@@ -351,39 +365,36 @@ public class Parser {
 			String expr = attr.getValue();
 
 			handler.elementConditionalElseIf(expr);
-			skipSubTreeVisitor.skipSubTree(null);
-			accept(findTemplate(tpl, el.ownerDocument()).childNodes());
+			acceptTemplate(tpl, el.root());
 		}
 	}
 
-	private void compileCmps(List<CmpRef> cmpRefs, Element el) {
+	private void compileCmps(List<CmpRef> cmpRefs, Jerry el) {
 		for (CmpRef cmpRef : cmpRefs) {
 			Object cmp = resolver.getInjector()
 					.get(cmpRef.clazz);
 
 			if (cmp instanceof OnCompile) {
-				String cmpClass = resolver.resolveCmpClass(handler.cmpClassesStack.peek());
-				((OnCompile) cmp).ngOnCompile(el, cmpClass);
+				((OnCompile) cmp).ngOnCompile(el, topCmpClass().getName());
 			}
 		}
 	}
 
-	boolean inlineComponent(Element el) {
+	boolean inlineComponent(Jerry el) {
 		return inlineComponents || el.is(ContainerComponent.SELECTOR);
 	}
 
-	private void endElement(Element el) {
-		if (!el.tag()
-				.isSelfClosing()
-				&& !el.nodeName()
-						.equals(NG_TEMPLATE)) {
+	private void endElement(Jerry el) {
+		Element ell = (Element) el.get(0);
+		String nodeName = ell.getNodeName();
+		if (!ell.isVoidElement() && !nodeName.equals(NG_TEMPLATE)) {
 
 			if (inlineComponent(el)) {
 				if (!cmpElements.remove(el)) {
-					handler.elementEnd(el.nodeName());
+					handler.elementEnd(nodeName);
 				}
 			} else {
-				handler.elementEnd(el.nodeName());
+				handler.elementEnd(nodeName);
 			}
 		}
 
@@ -398,5 +409,33 @@ public class Parser {
 			elementRepeated.pop();
 			handler.elementRepeatedEnd();
 		}
+	}
+
+	Class<?> topCmpClass() {
+		CmpRef peek = handler.cmpClassesStack.peek();
+		return resolver.resolveCmpClass(peek == null ? null : peek.clazz);
+	}
+
+	String exceptionInfo() {
+		CmpRef peek = handler.cmpClassesStack.peek();
+		Class<?> topCmpClass = null;
+		String templateUrl = "";
+		String className = "";
+		Jerry currentEl = replacingVisitor.currentEl;
+		String position = currentEl == null ? ""
+				: NgoyElement.get(currentEl)
+						.getPosition();
+		if (peek != null) {
+			topCmpClass = topCmpClass();
+			if (topCmpClass != null) {
+				className = topCmpClass.getName();
+				Component cmp = topCmpClass.getAnnotation(Component.class);
+				if (cmp != null) {
+					templateUrl = cmp.templateUrl();
+				}
+			}
+		}
+
+		return format("\nComponent: %s\ntemplateUrl: %s\nposition: %s", className, templateUrl, position);
 	}
 }

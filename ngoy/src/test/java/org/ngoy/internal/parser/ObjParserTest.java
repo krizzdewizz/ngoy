@@ -1,12 +1,10 @@
-package org.ngoy.parser;
-
+package org.ngoy.internal.parser;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 
 import org.junit.Test;
-import org.ngoy.internal.parser.ObjParser;
 
 public class ObjParserTest {
 	@Test

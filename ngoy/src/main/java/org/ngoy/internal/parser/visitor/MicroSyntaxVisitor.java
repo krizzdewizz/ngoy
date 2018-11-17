@@ -3,8 +3,10 @@ package org.ngoy.internal.parser.visitor;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.ngoy.internal.parser.Parser.NG_TEMPLATE;
+import static org.ngoy.internal.parser.visitor.XDom.appendChild;
+import static org.ngoy.internal.parser.visitor.XDom.cloneNode;
+import static org.ngoy.internal.parser.visitor.XDom.removeContents;
 
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -12,14 +14,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.NodeVisitor;
 import org.ngoy.core.NgoyException;
 import org.ngoy.internal.parser.ForOfVariable;
 import org.ngoy.internal.parser.ParseException;
+import org.ngoy.internal.parser.lagarto.NgoyElement;
 
-public class MicroSyntaxVisitor extends DefaultVisitor {
+import jodd.jerry.Jerry;
+import jodd.lagarto.dom.Element;
+
+public class MicroSyntaxVisitor extends NodeVisitor.Default {
 
 	private static final Pattern FOR_OF_PATTERN = Pattern.compile("let\\s*(.*)\\s*of\\s*(.*)");
 	private static final Pattern VAR_DECL_PATTERN = Pattern.compile("(.*)\\s*as\\s*(.*)");
@@ -31,40 +34,39 @@ public class MicroSyntaxVisitor extends DefaultVisitor {
 	}
 
 	@Override
-	public void head(Node node, int depth) {
-		if (node instanceof Element) {
-			Element el = (Element) node;
+	public void head(Jerry el, int depth) {
+		if (el.get(0) instanceof Element) {
 			replaceNgIf(el);
 			replaceNgFor(el);
 			replaceSwitchCase(el);
 			replaceSwitchDefault(el);
 		}
 
-		src.head(node, depth);
+		src.head(el, depth);
 	}
 
-	private void replaceSwitchCase(Element el) {
+	private void replaceSwitchCase(Jerry el) {
 		replaceWithTemplate(el, "*ngSwitchCase", "[ngSwitchCase]");
 	}
 
-	private void replaceSwitchDefault(Element el) {
+	private void replaceSwitchDefault(Jerry el) {
 		replaceWithTemplate(el, "*ngSwitchDefault", "ngSwitchDefault");
 	}
 
-	private void replaceNgFor(Element el) {
+	private void replaceNgFor(Jerry el) {
 		String ngFor = el.attr("*ngFor");
-		if (ngFor.isEmpty()) {
+		if (ngFor == null) {
 			return;
 		}
 		el.removeAttr("*ngFor");
 		String[] itemAndListName = parseNgFor(ngFor);
 
-		Element elClone = el.clone();
+		Jerry elClone = cloneNode(el);
 
-		new ArrayList<>(el.childNodes()).forEach(Node::remove);
-		el.tagName(NG_TEMPLATE);
-		el.attr("ngFor", true);
-		el.attr(format("let-%s", itemAndListName[0]), true);
+		removeContents(el);
+		((NgoyElement) el.get(0)).setNodeName(NG_TEMPLATE);
+		el.attr("ngFor", null);
+		el.attr(format("let-%s", itemAndListName[0]), null);
 		el.attr("[ngForOf]", itemAndListName[1]);
 
 		Map<ForOfVariable, String> vars = parseVariables(ngFor);
@@ -73,18 +75,18 @@ public class MicroSyntaxVisitor extends DefaultVisitor {
 					.name());
 		}
 
-		el.appendChild(elClone);
+		appendChild(el, elClone);
 	}
 
-	private void replaceNgIf(Element el) {
+	private void replaceNgIf(Jerry el) {
 		String ngIf = el.attr("*ngIf");
-		if (ngIf.isEmpty()) {
+		if (ngIf == null) {
 			return;
 		}
 
 		el.removeAttr("*ngIf");
 
-		Element elClone = el.clone();
+		Jerry elClone = cloneNode(el);
 
 		String[] splits = ngIf.split(";");
 		for (int i = 0, n = splits.length; i < n; i++) {
@@ -106,13 +108,13 @@ public class MicroSyntaxVisitor extends DefaultVisitor {
 			}
 		}
 
-		el.tagName(NG_TEMPLATE);
-		new ArrayList<>(el.childNodes()).forEach(Node::remove);
-		el.appendChild(elClone);
+		((NgoyElement) el.get(0)).setNodeName(NG_TEMPLATE);
+		removeContents(el);
+		appendChild(el, elClone);
 	}
 
 	@Override
-	public void tail(Node node, int depth) {
+	public void tail(Jerry node, int depth) {
 		src.tail(node, depth);
 	}
 
@@ -173,19 +175,20 @@ public class MicroSyntaxVisitor extends DefaultVisitor {
 		return result;
 	}
 
-	private void replaceWithTemplate(Element el, String microAttr, String replacedAttr) {
-		if (!el.hasAttr(microAttr)) {
+	private void replaceWithTemplate(Jerry el, String microAttr, String replacedAttr) {
+		if (!el.get(0)
+				.hasAttribute(microAttr)) {
 			return;
 		}
 		String value = el.attr(microAttr);
+
 		el.removeAttr(microAttr);
+		Jerry elClone = cloneNode(el);
 
-		Element elClone = el.clone();
+		el.attr(replacedAttr, value);
 
-		el.attr(replacedAttr, value.isEmpty() ? null : value);
-
-		el.tagName(NG_TEMPLATE);
-		new ArrayList<>(el.childNodes()).forEach(Node::remove);
-		el.appendChild(elClone);
+		((NgoyElement) el.get(0)).setNodeName(NG_TEMPLATE);
+		removeContents(el);
+		appendChild(el, elClone);
 	}
 }

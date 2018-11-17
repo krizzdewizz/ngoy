@@ -4,17 +4,20 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
 import static org.ngoy.internal.parser.Inputs.cmpInputs;
+import static org.ngoy.internal.parser.visitor.XDom.classNames;
+import static org.ngoy.internal.parser.visitor.XDom.nodeName;
+import static org.ngoy.internal.parser.visitor.XDom.traverse;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import org.ngoy.core.Nullable;
 import org.ngoy.core.internal.CmpRef;
+
+import jodd.jerry.Jerry;
+import jodd.lagarto.dom.Node;
 
 public class CmpRefParser {
 
@@ -34,10 +37,9 @@ public class CmpRefParser {
 		this.parser = parser;
 	}
 
-	boolean acceptCmpRefs(Element el, List<CmpRef> cmpRefs, boolean acceptChildren) {
+	boolean acceptCmpRefs(Jerry el, List<CmpRef> cmpRefs, boolean acceptChildren) {
 
-		List<String[]> classNames = el.classNames()
-				.stream()
+		List<String[]> classNames = classNames(el).stream()
 				.map(it -> new String[] { it, "" })
 				.collect(toList());
 		List<String[]> attrNames = new ArrayList<>();
@@ -46,7 +48,7 @@ public class CmpRefParser {
 			if (parser.inlineComponent(el)) {
 				parser.cmpElements.add(el);
 			} else {
-				parser.handler.elementHead(el.nodeName());
+				parser.handler.elementHead(nodeName(el));
 				AttributeBinding.replaceAttrs(parser, el, emptySet(), classNames, attrNames);
 				AttributeBinding.replaceAttrExpr(parser, classNames, attrNames);
 				parser.handler.elementHeadEnd();
@@ -67,14 +69,14 @@ public class CmpRefParser {
 		boolean hadElementHead = false;
 
 		if (!allDirs.isEmpty()) {
-			parser.handler.elementHead(el.nodeName());
+			parser.handler.elementHead(nodeName(el));
 			AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames);
 			AttributeBinding.replaceAttrExpr(parser, classNames, attrNames);
 			hadElementHead = true;
 
 			int i = 0;
 			for (CmpRef ref : allDirs) {
-				parser.handler.componentStart(ref.clazz.getName(), dirInputs.get(i));
+				parser.handler.componentStart(ref, dirInputs.get(i));
 
 				List<String[]> cNames = new ArrayList<>();
 				List<String[]> aNames = new ArrayList<>();
@@ -91,13 +93,13 @@ public class CmpRefParser {
 
 		if (!allCmps.isEmpty()) {
 			CmpRef ref = allCmps.get(0);
-			parser.handler.componentStart(ref.clazz.getName(), cmpInputs);
+			parser.handler.componentStart(ref, cmpInputs);
 
 			if (parser.inlineComponent(el)) {
 				parser.cmpElements.add(el);
 			} else {
 				if (!hadElementHead) {
-					parser.handler.elementHead(el.nodeName());
+					parser.handler.elementHead(nodeName(el));
 					AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames);
 					AttributeBinding.replaceAttrExpr(parser, classNames, attrNames);
 				}
@@ -121,29 +123,40 @@ public class CmpRefParser {
 		return true;
 	}
 
-	private void acceptCmpRef(Element el, CmpRef ref, boolean acceptChildren) {
-		List<Node> cmpNodes = parser.parse(ref.template, true);
+	private void acceptCmpRef(Jerry el, CmpRef ref, boolean acceptChildren) {
+		Jerry cmpNodes = parser.parse(ref.template);
 
-		Element ngContentEl = findNgContent(cmpNodes);
+		Jerry ngContentEl = findNgContent(cmpNodes);
 
-		if (ngContentEl == null) {
+		if (ngContentEl.length() == 0) {
 			parser.accept(cmpNodes);
 			return;
 		}
 
-		boolean invokeHandler = !ngContentEl.hasAttr("scope");
+		Node ngContentEll = ngContentEl.get(0);
+		boolean invokeHandler = !ngContentEll.hasAttribute("scope");
 		String select = ngContentEl.attr("select");
-		String selector = select.isEmpty() ? ngContentEl.attr("selector") : select;
+		String selector = select == null ? ngContentEl.attr("selector") : select;
 
-		Element parent = ngContentEl.parent();
+		Jerry parent = ngContentEl.parent();
 
-		List<Node> childNodes = new ArrayList<>(parent.childNodes());
-		int ngContentIndex = childNodes.indexOf(ngContentEl);
+		Jerry childNodes = parent.contents();// new ArrayList<>(asList(parent.getChildNodes()));
+		int ngContentIndex = childNodes.index(ngContentEll);
 
-		List<Node> nodesBefore = childNodes.subList(0, ngContentIndex);
-		List<Node> nodesAfter = childNodes.subList(ngContentIndex + 1, childNodes.size());
+		List<Jerry> nodesBefore = new ArrayList<>();
+		List<Jerry> nodesAfter = new ArrayList<>();
 
-		ngContentEl.remove();
+		childNodes.each((n, i) -> {
+			if (i < ngContentIndex) {
+				nodesBefore.add(n);
+			} else if (i > ngContentIndex) {
+				nodesAfter.add(n);
+			}
+			return true;
+		});
+
+		parent.get(0)
+				.removeChild(ngContentEll);
 
 		if (acceptChildren) {
 			parser.accept(nodesBefore);
@@ -154,15 +167,10 @@ public class CmpRefParser {
 		}
 
 		if (acceptChildren) {
-			if (selector.isEmpty()) {
-				parser.accept(el.childNodes());
+			if (selector == null) {
+				parser.accept(el.contents());
 			} else {
-				el.childNodes()
-						.stream()
-						.filter(Element.class::isInstance)
-						.map(Element.class::cast)
-						.filter(e -> e.is(selector))
-						.forEach(e -> e.traverse(parser.visitor));
+				traverse(el.$(selector), parser.visitor);
 			}
 
 			if (invokeHandler) {
@@ -174,14 +182,7 @@ public class CmpRefParser {
 	}
 
 	@Nullable
-	private Element findNgContent(List<Node> cmpNodes) {
-		return cmpNodes.stream()
-				.filter(Element.class::isInstance)
-				.map(Element.class::cast)
-				.map(cmpNode -> cmpNode.selectFirst("ng-content"))
-				.filter(Objects::nonNull)
-				.findFirst()
-				.orElse(null);
+	private Jerry findNgContent(Jerry cmpNodes) {
+		return cmpNodes.$("ng-content");
 	}
-
 }

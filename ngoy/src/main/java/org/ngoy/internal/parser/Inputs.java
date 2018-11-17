@@ -9,9 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.jsoup.nodes.Element;
 import org.ngoy.core.Input;
 import org.ngoy.core.NgoyException;
+
+import jodd.jerry.Jerry;
 
 public class Inputs {
 
@@ -23,7 +24,7 @@ public class Inputs {
 	public static final char VALUE_EXPR = '0';
 	public static final char VALUE_TEXT = '1';
 
-	public static List<String> cmpInputs(Element el, Class<?> clazz, Set<String> excludeBindings) {
+	public static List<String> cmpInputs(Jerry el, Class<?> clazz, Set<String> excludeBindings) {
 		List<String> result = new ArrayList<>();
 		for (Field f : clazz.getFields()) {
 			Input input = f.getAnnotation(Input.class);
@@ -64,13 +65,14 @@ public class Inputs {
 		return result;
 	}
 
-	private static void addInput(char inputType, char valueType, List<String> result, Element el, String input, String fieldName, Class<?> fieldType, Class<?> clazz, Set<String> excludeBindings) {
+	private static void addInput(char inputType, char valueType, List<String> result, Jerry el, String input, String fieldName, Class<?> fieldType, Class<?> clazz, Set<String> excludeBindings) {
 		String attr = valueType == VALUE_EXPR ? format("[%s]", input) : input;
 		String inp = el.attr(attr);
-		if (!inp.isEmpty()) {
+		if (inp != null) {
 
 			if (valueType == VALUE_TEXT && !fieldType.equals(String.class)) {
-				throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(), fieldType.getName(), format("[%s]", input));
+				throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(),
+						fieldType.getName(), format("[%s]", input));
 			}
 
 			result.add(format("%s%s%s", inputType, valueType, fieldName));

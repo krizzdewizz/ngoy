@@ -1,11 +1,14 @@
 package org.ngoy.internal.parser;
 
+import static org.ngoy.internal.parser.visitor.XDom.attributes;
+
 import java.util.EnumMap;
 import java.util.Map;
 
-import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.Element;
 import org.ngoy.core.NgoyException;
+
+import jodd.jerry.Jerry;
+import jodd.lagarto.dom.Attribute;
 
 public enum ForOfVariable {
 	index, first, last, even, odd;
@@ -22,17 +25,16 @@ public enum ForOfVariable {
 		void run(String[] itemAndListName, Map<ForOfVariable, String> variables);
 	}
 
-	public static boolean parse(Element el, ParseElement onParse) {
+	public static boolean parse(Jerry el, ParseElement onParse) {
 		String ngForOf = el.attr("[ngForOf]");
-		if (ngForOf.isEmpty()) {
+		if (ngForOf == null) {
 			return false;
 		}
 
 		Map<ForOfVariable, String> map = new EnumMap<>(ForOfVariable.class);
-
 		String itemName = null;
-		for (Attribute attr : el.attributes()) {
-			String name = attr.getKey();
+		for (Attribute attr : attributes(el)) {
+			String name = attr.getName();
 			if (!name.startsWith("let-")) {
 				continue;
 			}

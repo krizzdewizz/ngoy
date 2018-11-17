@@ -3,6 +3,8 @@ package org.ngoy.internal.parser;
 import java.util.List;
 import java.util.Map;
 
+import org.ngoy.core.internal.CmpRef;
+
 public interface ParserHandler {
 	void documentStart();
 
@@ -36,7 +38,7 @@ public interface ParserHandler {
 
 	void elementRepeatedEnd();
 
-	void componentStart(String clazz, List<String> params);
+	void componentStart(CmpRef cmpRef, List<String> params);
 
 	void componentEnd();
 
@@ -111,7 +113,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void componentStart(String clazz, List<String> params) {
+		public void componentStart(CmpRef cmpRef, List<String> params) {
 		}
 
 		@Override
@@ -203,8 +205,8 @@ public interface ParserHandler {
 			target.elementRepeatedEnd();
 		}
 
-		public void componentStart(String clazz, List<String> params) {
-			target.componentStart(clazz, params);
+		public void componentStart(CmpRef cmpRef, List<String> params) {
+			target.componentStart(cmpRef, params);
 		}
 
 		public void componentEnd() {

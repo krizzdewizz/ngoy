@@ -1,15 +1,17 @@
 package org.ngoy.core.internal;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 
 import java.util.List;
 import java.util.Set;
 
-import org.jsoup.nodes.Element;
 import org.ngoy.core.Injector;
 import org.ngoy.core.Provider;
 import org.ngoy.core.Util;
+
+import jodd.jerry.Jerry;
 
 public class MinimalEnv {
 	private static final List<CmpRef> CONTAINER = asList(new CmpRef(ContainerComponent.class, Util.getTemplate(ContainerComponent.class), false));
@@ -24,8 +26,8 @@ public class MinimalEnv {
 		}
 
 		@Override
-		public List<CmpRef> resolveCmps(Element element) {
-			return element.is(ContainerComponent.SELECTOR) ? CONTAINER : null;
+		public List<CmpRef> resolveCmps(Jerry element) {
+			return element.is(ContainerComponent.SELECTOR) ? CONTAINER : emptyList();
 		}
 
 		@Override
@@ -34,7 +36,7 @@ public class MinimalEnv {
 		}
 
 		@Override
-		public String resolveCmpClass(String cmpClass) {
+		public Class<?> resolveCmpClass(Class<?> cmpClass) {
 			return null;
 		}
 

@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.jsoup.nodes.Element;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.ngoy.ANgoyTest;
@@ -36,6 +35,8 @@ import org.ngoy.testapp.PersonDetailComponent;
 import org.ngoy.translate.TranslateDirective;
 import org.ngoy.translate.TranslateService;
 
+import jodd.jerry.Jerry;
+
 @Ignore
 public class ParserTest {
 
@@ -43,7 +44,7 @@ public class ParserTest {
 	public void parseToByteCode() throws Exception {
 		Parser parser = new Parser();
 		ByteCodeTemplate bb = new ByteCodeTemplate("org.ngoy.XByteCode", null);
-		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), bb, true);
+		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), bb);
 
 		Class<?> clazz = bb.getClassFile()
 				.defineClass();
@@ -62,7 +63,7 @@ public class ParserTest {
 				Provider.useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)));
 		Parser parser = new Parser(new Resolver() {
 			@Override
-			public List<CmpRef> resolveCmps(Element el) {
+			public List<CmpRef> resolveCmps(Jerry el) {
 
 				List<CmpRef> all = new ArrayList<>();
 
@@ -71,7 +72,8 @@ public class ParserTest {
 					all.add(new CmpRef(TranslateDirective.class, "", true));
 				}
 
-				String nodeName = el.nodeName();
+				String nodeName = el.get(0)
+						.getNodeName();
 
 				if (nodeName.equals("person")) {
 					all.add(new CmpRef(PersonDetailComponent.class, Util.getTemplate(PersonDetailComponent.class), false));
@@ -91,7 +93,7 @@ public class ParserTest {
 			}
 
 			@Override
-			public String resolveCmpClass(String cmpClass) {
+			public Class<?> resolveCmpClass(Class<?> cmpClass) {
 				return null;
 			}
 
@@ -102,7 +104,7 @@ public class ParserTest {
 		});
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = newPrintStream(baos);
-		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), new JavaTemplate(out), true);
+		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), new JavaTemplate(out));
 		out.flush();
 		out.close();
 		// System.out.println(flatten(html));

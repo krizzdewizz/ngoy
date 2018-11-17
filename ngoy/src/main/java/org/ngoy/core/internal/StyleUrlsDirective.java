@@ -3,21 +3,21 @@ package org.ngoy.core.internal;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.ngoy.core.NgoyException.wrap;
+import static org.ngoy.core.Util.copyToString;
 
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.jsoup.nodes.Element;
 import org.ngoy.core.Component;
 import org.ngoy.core.Directive;
 import org.ngoy.core.Inject;
 import org.ngoy.core.NgoyException;
 import org.ngoy.core.OnCompile;
-import org.ngoy.core.Util;
+import org.ngoy.internal.parser.visitor.XDom;
+
+import jodd.jerry.Jerry;
 
 @Directive(selector = "html")
 public class StyleUrlsDirective implements OnCompile {
@@ -25,26 +25,24 @@ public class StyleUrlsDirective implements OnCompile {
 	public Resolver resolver;
 
 	@Override
-	public void ngOnCompile(Element el, String cmpClass) {
+	public void ngOnCompile(Jerry el, String cmpClass) {
 		try {
 			Set<Class<?>> cmpClasses = resolver.getCmpClasses();
 			String styles = cmpClasses.stream()
 					.map(this::getStyles)
+					.filter(style -> !style.isEmpty())
 					.collect(joining("\n"));
 
-			Files.write(Paths.get("d:/downloads/x.css"), styles.getBytes());
-
-			Element styleEl = el.selectFirst("style");
-			if (styleEl == null) {
-				findParent(el).appendChild(el.ownerDocument()
-						.createElement("style")
-						.attr("type", "text/css")
-						.text(styles));
+			Jerry styleEl = el.$("style");
+			if (styleEl.length() == 0) {
+				Jerry ell = XDom.createElement("style");
+				ell.attr("type", "text/css");
+				ell.text(styles);
+				XDom.appendChild(findParent(el), ell);
 			} else {
-				String existingStyles = styleEl.childNodes()
-						.stream()
-						.map(Object::toString)
-						.collect(joining(""));
+				StringBuilder existingStyles = new StringBuilder();
+				styleEl.contents()
+						.forEach(s -> existingStyles.append(s.text()));
 				styleEl.text(format("%s\n%s", existingStyles, styles));
 			}
 
@@ -55,16 +53,16 @@ public class StyleUrlsDirective implements OnCompile {
 
 	private String getStyles(Class<?> clazz) {
 		return Optional.ofNullable(clazz.getAnnotation(Component.class))
-				.map(a -> Stream.of(a.styleUrls())
+				.map(ann -> Stream.of(ann.styleUrls())
 						.filter(url -> !url.isEmpty())
 						.map(url -> {
 							InputStream in = clazz.getResourceAsStream(url);
 							if (in == null) {
-								throw new NgoyException("Style could not be found: '%s'", url);
+								throw new NgoyException("Style could not be found: '%s'. Component: %s", url, clazz.getName());
 							}
 							String style;
 							try (InputStream inn = in) {
-								style = Util.copyToString(inn);
+								style = copyToString(inn);
 							} catch (Exception e) {
 								throw wrap(e);
 							}
@@ -76,12 +74,13 @@ public class StyleUrlsDirective implements OnCompile {
 
 	}
 
-	private Element findParent(Element el) {
-		Element parent = el.selectFirst("head");
-		if (parent == null) {
-			parent = el.selectFirst("body");
+	private Jerry findParent(Jerry el) {
+		Jerry parent = el.$("head");
+
+		if (parent.length() == 0) {
+			parent = el.$("body");
 		}
-		if (parent == null) {
+		if (parent.length() == 0) {
 			parent = el;
 		}
 		return parent;
