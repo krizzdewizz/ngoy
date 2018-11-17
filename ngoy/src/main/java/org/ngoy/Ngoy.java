@@ -464,4 +464,15 @@ public class Ngoy implements Renderer {
 	public void destroy() {
 		appInstance = null;
 	}
+
+	public static void main(String[] args) {
+		if (args.length == 0) {
+			System.out.println("usage: Ngoy <expr>");
+			return;
+		}
+		Context context = Context.of("args", args)
+				.variable("sys", System.getProperties());
+		String expr = args[0];
+		renderString(expr, context, System.out);
+	}
 }

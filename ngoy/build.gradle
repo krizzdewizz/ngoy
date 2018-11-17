@@ -7,7 +7,7 @@
  */
 
 // Apply the java-library plugin to add support for Java Library
-apply plugin: 'java-library'
+
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -16,17 +16,47 @@ repositories {
     jcenter()
 }
 
+buildscript {
+	repositories {
+	    // Use jcenter for resolving your dependencies.
+	    // You can declare any Maven/Ivy/file repository here.
+	    jcenter()
+	    
+	     dependencies {
+	        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
+	    }
+	}
+}
+
+apply plugin: 'java-library'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+shadowJar {
+  minimize()
+}
+
 dependencies {
+//	compile group: 'org.springframework' ,name:'spring-expression' ,version:'5.1.2.RELEASE'
+//	compile group: 'org.cojen' ,name:'cojen' ,version:'2.2.5'
+//	compile group: 'org.apache.commons' ,name:'commons-text' ,version:'1.6'
+//	compile group: 'org.jodd' ,name:'jodd-lagarto' ,version:'5.0.6'
+//	compile group: 'com.helger' ,name:'ph-css' ,version:'6.1.1'
+
 	implementation 'org.springframework:spring-expression:5.1.2.RELEASE'
 	implementation 'org.cojen:cojen:2.2.5'
 	implementation 'org.apache.commons:commons-text:1.6'
 	implementation 'org.jodd:jodd-lagarto:5.0.6'
-	implementation 'org.jodd:jodd-jerry:5.0.6'
 	implementation 'com.helger:ph-css:6.1.1'
-
+ 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.assertj:assertj-core:3.11.1'
     testImplementation 'org.mockito:mockito-core:2.23.0'
 }
 
+
+task customFatJar(type: Jar) {
+    baseName = 'all-in-one-jar'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
