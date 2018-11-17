@@ -32,8 +32,6 @@ import ngoy.core.PipeTransform;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.ContainerComponent;
 import ngoy.core.internal.Resolver;
-import ngoy.internal.parser.lagarto.NgoyDomBuilder;
-import ngoy.internal.parser.lagarto.NgoyElement;
 import ngoy.internal.parser.visitor.MicroSyntaxVisitor;
 import ngoy.internal.parser.visitor.NodeVisitor;
 import ngoy.internal.parser.visitor.SkipSubTreeVisitor;

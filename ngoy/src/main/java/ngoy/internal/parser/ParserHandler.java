@@ -16,6 +16,8 @@ public interface ParserHandler {
 
 	void attributeClasses(List<String[]> classExprPairs);
 
+	void attributeStyles(List<String[]> styleExprPairs);
+
 	void attributeExpr(String name, String expr);
 
 	void attributeEnd();
@@ -131,6 +133,10 @@ public interface ParserHandler {
 		@Override
 		public void textOverride(String expr) {
 		}
+
+		@Override
+		public void attributeStyles(List<String[]> styleExprPairs) {
+		}
 	}
 
 	class Delegate implements ParserHandler {
@@ -224,6 +230,11 @@ public interface ParserHandler {
 		@Override
 		public void textOverride(String expr) {
 			target.textOverride(expr);
+		}
+
+		@Override
+		public void attributeStyles(List<String[]> styleExprPairs) {
+			target.attributeStyles(styleExprPairs);
 		}
 	}
 

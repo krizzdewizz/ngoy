@@ -17,8 +17,9 @@ public class AttributeBinding {
 	private static final String BINDING_CLASS = "class.";
 	private static final String BINDING_ATTR = "attr.";
 	private static final String BINDING_TEXT = "text";
+	private static final String BINDING_STYLE = "style.";
 
-	static void addAttributeBinding(Parser parser, String name, String value, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames) {
+	static void addAttributeBinding(Parser parser, String name, String value, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames, List<String[]> targetStyleNames) {
 
 		String rawName = name.substring(1, name.length() - 1);
 
@@ -26,15 +27,21 @@ public class AttributeBinding {
 			return;
 		}
 
-		if (rawName.equals("class")) {
+		if (rawName.equals("ngClass")) {
 			ObjParser.parse(value)
 					.forEach((key, expr) -> targetClassNames.add(new String[] { key, expr }));
+		} else if (rawName.equals("ngStyle")) {
+			ObjParser.parse(value)
+					.forEach((key, expr) -> targetStyleNames.add(new String[] { key, expr }));
 		} else if (rawName.startsWith(BINDING_CLASS)) {
 			String className = rawName.substring(BINDING_CLASS.length());
 			targetClassNames.add(new String[] { className, value });
 		} else if (rawName.startsWith(BINDING_ATTR)) {
 			String attrName = rawName.substring(BINDING_ATTR.length());
 			targetAttrNames.add(new String[] { attrName, value });
+		} else if (rawName.startsWith(BINDING_STYLE)) {
+			String attrName = rawName.substring(BINDING_STYLE.length());
+			targetStyleNames.add(new String[] { attrName, value });
 		} else if (rawName.equals(BINDING_TEXT)) {
 			parser.handler.textOverride(value);
 		} else {
@@ -42,10 +49,10 @@ public class AttributeBinding {
 		}
 	}
 
-	static void replaceAttrs(Parser parser, Jerry el, Set<String> excludeBindings, List<String[]> targetClassNames, List<String[]> targetAttrNames) {
+	static void replaceAttrs(Parser parser, Jerry el, Set<String> excludeBindings, List<String[]> targetClassNames, List<String[]> targetAttrNames, List<String[]> targetStyleNames) {
 		for (Attribute attr : attributes(el)) {
 			String name = attr.getName();
-			if (name.equals("class") || name.startsWith("*")) {
+			if (name.equals("class") || name.equals("style") || name.startsWith("*")) {
 				continue;
 			}
 
@@ -53,7 +60,7 @@ public class AttributeBinding {
 				if (!name.endsWith("]")) {
 					throw new ParseException("Attribute binding malformed: missing ].", el);
 				}
-				addAttributeBinding(parser, name, attr.getValue(), excludeBindings, targetClassNames, targetAttrNames);
+				addAttributeBinding(parser, name, attr.getValue(), excludeBindings, targetClassNames, targetAttrNames, targetStyleNames);
 			} else if (!excludeBindings.contains(name)) {
 				boolean hasValue = attr.getValue() != null;
 				parser.handler.attributeStart(name, hasValue);
@@ -65,14 +72,14 @@ public class AttributeBinding {
 		}
 	}
 
-	static void addHostAttributeBindings(Parser parser, Class<?> cmpClass, Set<String> excludeBindings, List<String[]> classNames, List<String[]> attrNames) {
+	static void addHostAttributeBindings(Parser parser, Class<?> cmpClass, Set<String> excludeBindings, List<String[]> classNames, List<String[]> attrNames, List<String[]> styleNames) {
 		for (Field f : cmpClass.getFields()) {
 			HostBinding hb = f.getAnnotation(HostBinding.class);
 			if (hb == null) {
 				continue;
 			}
 
-			addAttributeBinding(parser, format("[%s]", hb.value()), f.getName(), excludeBindings, classNames, attrNames);
+			addAttributeBinding(parser, format("[%s]", hb.value()), f.getName(), excludeBindings, classNames, attrNames, styleNames);
 		}
 
 		for (Method m : cmpClass.getMethods()) {
@@ -85,18 +92,21 @@ public class AttributeBinding {
 				throw new ParseException("Host binding method must not have parameters: %s.%s", cmpClass.getName(), m.getName());
 			}
 
-			addAttributeBinding(parser, format("[%s]", hb.value()), format("%s()", m.getName()), excludeBindings, classNames, attrNames);
+			addAttributeBinding(parser, format("[%s]", hb.value()), format("%s()", m.getName()), excludeBindings, classNames, attrNames, styleNames);
 		}
 	}
 
-	static void replaceAttrExpr(Parser parser, List<String[]> classNames, List<String[]> attrNames) {
+	static void replaceAttrExpr(Parser parser, List<String[]> classNames, List<String[]> attrNames, List<String[]> styleNames) {
 		if (!classNames.isEmpty()) {
 			parser.handler.attributeClasses(classNames);
+		}
+
+		if (!styleNames.isEmpty()) {
+			parser.handler.attributeStyles(styleNames);
 		}
 
 		if (!attrNames.isEmpty()) {
 			attrNames.forEach(it -> parser.handler.attributeExpr(it[0], it[1]));
 		}
 	}
-
 }

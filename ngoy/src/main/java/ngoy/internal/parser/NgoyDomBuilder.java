@@ -1,4 +1,4 @@
-package ngoy.internal.parser.lagarto;
+package ngoy.internal.parser;
 
 import jodd.lagarto.LagartoParser;
 import jodd.lagarto.Tag;

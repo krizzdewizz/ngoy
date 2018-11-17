@@ -40,13 +40,11 @@ dependencies {
 //	compile group: 'org.cojen' ,name:'cojen' ,version:'2.2.5'
 //	compile group: 'org.apache.commons' ,name:'commons-text' ,version:'1.6'
 //	compile group: 'org.jodd' ,name:'jodd-lagarto' ,version:'5.0.6'
-//	compile group: 'com.helger' ,name:'ph-css' ,version:'6.1.1'
 
 	implementation 'org.springframework:spring-expression:5.1.2.RELEASE'
 	implementation 'org.cojen:cojen:2.2.5'
 	implementation 'org.apache.commons:commons-text:1.6'
 	implementation 'org.jodd:jodd-lagarto:5.0.6'
-	implementation 'com.helger:ph-css:6.1.1'
  
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'

@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import jodd.jerry.Jerry;
@@ -37,7 +36,6 @@ import ngoy.testapp.PersonDetailComponent;
 import ngoy.translate.TranslateDirective;
 import ngoy.translate.TranslateService;
 
-@Ignore
 public class ParserTest {
 
 	@Test

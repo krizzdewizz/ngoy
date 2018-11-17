@@ -1,5 +1,6 @@
 package ngoy.internal.parser;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.Util.isSet;
@@ -181,6 +182,15 @@ public class ByteCodeTemplate implements ParserHandler {
 
 	@Override
 	public void attributeClasses(List<String[]> classExprPairs) {
+		attributeEval("evalClasses", "class", classExprPairs);
+	}
+
+	@Override
+	public void attributeStyles(List<String[]> styleExprPairs) {
+		attributeEval("evalStyles", "style", styleExprPairs);
+	}
+
+	private void attributeEval(String evalCall, String attrName, List<String[]> classExprPairs) {
 		flushOut();
 
 		List<LocalVariable> ps = new ArrayList<>();
@@ -191,7 +201,7 @@ public class ByteCodeTemplate implements ParserHandler {
 
 		run.loadLocal(ctxParam);
 		run.loadLocal(classesArray);
-		run.invokeVirtual(ctxType, "evalClasses", TypeDesc.STRING, evalClassesParamTypes);
+		run.invokeVirtual(ctxType, evalCall, TypeDesc.STRING, evalClassesParamTypes);
 		LocalVariable evalResultVar = run.createLocalVariable(null, TypeDesc.OBJECT);
 		run.storeLocal(evalResultVar);
 
@@ -199,7 +209,7 @@ public class ByteCodeTemplate implements ParserHandler {
 		Label ifNull = run.createLabel();
 		run.ifNullBranch(ifNull, true);
 
-		printOut(" class=\"");
+		printOut(format(" %s=\"", attrName));
 
 		flushOut();
 		run.loadLocal(ctxParam);
@@ -517,5 +527,4 @@ public class ByteCodeTemplate implements ParserHandler {
 		run.ifZeroComparisonBranch(label, "==");
 		return label;
 	}
-
 }

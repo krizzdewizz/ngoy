@@ -18,8 +18,8 @@ import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Element;
 import ngoy.core.NgoyException;
 import ngoy.internal.parser.ForOfVariable;
+import ngoy.internal.parser.NgoyElement;
 import ngoy.internal.parser.ParseException;
-import ngoy.internal.parser.lagarto.NgoyElement;
 
 public class MicroSyntaxVisitor extends NodeVisitor.Default {
 

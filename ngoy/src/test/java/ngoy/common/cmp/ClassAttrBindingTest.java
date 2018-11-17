@@ -30,7 +30,7 @@ public class ClassAttrBindingTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "test", template = "<a [class]=\"{q:true, a: false, 'a-a': 'x'=='x'}\"></a>")
+	@Component(selector = "test", template = "<a [ngClass]=\"{q:true, a: false, 'a-a': 'x'=='x'}\"></a>")
 	public static class ClassAttrObj {
 	}
 
@@ -41,7 +41,7 @@ public class ClassAttrBindingTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "test", template = "<a [class.x]=\"false\" [class]=\"{z:false}\"></a>")
+	@Component(selector = "test", template = "<a [class.x]=\"false\" [ngClass]=\"{z:false}\"></a>")
 	public static class ClassAttrNoClass {
 	}
 

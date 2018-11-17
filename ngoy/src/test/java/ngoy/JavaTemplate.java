@@ -109,24 +109,12 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	@Override
 	public void attributeClasses(List<String[]> classExprPairs) {
-		String classListVar = createLocalVar();
+		attributeEval("evalClasses", "class", classExprPairs);
+	}
 
-		String pp = classExprPairs.stream()
-				.map(p -> {
-					String s = format("new String[]{\"%s\", \"%s\"}", escapeJava(p[0]), escapeJava(p[1]));
-					return s;
-				})
-				.collect(joining(","));
-
-		$("Object ", classListVar, "= ctx.evalClasses(", pp, ");");
-
-		$("if (", classListVar, " != null) {");
-		printOut(" class=\"");
-		flushOut();
-		printOutExpr(classListVar);
-		printOut("\"");
-		flushOut();
-		$("}");
+	@Override
+	public void attributeStyles(List<String[]> styleExprPairs) {
+		attributeEval("evalStyles", "style", styleExprPairs);
 	}
 
 	@Override
@@ -307,4 +295,24 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("ctx.popContext();");
 	}
 
+	private void attributeEval(String evalCall, String attrName, List<String[]> exprPairs) {
+		String listVar = createLocalVar();
+
+		String pp = exprPairs.stream()
+				.map(p -> {
+					String s = format("new String[]{\"%s\", \"%s\"}", escapeJava(p[0]), escapeJava(p[1]));
+					return s;
+				})
+				.collect(joining(","));
+
+		$("Object ", listVar, "= ctx.", evalCall, "(", pp, ");");
+
+		$("if (", listVar, " != null) {");
+		printOut(" ", attrName, "=\"");
+		flushOut();
+		printOutExpr(listVar);
+		printOut("\"");
+		flushOut();
+		$("}");
+	}
 }

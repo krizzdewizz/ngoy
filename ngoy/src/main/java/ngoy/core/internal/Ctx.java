@@ -193,7 +193,8 @@ public class Ctx {
 				root = rootClass.getName();
 			}
 		}
-		throw new NgoyException(format("Error while converting result of expression '%s' to boolean: the result was null and null cannot be converted to boolean.  modelRoot: %s. templateUrl: %s.", expr, root, templateUrl));
+		throw new NgoyException(format("Error while converting result of expression '%s' to boolean: the result was null and null cannot be converted to boolean.  modelRoot: %s. templateUrl: %s.",
+				expr, root, templateUrl));
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -293,7 +294,8 @@ public class Ctx {
 					Object valueType = value == null ? null
 							: value.getClass()
 									.getName();
-					throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", clazz.getName(), field.getName(), expr, fieldType, valueType);
+					throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", clazz.getName(), field.getName(), expr,
+							fieldType, valueType);
 				}
 			}
 				break;
@@ -306,7 +308,8 @@ public class Ctx {
 					Object valueType = value == null ? null
 							: value.getClass()
 									.getName();
-					throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", clazz.getName(), setter.getName(), expr, parameterType, valueType);
+					throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", clazz.getName(),
+							setter.getName(), expr, parameterType, valueType);
 				}
 			}
 				break;
@@ -366,6 +369,40 @@ public class Ctx {
 		return classList.isEmpty() ? null
 				: classList.stream()
 						.collect(joining(" "));
+	}
+
+	/**
+	 * @return null if none of the classes shall be added
+	 */
+	@Nullable
+	public String evalStyles(String[]... classExprPairs) {
+		List<String> styleList = new ArrayList<>();
+		for (String[] pair : classExprPairs) {
+			String style = pair[0];
+			String expr = pair[1];
+			if (expr.isEmpty()) {
+				styleList.add(style);
+			} else {
+				Object[] val = new Object[] { eval(expr) };
+				String syle = parseUnit(style, val);
+				styleList.add(format("%s:%s", syle, val[0]));
+			}
+		}
+		return styleList.isEmpty() ? null
+				: styleList.stream()
+						.collect(joining(";"));
+	}
+
+	private String parseUnit(String s, Object[] val) {
+		int pos = s.lastIndexOf('.');
+		if (pos < 0) {
+			return s;
+		}
+
+		String style = s.substring(0, pos);
+		String unit = s.substring(pos + 1);
+		val[0] = val[0] + unit;
+		return style;
 	}
 
 	public void printEscaped(@Nullable Object obj) {
