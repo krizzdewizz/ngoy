@@ -3,6 +3,7 @@ package ngoy.internal.parser;
 import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
+import static ngoy.internal.parser.NgoyElement.getPosition;
 import static ngoy.internal.parser.visitor.XDom.attributes;
 import static ngoy.internal.parser.visitor.XDom.createElement;
 import static ngoy.internal.parser.visitor.XDom.nodeName;
@@ -419,9 +420,7 @@ public class Parser {
 		String templateUrl = "";
 		String className = "";
 		Jerry currentEl = replacingVisitor.currentEl;
-		String position = currentEl == null ? ""
-				: NgoyElement.get(currentEl)
-						.getPosition();
+		String position = currentEl == null ? "" : getPosition(currentEl);
 		if (peek != null) {
 			topCmpClass = topCmpClass();
 			if (topCmpClass != null) {

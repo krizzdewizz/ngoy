@@ -7,8 +7,8 @@ import jodd.lagarto.dom.Element;
 
 public class NgoyElement extends Element {
 
-	public static NgoyElement get(Jerry el) {
-		return (NgoyElement) el.get(0);
+	public static String getPosition(Jerry el) {
+		return ((NgoyElement) el.get(0)).getPosition();
 	}
 
 	private final String position;
