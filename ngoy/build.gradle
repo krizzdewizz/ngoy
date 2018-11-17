@@ -22,6 +22,7 @@ dependencies {
 	implementation 'org.apache.commons:commons-text:1.6'
 	implementation 'org.jodd:jodd-lagarto:5.0.6'
 	implementation 'org.jodd:jodd-jerry:5.0.6'
+	implementation 'com.helger:ph-css:6.1.1'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
