@@ -28,11 +28,9 @@ public class AttributeBinding {
 		}
 
 		if (rawName.equals("ngClass")) {
-			ObjParser.parse(value)
-					.forEach((key, expr) -> targetClassNames.add(new String[] { key, expr }));
+			targetClassNames.add(new String[] { rawName, value });
 		} else if (rawName.equals("ngStyle")) {
-			ObjParser.parse(value)
-					.forEach((key, expr) -> targetStyleNames.add(new String[] { key, expr }));
+			targetStyleNames.add(new String[] { rawName, value });
 		} else if (rawName.startsWith(BINDING_CLASS)) {
 			String className = rawName.substring(BINDING_CLASS.length());
 			targetClassNames.add(new String[] { className, value });

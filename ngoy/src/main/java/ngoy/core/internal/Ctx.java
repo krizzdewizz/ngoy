@@ -160,7 +160,7 @@ public class Ctx {
 					Class<?> rootClass = value.getClass();
 					Component cmpAnn = rootClass.getAnnotation(Component.class);
 					if (cmpAnn != null) {
-						templateUrl = format("'%s'", cmpAnn.templateUrl());
+						templateUrl = cmpAnn.templateUrl();
 					}
 
 					root = rootClass.getName();
@@ -359,13 +359,27 @@ public class Ctx {
 	@Nullable
 	public String evalClasses(String[]... classExprPairs) {
 		List<String> classList = new ArrayList<>();
+
 		for (String[] pair : classExprPairs) {
 			String clazz = pair[0];
 			String expr = pair[1];
-			if (expr.isEmpty() || evalBool(expr)) {
-				classList.add(clazz);
+
+			if (clazz.equals("ngClass")) {
+				// Spring EL evals an object literal such as {a: true} properly to a map
+				@SuppressWarnings("unchecked")
+				Map<String, Boolean> map = (Map<String, Boolean>) eval(expr);
+				for (Map.Entry<String, Boolean> entry : map.entrySet()) {
+					if (entry.getValue()) {
+						classList.add(entry.getKey());
+					}
+				}
+			} else {
+				if (expr.isEmpty() || evalBool(expr)) {
+					classList.add(clazz);
+				}
 			}
 		}
+
 		return classList.isEmpty() ? null
 				: classList.stream()
 						.collect(joining(" "));
@@ -375,19 +389,34 @@ public class Ctx {
 	 * @return null if none of the classes shall be added
 	 */
 	@Nullable
-	public String evalStyles(String[]... classExprPairs) {
+	public String evalStyles(String[]... styleExprPairs) {
 		List<String> styleList = new ArrayList<>();
-		for (String[] pair : classExprPairs) {
+
+		for (String[] pair : styleExprPairs) {
 			String style = pair[0];
 			String expr = pair[1];
-			if (expr.isEmpty()) {
-				styleList.add(style);
+
+			if (style.equals("ngStyle")) {
+				// Spring EL evals an object literal such as {a: 'hello'} properly to a map
+				@SuppressWarnings("unchecked")
+				Map<String, String> map = (Map<String, String>) eval(expr);
+				for (Map.Entry<String, String> entry : map.entrySet()) {
+					String st = entry.getKey();
+					Object[] val = new Object[] { entry.getValue() };
+					String s = parseUnit(st, val);
+					styleList.add(format("%s:%s", s, val[0]));
+				}
 			} else {
-				Object[] val = new Object[] { eval(expr) };
-				String syle = parseUnit(style, val);
-				styleList.add(format("%s:%s", syle, val[0]));
+				if (expr.isEmpty()) {
+					styleList.add(style);
+				} else {
+					Object[] val = new Object[] { eval(expr) };
+					String s = parseUnit(style, val);
+					styleList.add(format("%s:%s", s, val[0]));
+				}
 			}
 		}
+
 		return styleList.isEmpty() ? null
 				: styleList.stream()
 						.collect(joining(";"));
