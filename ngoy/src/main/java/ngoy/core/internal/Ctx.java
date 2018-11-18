@@ -65,6 +65,7 @@ public class Ctx {
 	private final ExpressionParser exprParser;
 	private final Injector injector;
 	private final LinkedList<Map<String, Object>> iterationVars = new LinkedList<>();
+	private final ExprCache exprCache = new ExprCache();
 	private PrintStream out;
 	private String contentType;
 
@@ -135,7 +136,7 @@ public class Ctx {
 	public Object eval(String expr, String[]... pipes) {
 		EvaluationContext peek = spelCtxs.peek();
 		try {
-			Object value = exprParser.parseExpression(expr)
+			Object value = exprCache.get(expr, exprParser)
 					.getValue(peek);
 
 			for (String[] pipeWithParam : pipes) {
