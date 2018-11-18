@@ -1,7 +1,5 @@
 package ngoy.routing;
 
-import java.nio.file.Paths;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -31,7 +29,7 @@ public class RouterMain implements InitializingBean {
 
 	@GetMapping()
 	public void home(HttpServletResponse response) throws Exception {
-		//ngoy.renderSite(Paths.get("d:/downloads/abc"));
+//		ngoy.renderSite(java.nio.file.Paths.get("d:/downloads/abc"));
 
 		ngoy.render(response.getOutputStream());
 	}
