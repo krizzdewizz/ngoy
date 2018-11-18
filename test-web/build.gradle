@@ -26,6 +26,15 @@ repositories {
 
 dependencies {
 	implementation('org.springframework.boot:spring-boot-starter-web')
+	implementation 'org.jodd:jodd-lagarto:5.0.6'
+	implementation 'org.jodd:jodd-jerry:5.0.6'
+	implementation 'org.cojen:cojen:2.2.5'
+	implementation 'commons-cli:commons-cli:1.4'
 
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.assertj:assertj-core:3.11.1'
+	testImplementation 'org.apache.commons:commons-text:1.6'
 }

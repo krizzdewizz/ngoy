@@ -31,16 +31,14 @@ public class SiteRenderer {
 	private void renderRoutes(Ngoy ngoy, Path folder) {
 		Location oldLocation = router.location;
 		try {
-			int i = 0;
 			for (Route route : router.getRoutes()) {
 				String path = route.getPath();
 
 				String location = format("%s/%s", router.config.getBaseHref(), path);
 				router.location = () -> location;
 
-				String file = format("%s.html", i == 0 ? "index" : path);
+				String file = format("%s.html", path);
 				render(ngoy, folder, file);
-				i++;
 			}
 		} finally {
 			router.location = oldLocation;

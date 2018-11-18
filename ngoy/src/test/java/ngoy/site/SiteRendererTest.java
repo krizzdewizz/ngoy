@@ -44,7 +44,7 @@ public class SiteRendererTest extends ANgoyTest {
 		RouterConfig routerConfig = RouterConfig //
 				.baseHref("/app")
 				.location(useValue(Location.class, () -> "")) // not used for site renderer
-				.route("q/home", HomeCmp.class)
+				.route("index", HomeCmp.class)
 				.route("abc/settings", SettingsCmp.class)
 				.build();
 
