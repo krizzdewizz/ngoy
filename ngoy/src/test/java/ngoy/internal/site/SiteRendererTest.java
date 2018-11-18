@@ -1,4 +1,4 @@
-package ngoy.site;
+package ngoy.internal.site;
 
 import static ngoy.core.Provider.useValue;
 import static org.assertj.core.api.Assertions.assertThat;

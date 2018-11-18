@@ -1,4 +1,4 @@
-package ngoy.site;
+package ngoy.internal.site;
 
 import static java.lang.String.format;
 

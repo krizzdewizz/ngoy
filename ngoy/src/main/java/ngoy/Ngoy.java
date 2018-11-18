@@ -55,7 +55,7 @@ import ngoy.core.internal.Resolver;
 import ngoy.internal.cli.Cli;
 import ngoy.internal.parser.ByteCodeTemplate;
 import ngoy.internal.parser.Parser;
-import ngoy.site.SiteRenderer;
+import ngoy.internal.site.SiteRenderer;
 import ngoy.translate.TranslateModule;
 import ngoy.translate.TranslateService;
 
