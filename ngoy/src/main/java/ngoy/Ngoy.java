@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,7 +46,6 @@ import ngoy.core.OnInit;
 import ngoy.core.Pipe;
 import ngoy.core.Provide;
 import ngoy.core.Provider;
-import ngoy.core.Renderer;
 import ngoy.core.TemplateCache;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.CoreInternalModule;
@@ -55,10 +55,11 @@ import ngoy.core.internal.MinimalEnv;
 import ngoy.core.internal.Resolver;
 import ngoy.internal.parser.ByteCodeTemplate;
 import ngoy.internal.parser.Parser;
+import ngoy.site.SiteRenderer;
 import ngoy.translate.TranslateModule;
 import ngoy.translate.TranslateService;
 
-public class Ngoy implements Renderer {
+public class Ngoy {
 	public static class Builder {
 		private final Class<?> appRoot;
 		private final Config config = new Config();
@@ -232,8 +233,8 @@ public class Ngoy implements Renderer {
 		resolver = createResolver(cmpDecls, pipeDecls);
 
 		all.add(useValue(Resolver.class, resolver));
-		all.add(useValue(Renderer.class, this));
 		all.add(useValue(Events.class, events));
+		all.add(of(SiteRenderer.class));
 		all.addAll(cmpProviders);
 		all.addAll(cmpDecls.values());
 		all.addAll(pipeDecls.values());
@@ -328,7 +329,11 @@ public class Ngoy implements Renderer {
 				.orElse(null);
 	}
 
-	@Override
+	public void renderSite(Path folder) {
+		injector.get(SiteRenderer.class)
+				.render(this, folder);
+	}
+
 	public void render(OutputStream out) {
 		try {
 			if (appInstance instanceof OnInit) {

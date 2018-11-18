@@ -48,7 +48,7 @@ public class DefaultInjector implements Injector {
 
 	@Override
 	public <T> T get(Class<T> clazz) {
-		return getInternal(clazz, new HashSet<>());
+		return getInternal(clazz, new HashSet<>(), false);
 	}
 
 	public void put(Provider provider) {
@@ -62,7 +62,7 @@ public class DefaultInjector implements Injector {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> T getInternal(Class<T> clazz, Set<Class<?>> resolving) {
+	private <T> T getInternal(Class<T> clazz, Set<Class<?>> resolving, boolean nullIfNone) {
 		try {
 
 			if (resolving.contains(clazz)) {
@@ -88,6 +88,9 @@ public class DefaultInjector implements Injector {
 
 			Provider provider = providers.get(clazz);
 			if (provider == null) {
+				if (nullIfNone) {
+					return null;
+				}
 				throw new NgoyException("No provider for %s", clazz.getName());
 			}
 
@@ -110,7 +113,7 @@ public class DefaultInjector implements Injector {
 			} else {
 				Constructor<?> ctor = ctors[0];
 				inst = ctor.newInstance(Stream.of(ctor.getParameterTypes())
-						.map(pt -> getInternal(pt, resolving))
+						.map(pt -> getInternal(pt, resolving, false))
 						.collect(toList())
 						.toArray());
 			}
@@ -135,7 +138,12 @@ public class DefaultInjector implements Injector {
 					continue;
 				}
 
-				field.set(inst, getInternal(field.getType(), resolving));
+				boolean optional = findAnnotation(field, "Optional") != null;
+
+				Object obj = getInternal(field.getType(), resolving, optional);
+				if (!optional || obj != null) {
+					field.set(inst, obj);
+				}
 			}
 		} catch (Exception e) {
 			throw wrap(e);
