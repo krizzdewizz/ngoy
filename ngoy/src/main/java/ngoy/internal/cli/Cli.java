@@ -4,10 +4,14 @@ import static java.lang.String.format;
 import static ngoy.Ngoy.renderString;
 import static ngoy.core.NgoyException.wrap;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -28,6 +32,7 @@ public class Cli {
 				.addOption("h", "help", false, "display this help")
 				.addOption("e", "expression", false, "treat template as an expression")
 				.addOption("f", "file", false, "read template from file instead of command line")
+				.addOption("in", "input", false, "run template for each line read from stdin (use $ variable to access line within template)")
 				.addOption(null, "version", false, "print version information")
 				.addOption(Option.builder("v")
 						.longOpt("variable")
@@ -73,7 +78,14 @@ public class Cli {
 		String template = readTemplate(argList.get(0), cmd.hasOption('f'));
 		String tpl = expr ? format("{{ %s }}", template) : template;
 
-		renderString(tpl, context, out);
+		if (cmd.hasOption("in")) {
+			eachLine(System.in, line -> {
+				context.variable("$", line);
+				renderString(tpl, context, out);
+			});
+		} else {
+			renderString(tpl, context, out);
+		}
 	}
 
 	private void printHelp() {
@@ -94,5 +106,16 @@ public class Cli {
 		}
 
 		return template;
+	}
+
+	void eachLine(InputStream in, Consumer<String> lineConsumer) {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				lineConsumer.accept(line);
+			}
+		} catch (Exception e) {
+			throw wrap(e);
+		}
 	}
 }

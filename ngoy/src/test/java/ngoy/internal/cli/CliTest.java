@@ -2,8 +2,10 @@ package ngoy.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 
@@ -18,6 +20,7 @@ public class CliTest {
 	private ByteArrayOutputStream out;
 	private PrintStream prevOut;
 	private PrintStream prevErr;
+	private InputStream prevIn;
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
@@ -26,12 +29,14 @@ public class CliTest {
 	public void beforeEach() throws Exception {
 		prevOut = System.out;
 		prevErr = System.err;
+		prevIn = System.in;
 	}
 
 	@After
 	public void afterEach() throws Exception {
 		System.setOut(prevOut);
 		System.setErr(prevErr);
+		System.setIn(prevIn);
 	}
 
 	private void resetOut() {
@@ -84,6 +89,12 @@ public class CliTest {
 	public void testExpr() {
 		assertThat(run("-e", "{}")).isEqualTo("[]");
 		assertThat(run("-e", "{:}.entrySet().iterator().hasNext()")).isEqualTo("false");
+	}
+
+	@Test
+	public void testInput() {
+		System.setIn(new ByteArrayInputStream("line1\nline2\n".getBytes()));
+		assertThat(run("-e", "-in", "$ + 'a'")).isEqualTo("line1aline2a");
 	}
 
 	@Test
