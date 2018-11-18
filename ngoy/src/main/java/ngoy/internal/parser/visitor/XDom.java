@@ -50,7 +50,6 @@ public class XDom {
 		List<String> all = new ArrayList<>();
 		String style = el.attr("style");
 		if (style != null) {
-
 			Map<String, String> map = ObjParser.parse(format("{%s}", style));
 			for (Map.Entry<String, String> entry : map.entrySet()) {
 				all.add(format("%s:%s", entry.getKey(), entry.getValue()));

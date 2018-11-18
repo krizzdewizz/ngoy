@@ -4,10 +4,9 @@ import ngoy.core.Directive;
 import ngoy.core.HostBinding;
 import ngoy.core.Inject;
 import ngoy.core.Input;
-import ngoy.core.OnInit;
 
 @Directive(selector = "[translate]")
-public class TranslateDirective implements OnInit {
+public class TranslateDirective {
 
 	@Inject
 	public TranslateService translateService;
@@ -18,9 +17,5 @@ public class TranslateDirective implements OnInit {
 	@Input
 	public void translate(String key) {
 		translation = translateService.translate(key);
-	}
-
-	@Override
-	public void ngOnInit() {
 	}
 }

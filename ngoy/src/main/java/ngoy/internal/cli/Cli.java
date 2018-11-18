@@ -71,7 +71,7 @@ public class Cli {
 
 		boolean expr = cmd.hasOption('e');
 		String template = readTemplate(argList.get(0), cmd.hasOption('f'));
-		String tpl = expr ? format("{{%s}}", template) : template;
+		String tpl = expr ? format("{{ %s }}", template) : template;
 
 		renderString(tpl, context, out);
 	}

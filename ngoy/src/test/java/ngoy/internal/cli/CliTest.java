@@ -13,8 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import ngoy.internal.cli.Cli;
-
 public class CliTest {
 
 	private ByteArrayOutputStream out;
@@ -26,11 +24,8 @@ public class CliTest {
 
 	@Before
 	public void beforeEach() throws Exception {
-		out = new ByteArrayOutputStream();
 		prevOut = System.out;
 		prevErr = System.err;
-		System.setOut(new PrintStream(out));
-		System.setErr(new PrintStream(out));
 	}
 
 	@After
@@ -39,7 +34,14 @@ public class CliTest {
 		System.setErr(prevErr);
 	}
 
+	private void resetOut() {
+		out = new ByteArrayOutputStream();
+		System.setOut(new PrintStream(out));
+		System.setErr(new PrintStream(out));
+	}
+
 	private String run(String... args) {
+		resetOut();
 		new Cli().run(args, out);
 		String result = new String(out.toByteArray());
 		result = result.replaceAll("\\r|\\n", "");
@@ -76,6 +78,12 @@ public class CliTest {
 	@Test
 	public void testVersion() {
 		assertThat(run("--version")).isEqualTo("unknown");
+	}
+
+	@Test
+	public void testExpr() {
+		assertThat(run("-e", "{}")).isEqualTo("[]");
+		assertThat(run("-e", "{:}.entrySet().iterator().hasNext()")).isEqualTo("false");
 	}
 
 	@Test

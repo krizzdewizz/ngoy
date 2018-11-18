@@ -23,7 +23,7 @@ public class EvalContext implements EvaluationContext {
 
 	private final List<ConstructorResolver> ctorResolvers;
 	private final EvaluationContext target;
-	private final StandardTypeLocator typeLocator;
+	private final TypeLocator typeLocator;
 	private final List<MethodResolver> methodResolvers;
 	private final Map<String, Object> variables;
 
@@ -31,8 +31,13 @@ public class EvalContext implements EvaluationContext {
 		this.target = target;
 		this.variables = variables;
 		ctorResolvers = asList(new ReflectiveConstructorResolver());
-		typeLocator = new StandardTypeLocator();
 		methodResolvers = asList(new ReflectiveMethodResolver());
+
+		StandardTypeLocator locator = new StandardTypeLocator();
+		locator.registerImport("java.util");
+		locator.registerImport("java.time");
+		locator.registerImport("java.math");
+		typeLocator = locator;
 	}
 
 	public List<ConstructorResolver> getConstructorResolvers() {
