@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Attribute;
 import jodd.lagarto.dom.Element;
-import jodd.lagarto.dom.LagartoDOMBuilder;
 import jodd.lagarto.dom.Node;
 import jodd.lagarto.dom.Node.NodeType;
 import jodd.lagarto.dom.Text;
@@ -42,9 +41,7 @@ public class Parser {
 
 	public static Jerry parseHtml(String template) {
 		try {
-			LagartoDOMBuilder domBuilder = new NgoyDomBuilder();
-
-			Jerry doc = Jerry.jerry(domBuilder)
+			Jerry doc = Jerry.jerry(new NgoyDomBuilder())
 					.parse(template);
 			return doc;
 		} catch (Exception e) {
