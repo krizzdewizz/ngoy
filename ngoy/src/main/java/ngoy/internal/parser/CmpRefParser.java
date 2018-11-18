@@ -37,7 +37,7 @@ public class CmpRefParser {
 		this.parser = parser;
 	}
 
-	boolean acceptCmpRefs(Jerry el, List<CmpRef> cmpRefs, boolean acceptChildren) {
+	boolean acceptCmpRefs(Jerry el, List<CmpRef> cmpRefs) {
 
 		List<String[]> classNames = classNames(el).stream()
 				.map(it -> new String[] { it, "" })
@@ -118,11 +118,9 @@ public class CmpRefParser {
 				parser.handler.elementHeadEnd();
 			}
 
-			acceptCmpRef(el, ref, acceptChildren);
+			acceptCmpRef(el, ref);
 
-			if (acceptChildren) {
-				parser.handler.componentEnd();
-			}
+			parser.handler.componentEnd();
 
 			parser.skipSubTreeVisitor.skipSubTree(el);
 		}
@@ -130,7 +128,7 @@ public class CmpRefParser {
 		return true;
 	}
 
-	private void acceptCmpRef(Jerry el, CmpRef ref, boolean acceptChildren) {
+	private void acceptCmpRef(Jerry el, CmpRef ref) {
 		Jerry cmpNodes = parser.parse(ref.template);
 
 		Jerry ngContentEl = findNgContent(cmpNodes);
@@ -165,27 +163,23 @@ public class CmpRefParser {
 		parent.get(0)
 				.removeChild(ngContentEll);
 
-		if (acceptChildren) {
-			parser.accept(nodesBefore);
-		}
+		parser.accept(nodesBefore);
 
 		if (invokeHandler) {
 			parser.handler.ngContentStart();
 		}
 
-		if (acceptChildren) {
-			if (selector == null) {
-				parser.accept(el.contents());
-			} else {
-				traverse(el.$(selector), parser.visitor);
-			}
-
-			if (invokeHandler) {
-				parser.handler.ngContentEnd();
-			}
-
-			parser.accept(nodesAfter);
+		if (selector == null) {
+			parser.accept(el.contents());
+		} else {
+			traverse(el.$(selector), parser.visitor);
 		}
+
+		if (invokeHandler) {
+			parser.handler.ngContentEnd();
+		}
+
+		parser.accept(nodesAfter);
 	}
 
 	@Nullable

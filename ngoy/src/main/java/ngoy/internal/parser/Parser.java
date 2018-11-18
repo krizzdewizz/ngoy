@@ -6,7 +6,6 @@ import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
 import static ngoy.internal.parser.NgoyElement.getPosition;
 import static ngoy.internal.parser.visitor.XDom.attributes;
-import static ngoy.internal.parser.visitor.XDom.createElement;
 import static ngoy.internal.parser.visitor.XDom.nodeName;
 import static ngoy.internal.parser.visitor.XDom.traverse;
 
@@ -21,7 +20,6 @@ import java.util.regex.Pattern;
 
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Attribute;
-import jodd.lagarto.dom.CData;
 import jodd.lagarto.dom.Element;
 import jodd.lagarto.dom.LagartoDOMBuilder;
 import jodd.lagarto.dom.Node;
@@ -76,8 +74,15 @@ public class Parser {
 		@Override
 		public void head(Jerry node, int depth) {
 			currentEl = node;
+
 			replaceDocType(node);
-			replaceExprs(node);
+
+			Node n = node.get(0);
+			if (n instanceof Text) {
+				replaceExpr(((Text) n).getTextContent());
+			} else if (n instanceof Element) {
+				replaceElement(node);
+			}
 		}
 
 		@Override
@@ -93,8 +98,6 @@ public class Parser {
 	private static final String NG_ELSE = "ngElse";
 
 	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
-	private static final Pattern NG_CONTAINER_PATTERN = Pattern.compile("<ng-container(.*)>((.|\\s)*)</ng-container>", Pattern.MULTILINE);
-	private static final Pattern NG_FOR_PATTERN = Pattern.compile("\\*ngFor=\"(.*)\"");
 
 	private final LinkedList<Jerry> elementConditionals = new LinkedList<>();
 	private final LinkedList<Jerry> elementRepeated = new LinkedList<>();
@@ -179,53 +182,7 @@ public class Parser {
 		this.handler.documentEnd();
 	}
 
-	private void replaceExprs(Jerry node) {
-		Node n = node.get(0);
-		if (n instanceof CData) {
-			replaceCData((CData) n);
-		} else if (n instanceof Text) {
-			replaceExpr(((Text) n).getTextContent());
-		} else if (n instanceof Element) {
-			replaceElement(node, true);
-		}
-	}
-
-	private void replaceCData(CData node) {
-		String text = node.getTextContent();
-
-		text = ForOfMicroParser.parse(text);
-
-		Jerry el;
-		String content;
-		Matcher matcher = NG_CONTAINER_PATTERN.matcher(text);
-		if (matcher.find()) {
-			el = createElement(NG_TEMPLATE);
-			content = matcher.group(2);
-			Matcher forMatcher = NG_FOR_PATTERN.matcher(matcher.group(1));
-			if (forMatcher.find()) {
-				el.attr("*ngFor", forMatcher.group(1));
-			}
-
-			traverse(el, new MicroSyntaxVisitor(new NodeVisitor.Default()));
-
-		} else {
-			content = text;
-			el = null;
-		}
-
-		boolean cmpEnd = el != null && replaceElement(el, false);
-		replaceExpr(content);
-
-		if (el != null) {
-			if (cmpEnd) {
-				handler.componentEnd();
-				handler.ngContentEnd();
-			}
-			visitor.tail(el, -1);
-		}
-	}
-
-	private boolean replaceElement(Jerry el, boolean acceptChildren) {
+	private boolean replaceElement(Jerry el) {
 
 		if (nodeName(el).equals(NG_TEMPLATE)) {
 			String ngIf = el.attr("[ngIf]");
@@ -243,7 +200,7 @@ public class Parser {
 		List<CmpRef> cmpRefs = resolver.resolveCmps(el);
 		compileCmps(cmpRefs, el);
 
-		boolean hasCmps = cmpRefParser.acceptCmpRefs(el, cmpRefs, acceptChildren);
+		boolean hasCmps = cmpRefParser.acceptCmpRefs(el, cmpRefs);
 
 		if (isSet(handler.textOverrideExpr)) {
 			skipSubTreeVisitor.skipSubTree(el);
