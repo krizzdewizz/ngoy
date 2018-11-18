@@ -6,13 +6,11 @@ import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Attribute;
 import jodd.lagarto.dom.Node;
-import ngoy.internal.parser.ObjParser;
 import ngoy.internal.parser.Parser;
 
 public class XDom {
@@ -50,12 +48,19 @@ public class XDom {
 		List<String> all = new ArrayList<>();
 		String style = el.attr("style");
 		if (style != null) {
-			Map<String, String> map = ObjParser.parse(format("{%s}", style));
-			for (Map.Entry<String, String> entry : map.entrySet()) {
-				all.add(format("%s:%s", entry.getKey(), entry.getValue()));
-			}
+			parseStyles(style, all);
 		}
 		return all;
+	}
+
+	private static void parseStyles(String style, List<String> target) {
+		String[] splits = style.split(";");
+		for (String split : splits) {
+			split = split.trim();
+			if (!split.isEmpty()) {
+				target.add(split);
+			}
+		}
 	}
 
 	public static void removeContents(Jerry el) {
