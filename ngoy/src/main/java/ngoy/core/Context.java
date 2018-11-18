@@ -1,8 +1,5 @@
 package ngoy.core;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.MinimalEnv;
 
@@ -28,7 +25,6 @@ public final class Context {
 	}
 
 	private final Ctx ctx;
-	private final Map<String, Object> global = new HashMap<>();
 
 	private Context(Ctx ctx) {
 		this.ctx = ctx;
@@ -43,8 +39,6 @@ public final class Context {
 	 */
 	public Context variable(String variableName, Object variableValue) {
 		ctx.variable(variableName, variableValue);
-		global.put(variableName, variableValue);
-		ctx.variable("global", global);
 		return this;
 	}
 
