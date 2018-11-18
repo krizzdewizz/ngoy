@@ -12,7 +12,8 @@ public class NgoyDomBuilder extends LagartoDOMBuilder {
 	public NgoyDomBuilder() {
 		config //
 				.setCalculatePosition(true)
-				.setCaseSensitive(true);
+				.setCaseSensitive(true)
+				.setParseXmlTags(true);
 	}
 
 	@Override

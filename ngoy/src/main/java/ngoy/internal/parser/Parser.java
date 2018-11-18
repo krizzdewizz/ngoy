@@ -75,7 +75,7 @@ public class Parser {
 		public void head(Jerry node, int depth) {
 			currentEl = node;
 
-			replaceDocType(node);
+			replaceCommentLikeNodes(node);
 
 			Node n = node.get(0);
 			if (n instanceof Text) {
@@ -389,9 +389,10 @@ public class Parser {
 		return format("\nComponent: %s\ntemplateUrl: %s\nposition: %s", className, templateUrl, position);
 	}
 
-	private void replaceDocType(Jerry node) {
+	private void replaceCommentLikeNodes(Jerry node) {
 		Node n = node.get(0);
-		if (n.getNodeType() == NodeType.DOCUMENT_TYPE) {
+		NodeType nodeType = n.getNodeType();
+		if (nodeType == NodeType.DOCUMENT_TYPE || nodeType == NodeType.COMMENT || nodeType == NodeType.CDATA || nodeType == NodeType.XML_DECLARATION) {
 			handler.text(n.getHtml(), false, false, emptyList());
 		}
 	}
