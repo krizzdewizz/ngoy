@@ -1,6 +1,7 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
 import static ngoy.internal.parser.NgoyElement.getPosition;
@@ -24,6 +25,7 @@ import jodd.lagarto.dom.CData;
 import jodd.lagarto.dom.Element;
 import jodd.lagarto.dom.LagartoDOMBuilder;
 import jodd.lagarto.dom.Node;
+import jodd.lagarto.dom.Node.NodeType;
 import jodd.lagarto.dom.Text;
 import ngoy.core.Component;
 import ngoy.core.NgoyException;
@@ -74,6 +76,7 @@ public class Parser {
 		@Override
 		public void head(Jerry node, int depth) {
 			currentEl = node;
+			replaceDocType(node);
 			replaceExprs(node);
 		}
 
@@ -306,7 +309,7 @@ public class Parser {
 			if (isExpr) {
 				handleExpr(s);
 			} else {
-				handler.text(s, false, null);
+				handler.text(s, false, true, null);
 			}
 		});
 	}
@@ -334,7 +337,7 @@ public class Parser {
 			pipeAndParams.add(0, resolvedPipe.getName());
 			pipes.add(pipeAndParams);
 		}
-		handler.text(exprHead, true, pipes);
+		handler.text(exprHead, true, true, pipes);
 	}
 
 	private void elementConditionalElse(Jerry el) {
@@ -427,5 +430,12 @@ public class Parser {
 		}
 
 		return format("\nComponent: %s\ntemplateUrl: %s\nposition: %s", className, templateUrl, position);
+	}
+
+	private void replaceDocType(Jerry node) {
+		Node n = node.get(0);
+		if (n.getNodeType() == NodeType.DOCUMENT_TYPE) {
+			handler.text(n.getHtml(), false, false, emptyList());
+		}
 	}
 }

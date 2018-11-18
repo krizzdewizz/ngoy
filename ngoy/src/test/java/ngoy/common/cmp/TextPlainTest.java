@@ -39,11 +39,11 @@ public class TextPlainTest extends ANgoyTest {
 	@Component(selector = "test", contentType = "text/plain", template = "<ng-container *ngFor=\"let p of persons\">{{p.name}}{{delim}}{{p.age}}\n</ng-container>")
 	public static class CmpRepeated {
 		public final String delim = ";";
-		public List<Person> persons = asList(new Person("peter", 22), new Person("paul", 26), new Person("mary", 24));
+		public List<Person> persons = asList(new Person("petör", 22), new Person("paul", 26), new Person("märy", 24));
 	}
 
 	@Test
 	public void testRepeated() throws Exception {
-		assertThat(render(CmpRepeated.class)).isEqualTo("peter;22\npaul;26\nmary;24\n");
+		assertThat(render(CmpRepeated.class)).isEqualTo("petör;22\npaul;26\nmäry;24\n");
 	}
 }

@@ -53,7 +53,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
-	public void text(String text, boolean textIsExpr, List<List<String>> pipes) {
+	public void text(String text, boolean textIsExpr, boolean escape, List<List<String>> pipes) {
 		if (text.isEmpty()) {
 			return;
 		}
@@ -74,7 +74,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			String call = format("ctx.eval(\"%s\"%s)", escapeJava(text), params);
 			printOutExpr(call);
 		} else {
-			out.printEscaped(escapeJava(text), false);
+			if (escape) {
+				out.printEscaped(escapeJava(text), false);
+			} else {
+				printOut(text);
+			}
 		}
 	}
 

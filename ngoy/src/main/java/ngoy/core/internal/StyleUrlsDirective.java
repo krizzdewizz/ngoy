@@ -32,6 +32,11 @@ public class StyleUrlsDirective implements OnCompile {
 					.filter(style -> !style.isEmpty())
 					.collect(joining("\n"));
 
+			if (styles.trim()
+					.isEmpty()) {
+				return;
+			}
+
 			Jerry styleEl = el.$("style");
 			if (styleEl.length() == 0) {
 				Jerry ell = XDom.createElement("style");

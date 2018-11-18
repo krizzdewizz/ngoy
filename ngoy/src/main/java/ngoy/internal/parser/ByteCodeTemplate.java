@@ -145,14 +145,14 @@ public class ByteCodeTemplate implements ParserHandler {
 	}
 
 	@Override
-	public void text(String text, boolean textIsExpr, List<List<String>> pipes) {
+	public void text(String text, boolean textIsExpr, boolean escape, List<List<String>> pipes) {
 		if (text.isEmpty()) {
 			return;
 		}
 		if (textIsExpr) {
 			out.printOutExpr(text, pipes);
 		} else {
-			out.print(text, false, true, contentType);
+			out.print(text, false, escape, contentType);
 		}
 	}
 

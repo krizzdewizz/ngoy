@@ -24,7 +24,7 @@ public interface ParserHandler {
 
 	void elementHeadEnd();
 
-	void text(String text, boolean textIsExpr, List<List<String>> pipes);
+	void text(String text, boolean textIsExpr, boolean escape, List<List<String>> pipes);
 
 	void elementEnd(String name);
 
@@ -83,7 +83,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void text(String text, boolean textIsExpr, List<List<String>> pipes) {
+		public void text(String text, boolean textIsExpr, boolean escape, List<List<String>> pipes) {
 		}
 
 		@Override
@@ -178,8 +178,8 @@ public interface ParserHandler {
 			target.elementHeadEnd();
 		}
 
-		public void text(String text, boolean textIsExpr, List<List<String>> pipes) {
-			target.text(text, textIsExpr, pipes);
+		public void text(String text, boolean textIsExpr, boolean escape, List<List<String>> pipes) {
+			target.text(text, textIsExpr, escape, pipes);
 		}
 
 		public void elementEnd(String name) {
