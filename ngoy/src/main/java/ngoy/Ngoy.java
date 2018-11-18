@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
-import ngoy.cli.Cli;
 import ngoy.common.PipesModule;
 import ngoy.core.Component;
 import ngoy.core.Context;
@@ -53,6 +52,7 @@ import ngoy.core.internal.Ctx;
 import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.MinimalEnv;
 import ngoy.core.internal.Resolver;
+import ngoy.internal.cli.Cli;
 import ngoy.internal.parser.ByteCodeTemplate;
 import ngoy.internal.parser.Parser;
 import ngoy.site.SiteRenderer;

@@ -1,4 +1,4 @@
-package ngoy.cli;
+package ngoy.internal.cli;
 
 import static java.lang.String.format;
 import static ngoy.Ngoy.renderString;

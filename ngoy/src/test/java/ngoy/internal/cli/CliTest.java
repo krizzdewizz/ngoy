@@ -1,4 +1,4 @@
-package ngoy.cli;
+package ngoy.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -12,6 +12,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import ngoy.internal.cli.Cli;
 
 public class CliTest {
 

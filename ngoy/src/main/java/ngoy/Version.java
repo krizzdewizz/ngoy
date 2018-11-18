@@ -1,5 +1,10 @@
 package ngoy;
 
+/**
+ * The ngoy version.
+ * 
+ * @author krizz
+ */
 public final class Version {
 
 	private static final String IMPLEMENTATION_VERSION;
