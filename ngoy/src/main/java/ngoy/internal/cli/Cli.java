@@ -57,8 +57,7 @@ public class Cli {
 		List<String> argList = cmd.getArgList();
 
 		if (argList.isEmpty() || cmd.hasOption('h')) {
-			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp("ngoy [options] template", "\nOptions", options, "");
+			printHelp();
 			return;
 		}
 
@@ -75,6 +74,10 @@ public class Cli {
 		String tpl = expr ? format("{{%s}}", template) : template;
 
 		renderString(tpl, context, out);
+	}
+
+	private void printHelp() {
+		new HelpFormatter().printHelp("ngoy [options] template", "\nOptions", options, "");
 	}
 
 	private void printVersion() {

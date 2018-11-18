@@ -2,6 +2,7 @@ package ngoy.internal.parser.visitor;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static ngoy.internal.parser.NgoyElement.setNodeName;
 import static ngoy.internal.parser.Parser.NG_TEMPLATE;
 import static ngoy.internal.parser.visitor.XDom.appendChild;
 import static ngoy.internal.parser.visitor.XDom.cloneNode;
@@ -18,7 +19,6 @@ import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Element;
 import ngoy.core.NgoyException;
 import ngoy.internal.parser.ForOfVariable;
-import ngoy.internal.parser.NgoyElement;
 import ngoy.internal.parser.ParseException;
 
 public class MicroSyntaxVisitor extends NodeVisitor.Default {
@@ -63,7 +63,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 		Jerry elClone = cloneNode(el);
 
 		removeContents(el);
-		((NgoyElement) el.get(0)).setNodeName(NG_TEMPLATE);
+		setNodeName(el, NG_TEMPLATE);
 		el.attr("ngFor", null);
 		el.attr(format("let-%s", itemAndListName[0]), null);
 		el.attr("[ngForOf]", itemAndListName[1]);
@@ -107,7 +107,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 			}
 		}
 
-		((NgoyElement) el.get(0)).setNodeName(NG_TEMPLATE);
+		setNodeName(el, NG_TEMPLATE);
 		removeContents(el);
 		appendChild(el, elClone);
 	}
@@ -186,7 +186,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 
 		el.attr(replacedAttr, value);
 
-		((NgoyElement) el.get(0)).setNodeName(NG_TEMPLATE);
+		setNodeName(el, NG_TEMPLATE);
 		removeContents(el);
 		appendChild(el, elClone);
 	}

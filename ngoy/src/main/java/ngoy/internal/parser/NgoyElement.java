@@ -11,6 +11,10 @@ public class NgoyElement extends Element {
 		return ((NgoyElement) el.get(0)).getPosition();
 	}
 
+	public static void setNodeName(Jerry el, String name) {
+		((NgoyElement) el.get(0)).setNodeName(name);
+	}
+
 	private final String position;
 	private String writableNodeName;
 
@@ -31,11 +35,11 @@ public class NgoyElement extends Element {
 		return writableNodeName;
 	}
 
-	public void setNodeName(String nodeName) {
+	private void setNodeName(String nodeName) {
 		this.writableNodeName = nodeName;
 	}
 
-	public String getPosition() {
+	private String getPosition() {
 		return position;
 	}
 }

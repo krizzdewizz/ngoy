@@ -9,19 +9,17 @@ import jodd.lagarto.dom.LagartoDOMBuilderTagVisitor;
 
 public class NgoyDomBuilder extends LagartoDOMBuilder {
 
-	private static LagartoDOMBuilderTagVisitor domBuilderTagVisitor;
-
 	public NgoyDomBuilder() {
-		config = config //
+		config //
 				.setCalculatePosition(true)
 				.setCaseSensitive(true);
 	}
 
 	@Override
-	protected Document doParse(LagartoParser lagartoParser) {
-		lagartoParser.setConfig(config);
+	protected Document doParse(LagartoParser parser) {
+		parser.setConfig(config);
 
-		domBuilderTagVisitor = new LagartoDOMBuilderTagVisitor(this) {
+		LagartoDOMBuilderTagVisitor builder = new LagartoDOMBuilderTagVisitor(this) {
 			@Override
 			protected Element createElementNode(Tag tag) {
 				Element el = super.createElementNode(tag);
@@ -29,8 +27,8 @@ public class NgoyDomBuilder extends LagartoDOMBuilder {
 			}
 		};
 
-		lagartoParser.parse(domBuilderTagVisitor);
+		parser.parse(builder);
 
-		return domBuilderTagVisitor.getDocument();
+		return builder.getDocument();
 	}
 }
