@@ -89,7 +89,6 @@ public class Parser {
 	public static final String NG_TEMPLATE = "ng-template";
 	private static final String NG_ELSE = "ngElse";
 
-	private static final Pattern EXPR_PATTERN = Pattern.compile("\\{\\{(.*?)\\}\\}", Pattern.MULTILINE);
 	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
 	private static final Pattern NG_CONTAINER_PATTERN = Pattern.compile("<ng-container(.*)>((.|\\s)*)</ng-container>", Pattern.MULTILINE);
 	private static final Pattern NG_FOR_PATTERN = Pattern.compile("\\*ngFor=\"(.*)\"");
@@ -302,19 +301,14 @@ public class Parser {
 		if (text == null || text.isEmpty()) {
 			return;
 		}
-		Matcher matcher = EXPR_PATTERN.matcher(text);
-		int last = 0;
-		while (matcher.find()) {
-			String expr = matcher.group(1);
-			String left = text.substring(last, matcher.start());
-			handler.text(left, false, null);
-			handleExpr(expr);
-			last = matcher.end();
-		}
 
-		if (last < text.length()) {
-			handler.text(text.substring(last), false, null);
-		}
+		ExprParser.parse(text, (s, isExpr) -> {
+			if (isExpr) {
+				handleExpr(s);
+			} else {
+				handler.text(s, false, null);
+			}
+		});
 	}
 
 	private void handleExpr(String expr) {
