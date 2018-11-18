@@ -7,10 +7,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
-import ngoy.Ngoy;
 import ngoy.common.DatePipe;
 import ngoy.common.LowerCasePipe;
 import ngoy.common.UpperCasePipe;
@@ -22,10 +18,9 @@ import ngoy.testapp.PersonDetailComponent;
 import ngoy.testapp.PersonService;
 import ngoy.testapp.TestApp;
 
-@Ignore
 public class XTest {
 
-	@Test
+//	@Test
 	public void testNgoy() throws Exception {
 		Ngoy ng = Ngoy.app(TestApp.class)
 				.providers(Provider.of(PersonService.class))
@@ -33,7 +28,7 @@ public class XTest {
 		ng.render(System.out);
 	}
 
-	@Test
+//	@Test
 	public void test() throws Exception {
 		TestApp testApp = new TestApp();
 		testApp.personService = new PersonService();
