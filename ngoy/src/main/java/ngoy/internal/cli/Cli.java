@@ -109,7 +109,8 @@ public class Cli {
 	}
 
 	void eachLine(InputStream in, Consumer<String> lineConsumer) {
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 			String line;
 			while ((line = reader.readLine()) != null) {
 				lineConsumer.accept(line);
