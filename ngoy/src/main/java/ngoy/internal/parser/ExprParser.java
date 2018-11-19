@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +37,7 @@ public class ExprParser {
 		@Override
 		protected SpelExpression doParseExpression(String expressionString, ParserContext context) throws ParseException {
 			String e = convertPipesToTransformCalls(expressionString);
-			return super.doParseExpression(e, context);
+			return new SpelExpression(e, null, null);
 		}
 
 		private String convertPipesToTransformCalls(String expressionString) {
@@ -50,7 +51,7 @@ public class ExprParser {
 						.trim();
 
 				List<String> pipeParams = new ArrayList<>();
-				pipe = PipeParser.parsePipe(pipe, pipeParams);
+				pipe = parsePipe(pipe, pipeParams);
 				String params = pipeParams.stream()
 						.collect(joining(","));
 
@@ -90,4 +91,39 @@ public class ExprParser {
 					.getName());
 		}
 	}
+
+	private static String parsePipe(String pipe, List<String> targetParams) {
+		int pos = pipe.indexOf(':');
+		if (pos < 0) {
+			return pipe;
+		}
+
+		parsePipeParams(pipe.substring(pos + 1), targetParams::add);
+		return pipe.substring(0, pos);
+	}
+
+	private static void parsePipeParams(String s, Consumer<String> param) {
+		StringBuilder result = new StringBuilder();
+
+		boolean quote = false;
+		for (int i = 0, n = s.length(); i < n; i++) {
+			char c = s.charAt(i);
+			boolean add = true;
+			if (c == '\'' || c == '"') {
+				quote = !quote;
+			} else if (c == ':' && !quote) {
+				param.accept(result.toString());
+				result.setLength(0);
+				add = false;
+			}
+			if (add) {
+				result.append(c);
+			}
+		}
+
+		if (result.length() > 0) {
+			param.accept(result.toString());
+		}
+	}
+
 }
