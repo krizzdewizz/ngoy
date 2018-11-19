@@ -1,7 +1,6 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
 import static ngoy.internal.parser.NgoyElement.getPosition;
@@ -9,14 +8,11 @@ import static ngoy.internal.parser.visitor.XDom.attributes;
 import static ngoy.internal.parser.visitor.XDom.nodeName;
 import static ngoy.internal.parser.visitor.XDom.traverse;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Attribute;
@@ -28,7 +24,6 @@ import ngoy.core.Component;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnCompile;
-import ngoy.core.PipeTransform;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.ContainerComponent;
 import ngoy.core.internal.Resolver;
@@ -70,7 +65,6 @@ public class Parser {
 
 		@Override
 		public void head(Jerry node, int depth) {
-			currentEl = node;
 
 			replaceCommentLikeNodes(node);
 
@@ -78,6 +72,7 @@ public class Parser {
 			if (n instanceof Text) {
 				replaceExpr(((Text) n).getTextContent());
 			} else if (n instanceof Element) {
+				currentEl = node;
 				replaceElement(node);
 			}
 		}
@@ -93,8 +88,6 @@ public class Parser {
 
 	public static final String NG_TEMPLATE = "ng-template";
 	private static final String NG_ELSE = "ngElse";
-
-	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
 
 	private final LinkedList<Jerry> elementConditionals = new LinkedList<>();
 	private final LinkedList<Jerry> elementRepeated = new LinkedList<>();
@@ -259,39 +252,7 @@ public class Parser {
 			return;
 		}
 
-		ExprParser.parse(text, (s, isExpr) -> {
-			if (isExpr) {
-				handleExpr(s);
-			} else {
-				handler.text(s, false, true, null);
-			}
-		});
-	}
-
-	private void handleExpr(String expr) {
-		Matcher matcher = PIPE_PATTERN.matcher(expr);
-		matcher.find();
-		String exprHead = matcher.group(1)
-				.trim();
-		List<List<String>> pipes = new ArrayList<>();
-		while (matcher.find()) {
-			String pipe = matcher.group(1)
-					.trim();
-
-			List<String> pipeAndParams = new ArrayList<>();
-			pipe = PipeParser.parsePipe(pipe, pipeAndParams);
-
-			Class<?> resolvedPipe = resolver.resolvePipe(pipe);
-			if (resolvedPipe == null) {
-				throw new ParseException("Pipe not found for name '%s'", pipe);
-			} else if (!PipeTransform.class.isAssignableFrom(resolvedPipe)) {
-				throw new ParseException("Pipe %s must implement %s", resolvedPipe.getName(), PipeTransform.class.getName());
-			}
-
-			pipeAndParams.add(0, resolvedPipe.getName());
-			pipes.add(pipeAndParams);
-		}
-		handler.text(exprHead, true, true, pipes);
+		ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, true));
 	}
 
 	private void elementConditionalElse(Jerry el) {
@@ -390,7 +351,7 @@ public class Parser {
 		Node n = node.get(0);
 		NodeType nodeType = n.getNodeType();
 		if (nodeType == NodeType.DOCUMENT_TYPE || nodeType == NodeType.COMMENT || nodeType == NodeType.CDATA || nodeType == NodeType.XML_DECLARATION) {
-			handler.text(n.getHtml(), false, false, emptyList());
+			handler.text(n.getHtml(), false, false);
 		}
 	}
 }

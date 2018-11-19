@@ -43,23 +43,12 @@ public class ByteCodeTemplate implements ParserHandler {
 			run.invokeVirtual(ctxType, "print", null, singleObjectParamType);
 		}
 
-		void printOutExpr(String text, List<List<String>> pipes) {
+		void printOutExpr(String text) {
 			flush();
-			LocalVariable pipesArray;
-			if (pipes.isEmpty()) {
-				pipesArray = emptyExprParams;
-			} else {
-				List<LocalVariable> ps = new ArrayList<>();
-				for (List<String> pipe : pipes) {
-					ps.add(toArray(pipe));
-				}
-				pipesArray = toStringTable(ps);
-			}
 
 			run.loadLocal(ctxParam);
 			run.loadLocal(ctxParam);
 			run.loadConstant(text);
-			run.loadLocal(pipesArray);
 
 			run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
 			run.invokeVirtual(ctxType, "printEscaped", null, singleObjectParamType);
@@ -84,7 +73,7 @@ public class ByteCodeTemplate implements ParserHandler {
 	private static final TypeDesc stringArrayType = TypeDesc.STRING.toArrayType();
 	private static final TypeDesc stringTableType = stringArrayType.toArrayType();
 	private static final TypeDesc[] pushCmpContextParamTypes = new TypeDesc[] { TypeDesc.STRING, stringArrayType };
-	private static final TypeDesc[] evalParamTypes = new TypeDesc[] { TypeDesc.STRING, stringTableType };
+	private static final TypeDesc[] evalParamTypes = new TypeDesc[] { TypeDesc.STRING };
 	private static final TypeDesc[] forOfStartParamTypes = new TypeDesc[] { TypeDesc.STRING, stringArrayType };
 	private static final TypeDesc[] evalClassesParamTypes = new TypeDesc[] { stringTableType };
 	private static final TypeDesc[] pushForOfContextParamsTypes = new TypeDesc[] { TypeDesc.STRING, TypeDesc.OBJECT };
@@ -104,7 +93,6 @@ public class ByteCodeTemplate implements ParserHandler {
 	private CodeBuilder run;
 	private RuntimeClassFile classFile;
 	private LocalVariable ctxParam;
-	private LocalVariable emptyExprParams;
 	private LocalVariable emptyStringArray;
 	private LocalVariable textOverrideVar;
 	private boolean hadTextOverride;
@@ -121,12 +109,6 @@ public class ByteCodeTemplate implements ParserHandler {
 				.getContextClassLoader());
 		run = new CodeBuilder(classFile.addMethod(Modifiers.PUBLIC_STATIC, "render", null, runParamTypes));
 		ctxParam = run.getParameter(0);
-
-		// create empty pipes array
-		emptyExprParams = run.createLocalVariable(stringTableType);
-		run.loadConstant(0);
-		run.newObject(stringTableType);
-		run.storeLocal(emptyExprParams);
 
 		emptyStringArray = run.createLocalVariable(stringArrayType);
 		run.loadConstant(0);
@@ -145,12 +127,12 @@ public class ByteCodeTemplate implements ParserHandler {
 	}
 
 	@Override
-	public void text(String text, boolean textIsExpr, boolean escape, List<List<String>> pipes) {
+	public void text(String text, boolean textIsExpr, boolean escape) {
 		if (text.isEmpty()) {
 			return;
 		}
 		if (textIsExpr) {
-			out.printOutExpr(text, pipes);
+			out.printOutExpr(text);
 		} else {
 			out.print(text, false, escape, contentType);
 		}
@@ -235,7 +217,6 @@ public class ByteCodeTemplate implements ParserHandler {
 		flushOut();
 		run.loadLocal(ctxParam);
 		run.loadConstant(expr);
-		run.loadLocal(emptyExprParams);
 		run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
 		LocalVariable evalResultVar = run.createLocalVariable(null, TypeDesc.OBJECT);
 		run.storeLocal(evalResultVar);
@@ -266,7 +247,6 @@ public class ByteCodeTemplate implements ParserHandler {
 	public void textOverride(String expr) {
 		run.loadLocal(ctxParam);
 		run.loadConstant(expr);
-		run.loadLocal(emptyExprParams);
 		run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
 		run.storeLocal(textOverrideVar);
 
@@ -291,7 +271,6 @@ public class ByteCodeTemplate implements ParserHandler {
 
 			run.loadLocal(ctxParam);
 			run.loadConstant(expr);
-			run.loadLocal(emptyExprParams);
 			run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
 			run.storeLocal(switchVar);
 
@@ -518,7 +497,6 @@ public class ByteCodeTemplate implements ParserHandler {
 
 		run.loadLocal(ctxParam);
 		run.loadConstant(switchCaseExpr);
-		run.loadLocal(emptyExprParams);
 		run.invokeVirtual(ctxType, "eval", TypeDesc.OBJECT, evalParamTypes);
 
 		run.loadLocal(switchVar);

@@ -20,6 +20,7 @@ import org.junit.Test;
 import jodd.jerry.Jerry;
 import ngoy.ANgoyTest;
 import ngoy.JavaTemplate;
+import ngoy.common.UpperCasePipe;
 import ngoy.core.Directive;
 import ngoy.core.Injector;
 import ngoy.core.LocaleProvider;
@@ -82,7 +83,7 @@ public class ParserTest {
 
 			@Override
 			public Class<?> resolvePipe(String name) {
-				return null;
+				return "uppercase".equals(name) ? UpperCasePipe.class : null;
 			}
 
 			@Override

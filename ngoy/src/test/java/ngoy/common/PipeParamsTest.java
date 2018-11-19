@@ -30,17 +30,4 @@ public class PipeParamsTest extends ANgoyTest {
 	public void test() {
 		assertThat(render(Cmp.class)).isEqualTo("alfreda22");
 	}
-
-	//
-
-	@Component(selector = "test", template = "{{ 'alfred' | myPipe:'a:x':age }}")
-	@NgModule(declarations = { MyPipe.class })
-	public static class FailCmp {
-		public int age = 22;
-	}
-
-	@Test
-	public void testFail() {
-		assertThat(render(FailCmp.class)).isEqualTo("alfreda:x22");
-	}
 }

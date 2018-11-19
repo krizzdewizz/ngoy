@@ -46,10 +46,16 @@ public class CliTest {
 	}
 
 	private String run(String... args) {
+		return run(false, args);
+	}
+
+	private String run(boolean rawOutput, String... args) {
 		resetOut();
 		new Cli().run(args, out);
 		String result = new String(out.toByteArray());
-		result = result.replaceAll("\\r|\\n", "");
+		if (!rawOutput) {
+			result = result.replaceAll("\\r|\\n", "");
+		}
 		return result;
 	}
 
@@ -89,6 +95,11 @@ public class CliTest {
 	public void testExpr() {
 		assertThat(run("-e", "{}")).isEqualTo("[]");
 		assertThat(run("-e", "{:}.entrySet().iterator().hasNext()")).isEqualTo("false");
+	}
+
+	@Test
+	public void testNewLine() {
+		assertThat(run(true, "-e", "'\n'")).isEqualTo("\n");
 	}
 
 	@Test

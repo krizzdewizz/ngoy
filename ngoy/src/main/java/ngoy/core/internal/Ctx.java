@@ -36,7 +36,6 @@ import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
-import ngoy.core.PipeTransform;
 import ngoy.core.internal.IterableWithVariables.IterVariable;
 import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.Inputs;
@@ -58,6 +57,8 @@ public class Ctx {
 	public static boolean eq(Object a, Object b) {
 		return Objects.equals(a, b);
 	}
+
+	public static String CTX_VARIABLE = "_ctx";
 
 	private final LinkedList<EvaluationContext> spelCtxs = new LinkedList<>();
 	private final Set<String> variables = new HashSet<>();
@@ -123,7 +124,9 @@ public class Ctx {
 		SimpleEvaluationContext evalCtx = SimpleEvaluationContext.forPropertyAccessors(accessor)
 				.withRootObject(modelRoot)
 				.build();
-		return new EvalContext(evalCtx, variables);
+		Map<String, Object> vars = new HashMap<String, Object>(variables);
+		vars.put(CTX_VARIABLE, this);
+		return new EvalContext(evalCtx, vars);
 	}
 
 	public Ctx variable(String variableName, @Nullable Object variableValue) {
@@ -133,23 +136,19 @@ public class Ctx {
 		return this;
 	}
 
-	public Object eval(String expr, String[]... pipes) {
+	public Object pipe(String pipeClass) {
+		try {
+			return injector.get(loadClass(pipeClass));
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
+	public Object eval(String expr) {
 		EvaluationContext peek = spelCtxs.peek();
 		try {
 			Object value = exprCache.get(expr, exprParser)
 					.getValue(peek);
-
-			for (String[] pipeWithParam : pipes) {
-				String pipeClass = pipeWithParam[0];
-				List<Object> evaledParams = new ArrayList<>();
-				for (int i = 1, n = pipeWithParam.length; i < n; i++) {
-					evaledParams.add(eval(pipeWithParam[i]));
-				}
-
-				PipeTransform pipe = (PipeTransform) injector.get(loadClass(pipeClass));
-				value = pipe.transform(value, evaledParams.toArray());
-			}
-
 			return value;
 		} catch (Exception e) {
 			TypedValue rootObject = peek.getRootObject();

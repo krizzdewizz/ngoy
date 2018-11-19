@@ -53,25 +53,12 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
-	public void text(String text, boolean textIsExpr, boolean escape, List<List<String>> pipes) {
+	public void text(String text, boolean textIsExpr, boolean escape) {
 		if (text.isEmpty()) {
 			return;
 		}
 		if (textIsExpr) {
-			String params;
-			if (!pipes.isEmpty()) {
-				String pp = pipes.stream()
-						.map(p -> {
-							String ppa = p.size() > 1 ? format(",\"%s\"", escapeJava(p.get(1))) : "";
-							String s = format("new String[]{\"%s\"%s}", p.get(0), ppa);
-							return s;
-						})
-						.collect(joining(","));
-				params = format(", %s", pp);
-			} else {
-				params = "";
-			}
-			String call = format("ctx.eval(\"%s\"%s)", escapeJava(text), params);
+			String call = format("ctx.eval(\"%s\")", escapeJava(text));
 			printOutExpr(call);
 		} else {
 			if (escape) {
