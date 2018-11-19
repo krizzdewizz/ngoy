@@ -58,7 +58,18 @@ public class Ctx {
 		return Objects.equals(a, b);
 	}
 
-	public static String CTX_VARIABLE = "_ctx";
+	public class ContextApi {
+		// see ExprParser
+		public Object pipe(String pipeClass) {
+			try {
+				return injector.get(loadClass(pipeClass));
+			} catch (Exception e) {
+				throw wrap(e);
+			}
+		}
+	}
+	
+	public static String CTX_VARIABLE = "$ngoyctx";
 
 	private final LinkedList<EvaluationContext> spelCtxs = new LinkedList<>();
 	private final Set<String> variables = new HashSet<>();
@@ -67,6 +78,7 @@ public class Ctx {
 	private final Injector injector;
 	private final LinkedList<Map<String, Object>> iterationVars = new LinkedList<>();
 	private final ExprCache exprCache = new ExprCache();
+	private final ContextApi api = new ContextApi();
 	private PrintStream out;
 	private String contentType;
 
@@ -125,7 +137,7 @@ public class Ctx {
 				.withRootObject(modelRoot)
 				.build();
 		Map<String, Object> vars = new HashMap<String, Object>(variables);
-		vars.put(CTX_VARIABLE, this);
+		vars.put(CTX_VARIABLE, api);
 		return new EvalContext(evalCtx, vars);
 	}
 
@@ -136,13 +148,6 @@ public class Ctx {
 		return this;
 	}
 
-	public Object pipe(String pipeClass) {
-		try {
-			return injector.get(loadClass(pipeClass));
-		} catch (Exception e) {
-			throw wrap(e);
-		}
-	}
 
 	public Object eval(String expr) {
 		EvaluationContext peek = spelCtxs.peek();
