@@ -1,5 +1,6 @@
 package ngoy.internal.cli;
 
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -105,7 +106,8 @@ public class CliTest {
 	@Test
 	public void testInput() {
 		System.setIn(new ByteArrayInputStream("line1\nline2\n".getBytes()));
-		assertThat(run("-e", "-in", "$ + 'a'")).isEqualTo("line1aline2a");
+		String sep = System.lineSeparator();
+		assertThat(run(true, "-e", "-in", "$ + 'a' + nl")).isEqualTo(format("line1a%sline2a%s", sep, sep));
 	}
 
 	@Test
