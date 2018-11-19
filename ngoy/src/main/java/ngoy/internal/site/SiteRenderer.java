@@ -20,7 +20,7 @@ public class SiteRenderer {
 	@Optional
 	public Router router;
 
-	public void render(Ngoy ngoy, Path folder) {
+	public void render(Ngoy<?> ngoy, Path folder) {
 		if (router != null) {
 			renderRoutes(ngoy, folder);
 		} else {
@@ -28,7 +28,7 @@ public class SiteRenderer {
 		}
 	}
 
-	private void renderRoutes(Ngoy ngoy, Path folder) {
+	private void renderRoutes(Ngoy<?> ngoy, Path folder) {
 		Location oldLocation = router.location;
 		try {
 			for (Route route : router.getRoutes()) {
@@ -45,7 +45,7 @@ public class SiteRenderer {
 		}
 	}
 
-	private void render(Ngoy ngoy, Path folder, String file) {
+	private void render(Ngoy<?> ngoy, Path folder, String file) {
 		Path page = folder.resolve(file);
 		try {
 			Files.createDirectories(page.getParent());

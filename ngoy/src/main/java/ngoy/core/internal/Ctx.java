@@ -58,7 +58,18 @@ public class Ctx {
 		return Objects.equals(a, b);
 	}
 
-	public static String CTX_VARIABLE = "_ctx";
+	public class ContextApi {
+		// see ExprParser
+		public Object pipe(String pipeClass) {
+			try {
+				return injector.get(loadClass(pipeClass));
+			} catch (Exception e) {
+				throw wrap(e);
+			}
+		}
+	}
+	
+	public static String CTX_VARIABLE = "$ngoyctx";
 
 	private final LinkedList<EvaluationContext> spelCtxs = new LinkedList<>();
 	private final Set<String> variables = new HashSet<>();
@@ -67,6 +78,7 @@ public class Ctx {
 	private final Injector injector;
 	private final LinkedList<Map<String, Object>> iterationVars = new LinkedList<>();
 	private final ExprCache exprCache = new ExprCache();
+	private final ContextApi api = new ContextApi();
 	private PrintStream out;
 	private String contentType;
 
@@ -125,7 +137,7 @@ public class Ctx {
 				.withRootObject(modelRoot)
 				.build();
 		Map<String, Object> vars = new HashMap<String, Object>(variables);
-		vars.put(CTX_VARIABLE, this);
+		vars.put(CTX_VARIABLE, api);
 		return new EvalContext(evalCtx, vars);
 	}
 
@@ -136,13 +148,6 @@ public class Ctx {
 		return this;
 	}
 
-	public Object pipe(String pipeClass) {
-		try {
-			return injector.get(loadClass(pipeClass));
-		} catch (Exception e) {
-			throw wrap(e);
-		}
-	}
 
 	public Object eval(String expr) {
 		EvaluationContext peek = spelCtxs.peek();
@@ -160,7 +165,7 @@ public class Ctx {
 					Class<?> rootClass = value.getClass();
 					Component cmpAnn = rootClass.getAnnotation(Component.class);
 					if (cmpAnn != null) {
-						templateUrl = cmpAnn.templateUrl();
+						templateUrl = format("'%s'", cmpAnn.templateUrl());
 					}
 
 					root = rootClass.getName();
@@ -171,30 +176,32 @@ public class Ctx {
 	}
 
 	public boolean evalBool(String expr) {
-		Object obj = eval(expr);
-		Boolean result = (Boolean) obj;
-		if (result != null) {
-			return result.booleanValue();
-		}
-
-		TypedValue rootObject = spelCtxs.peek()
-				.getRootObject();
-		String root = "null";
-		String templateUrl = "none";
-		if (rootObject != null) {
-			Object value = rootObject.getValue();
-			if (value != null) {
-				Class<?> rootClass = value.getClass();
-				Component cmpAnn = rootClass.getAnnotation(Component.class);
-				if (cmpAnn != null) {
-					templateUrl = format("'%s'", cmpAnn.templateUrl());
-				}
-
-				root = rootClass.getName();
+		try {
+			Object obj = eval(expr);
+			Boolean result = (Boolean) obj;
+			if (result == null) {
+				throw new NgoyException("result is null");
 			}
+			return result.booleanValue();
+		} catch (Exception e) {
+			TypedValue rootObject = spelCtxs.peek()
+					.getRootObject();
+			String root = "null";
+			String templateUrl = "none";
+			if (rootObject != null) {
+				Object value = rootObject.getValue();
+				if (value != null) {
+					Class<?> rootClass = value.getClass();
+					Component cmpAnn = rootClass.getAnnotation(Component.class);
+					if (cmpAnn != null) {
+						templateUrl = format("'%s'", cmpAnn.templateUrl());
+					}
+
+					root = rootClass.getName();
+				}
+			}
+			throw new NgoyException(e, format("Error while converting result of expression '%s' to boolean: %s. modelRoot: %s. templateUrl: %s.", expr, e.getMessage(), root, templateUrl));
 		}
-		throw new NgoyException(format("Error while converting result of expression '%s' to boolean: the result was null and null cannot be converted to boolean.  modelRoot: %s. templateUrl: %s.",
-				expr, root, templateUrl));
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -294,8 +301,7 @@ public class Ctx {
 					Object valueType = value == null ? null
 							: value.getClass()
 									.getName();
-					throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", clazz.getName(), field.getName(), expr,
-							fieldType, valueType);
+					throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", clazz.getName(), field.getName(), expr, fieldType, valueType);
 				}
 			}
 				break;
@@ -308,8 +314,7 @@ public class Ctx {
 					Object valueType = value == null ? null
 							: value.getClass()
 									.getName();
-					throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", clazz.getName(),
-							setter.getName(), expr, parameterType, valueType);
+					throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", clazz.getName(), setter.getName(), expr, parameterType, valueType);
 				}
 			}
 				break;
@@ -365,7 +370,8 @@ public class Ctx {
 			String expr = pair[1];
 
 			if (clazz.equals("ngClass")) {
-				// Spring EL evals an object literal such as {a: true} properly to a map
+				// Spring EL evals an object literal such as {a: true} properly
+				// to a map
 				@SuppressWarnings("unchecked")
 				Map<String, Boolean> map = (Map<String, Boolean>) eval(expr);
 				for (Map.Entry<String, Boolean> entry : map.entrySet()) {
@@ -397,7 +403,8 @@ public class Ctx {
 			String expr = pair[1];
 
 			if (style.equals("ngStyle")) {
-				// Spring EL evals an object literal such as {a: 'hello'} properly to a map
+				// Spring EL evals an object literal such as {a: 'hello'}
+				// properly to a map
 				@SuppressWarnings("unchecked")
 				Map<String, String> map = (Map<String, String>) eval(expr);
 				for (Map.Entry<String, String> entry : map.entrySet()) {

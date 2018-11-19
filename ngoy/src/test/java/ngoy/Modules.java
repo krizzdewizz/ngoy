@@ -5,7 +5,7 @@ import java.util.function.Function;
 import ngoy.Ngoy;
 import ngoy.core.ModuleWithProviders;
 
-public class Modules<T> implements Function<Ngoy.Builder, Ngoy.Builder> {
+public class Modules<T> implements Function<Ngoy.Builder<?>, Ngoy.Builder<?>> {
 
 	@SafeVarargs
 	public static <T> Modules<T> of(ModuleWithProviders<T>... mods) {
@@ -20,7 +20,7 @@ public class Modules<T> implements Function<Ngoy.Builder, Ngoy.Builder> {
 	}
 
 	@Override
-	public Ngoy.Builder apply(Ngoy.Builder t) {
+	public Ngoy.Builder<?> apply(Ngoy.Builder<?> t) {
 		return t.modules(mods);
 	}
 }
