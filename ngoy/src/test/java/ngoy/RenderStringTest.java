@@ -53,4 +53,22 @@ public class RenderStringTest {
 		Ngoy.renderString("*ngFor let x of all; index as i:hello {{x}}, {{i}}\n", ctx, out, config);
 		assertThat(out.toString()).isEqualTo("hello 11, 0\nhello 22, 1\nhello 33, 2\n");
 	}
+
+	public class Person {
+		private final String name;
+
+		public Person(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
+		}
+	}
+
+	@Test
+	public void some() {
+		Ngoy.renderString("hello: {{name}}", Context.of("name", "peter"), System.out);
+		Ngoy.renderString("hello: {{name}}", Context.of(new Person("sam")), System.out);
+	}
 }

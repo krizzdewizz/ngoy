@@ -25,10 +25,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.PropertyResourceBundle;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
+import ngoy.common.DatePipe;
 import ngoy.common.PipesModule;
 import ngoy.core.Component;
 import ngoy.core.Context;
@@ -56,64 +58,162 @@ import ngoy.internal.cli.Cli;
 import ngoy.internal.parser.ByteCodeTemplate;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.site.SiteRenderer;
+import ngoy.router.RouterModule;
 import ngoy.translate.TranslateModule;
 import ngoy.translate.TranslateService;
 
-public class Ngoy {
-	public static class Builder {
-		private final Class<?> appRoot;
+/**
+ * The main entry point to ngoy.
+ * <p>
+ * Use {@link #renderString(String, Context, OutputStream, Config...)} or
+ * {@link #renderTemplate(String, boolean, Ctx, OutputStream)} for simple
+ * templates.
+ * <p>
+ * Use {@link #app(Class)} to build an 'app' using components, directives, pipes
+ * etc.
+ * 
+ * @author krizz
+ */
+public class Ngoy<T> {
+
+	/**
+	 * Used to build an 'app'.
+	 */
+	public static class Builder<T> {
+		private final Class<T> appRoot;
 		private final Config config = new Config();
 		private Provider[] providers;
 		private Injector[] injectors;
 		private TemplateCache cache;
 		private ModuleWithProviders<?>[] modules;
 
-		public Builder(Class<?> appRoot) {
+		private Builder(Class<T> appRoot) {
 			this.appRoot = appRoot;
 		}
 
-		public Builder providers(Provider... providers) {
+		/**
+		 * Adds the given providers to the app.
+		 * 
+		 * @param providers
+		 *            Providers to add
+		 * @return this
+		 */
+		public Builder<T> providers(Provider... providers) {
 			this.providers = providers;
 			return this;
 		}
 
-		public Builder injectors(Injector... injectors) {
+		/**
+		 * Adds the given injectors to the app.
+		 * <p>
+		 * Additional injectors may be used to integrate another DI system into
+		 * ngoy.
+		 * 
+		 * @param injectors
+		 * @return this
+		 */
+		public Builder<T> injectors(Injector... injectors) {
 			this.injectors = injectors;
 			return this;
 		}
 
-		public Builder modules(ModuleWithProviders<?>... modules) {
+		/**
+		 * Adds the given runtime module to the app.
+		 * <p>
+		 * Some modules like the {@link RouterModule} cannot be declared using
+		 * annotations only. They need 'runtime' information, usually passed
+		 * with a call to a static 'forRoot' method such as
+		 * {@link RouterModule#forRoot(ngoy.router.RouterConfig)}.
+		 * 
+		 * @param modules
+		 *            Modules to add
+		 * @return this
+		 */
+		public Builder<T> modules(ModuleWithProviders<?>... modules) {
 			this.modules = modules;
 			return this;
 		}
 
-		public Builder inlineComponents(boolean inlineComponents) {
+		/**
+		 * Whether to inline components.
+		 * 
+		 * @param inlineComponents
+		 * @return this
+		 */
+		public Builder<T> inlineComponents(boolean inlineComponents) {
 			config.inlineComponents = inlineComponents;
 			return this;
 		}
 
-		public Builder contentType(String contentType) {
+		/**
+		 * The content type. Known values are: <code>text/xml</code>,
+		 * <code>text/plain</code> and <code>text/html</code>. Default is
+		 * <code>text/html</code>.
+		 * <p>
+		 * This affects the output escaping. With <code>text/plain</code>, no
+		 * escaping takes place.
+		 * 
+		 * @param contentType
+		 *            The content type
+		 * @return this
+		 */
+		public Builder<T> contentType(String contentType) {
 			config.contentType = contentType;
 			return this;
 		}
 
-		public Builder cache(TemplateCache cache) {
+		/**
+		 * Provide an own cache instance.
+		 * <p>
+		 * Once a template first used, it is compiled to byte code and stored in
+		 * the cache for later retrieval when the template is run again
+		 * 
+		 * @param cache
+		 * @return this
+		 */
+		public Builder<T> cache(TemplateCache cache) {
 			this.cache = cache;
 			return this;
 		}
 
-		public Builder locale(Locale locale) {
+		/**
+		 * The locale to use.
+		 * <p>
+		 * This affects i.e. formatting of the {@link DatePipe}
+		 * 
+		 * @param locale
+		 *            Default is the system locale
+		 * @return this
+		 */
+		public Builder<T> locale(Locale locale) {
 			this.config.locale = locale;
 			return this;
 		}
 
-		public Builder translateBundle(String translateBundle) {
+		/**
+		 * Load a translation bundle such as <code>messages</code>. If this
+		 * member is set, the {@link TranslationModule} is automatically added
+		 * to the app.
+		 * 
+		 * @param translateBundle
+		 *            translation bundle such as <code>messages</code>. Same as
+		 *            you would pass to
+		 *            {@link PropertyResourceBundle#getBundle(String)}
+		 * @return this
+		 */
+		public Builder<T> translateBundle(String translateBundle) {
 			this.config.translateBundle = translateBundle;
 			return this;
 		}
 
-		public Ngoy build() {
-			return new Ngoy(appRoot, //
+		/**
+		 * Builds the app instance, on which then
+		 * {@link Ngoy#render(OutputStream)} can be called.
+		 * 
+		 * @return App
+		 */
+		public Ngoy<T> build() {
+			return new Ngoy<T>(appRoot, //
 					config, //
 					cache, //
 					injectors != null ? injectors : new Injector[0], //
@@ -122,33 +222,96 @@ public class Ngoy {
 		}
 	}
 
-	public static Builder app(Class<?> appRoot) {
-		return new Builder(appRoot);
+	/**
+	 * Begins building an 'app' using components, pipes etc.
+	 * 
+	 * @param appRoot
+	 *            The root component. The class must have at least the
+	 *            {@link Component} annotation set. It may have the
+	 *            {@link NgModule} annotation set if the app is using other
+	 *            components
+	 * @return A new builder
+	 */
+	public static <T> Builder<T> app(Class<T> appRoot) {
+		return new Builder<T>(appRoot);
 	}
 
 	/**
 	 * Renders the given string.
+	 * <p>
+	 * Example with variable:
+	 * 
+	 * <pre>
+	 * Ngoy.renderString("hello: {{name}}", Context.of("name", "peter"), System.out);
+	 * 
+	 * &gt;&gt; hello peter
+	 * </pre>
+	 * 
+	 * Example with model:
+	 * 
+	 * <pre>
+	 * public class Person {
+	 * 	private final String name;
+	 *
+	 * 	public Person(String name) {
+	 * 		this.name = name;
+	 * 	}
+	 *
+	 * 	public String getName() {
+	 * 		return name;
+	 * 	}
+	 * }
+	 * 
+	 * Ngoy.renderString("hello: {{name}}", Context.of(new Person("sam")), System.out);
+	 * 
+	 * &gt;&gt; hello sam
+	 * 
+	 * </pre>
+	 * 
+	 * @param template
+	 *            The template
+	 * @param context
+	 *            Execution context used to provide variables and/or a 'model'
+	 *            to the template
+	 * @param out
+	 *            Where the processed template is written to
+	 * @param config
+	 *            Optional configuration
 	 */
 	public static void renderString(String template, Context context, OutputStream out, Config... config) {
 		if (context == null) {
 			context = Context.of();
 		}
-		new Ngoy(optionalConfig(config)).renderTemplate(template, false, (Ctx) context.internal(), out);
+		new Ngoy<Void>(optionalConfig(config)).doRender(template, false, (Ctx) context.internal(), out);
 	}
 
 	/**
-	 * Renders the given template
+	 * Renders the given template file/resource.
+	 * <p>
+	 * Same as {@link #renderString(String, Context, OutputStream, Config...)},
+	 * except that the template is read from the given path.
 	 * 
-	 * @param templatePath see {@link Class#getResourceAsStream(String)}
+	 * @param templatePath
+	 *            path to the template. The template resource is loaded with
+	 *            {@link Class#getResourceAsStream(String)}
+	 * @param context
+	 *            Execution context used to provide variables and/or a 'model'
+	 *            to the template
+	 * @param out
+	 *            Where the processed template is written to
+	 * @param config
+	 *            Optional configuration
+	 * @see {@link #renderString(String, Context, OutputStream, Config...)} for
+	 *      examples
 	 */
-	public static void render(String templatePath, Context context, OutputStream out, Config... config) {
+	public static void renderTemplate(String templatePath, Context context, OutputStream out, Config... config) {
 		if (context == null) {
 			context = Context.of();
 		}
-		new Ngoy(optionalConfig(config)).renderTemplate(templatePath, true, (Ctx) context.internal(), out);
+		new Ngoy<Void>(optionalConfig(config)).doRender(templatePath, true, (Ctx) context.internal(), out);
 	}
 
-	private void renderTemplate(String templateOrPath, boolean templateIsPath, Ctx ctx, OutputStream out) {
+	private void doRender(String templateOrPath, boolean templateIsPath, Ctx ctx, OutputStream out) {
 		String tpl;
 		if (templateIsPath) {
 			InputStream in = getClass().getResourceAsStream(templateOrPath);
@@ -164,7 +327,7 @@ public class Ngoy {
 			tpl = templateOrPath;
 		}
 
-		Class<?> clazz = createTemplate(cache.key(templateOrPath), createParser(null, MinimalEnv.RESOLVER, config), tpl, config.contentType);
+		Class<?> clazz = createTemplate(cache.key(templateOrPath), createParser(MinimalEnv.RESOLVER, config), tpl, config.contentType);
 		invokeRender(clazz, ctx, newPrintStream(out));
 	}
 
@@ -172,18 +335,41 @@ public class Ngoy {
 		return config.length > 0 ? config[0] : new Config();
 	}
 
+	/**
+	 * Configuration used for simple templates.
+	 */
 	public static class Config {
+		/**
+		 * The locale to render the template with
+		 */
 		public Locale locale;
+
+		/**
+		 * Path to the translation bundle, such as <code>messages</code>.
+		 */
 		public String translateBundle;
+
+		/**
+		 * Whether to inline components. TODO: document
+		 */
 		public boolean inlineComponents;
+
+		/**
+		 * The content type. Known values are: <code>text/xml</code>,
+		 * <code>text/plain</code> and <code>text/html</code>. Default is
+		 * <code>text/html</code>.
+		 * <p>
+		 * This affects the output escaping. With <code>text/plain</code>, no
+		 * escaping takes place.
+		 */
 		public String contentType;
 	}
 
 	private final Config config;
-	private final Class<?> appRoot;
-	private Object appInstance;
+	private final Class<T> appRoot;
+	private T appInstance;
 	private Resolver resolver;
-	private Injector injector;
+	private DefaultInjector injector;
 	private final TemplateCache cache;
 	private final Events events = new Events();
 
@@ -191,8 +377,9 @@ public class Ngoy {
 		this(Object.class, config, null, new Injector[0], new ModuleWithProviders[0]);
 	}
 
+	@SuppressWarnings("unchecked")
 	protected Ngoy(Class<?> appRoot, Config config, TemplateCache cache, Injector[] injectors, ModuleWithProviders<?>[] modules, Provider... rootProviders) {
-		this.appRoot = appRoot;
+		this.appRoot = (Class<T>) appRoot;
 		this.config = config;
 		this.cache = cache != null ? cache : TemplateCache.DEFAULT;
 		this.init(injectors, modules, rootProviders);
@@ -240,22 +427,25 @@ public class Ngoy {
 		all.addAll(pipeDecls.values());
 		all.addAll(asList(rootProviders));
 
-		Provider appRootProvider = provides(appRoot, rootProviders);
+		injector = new DefaultInjector(injectors, all.toArray(new Provider[all.size()]));
 
-		DefaultInjector inj = new DefaultInjector(injectors, all.toArray(new Provider[all.size()]));
-		injector = inj;
-
-		if (appRootProvider != null && appRootProvider.getUseValue() != null) {
-			appInstance = appRootProvider.getUseValue();
-			inj.injectFields(appRoot, appInstance, new HashSet<>());
-		} else {
-			inj.put(of(appRoot));
-			appInstance = injector.get(appRoot);
-		}
+		initAppInstance(rootProviders);
 
 		if (hasTranslate) {
 			injector.get(TranslateService.class)
 					.setBundle(translateBundle);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void initAppInstance(Provider... rootProviders) {
+		Provider appRootProvider = provides(appRoot, rootProviders);
+		if (appRootProvider != null && appRootProvider.getUseValue() != null) {
+			appInstance = (T) appRootProvider.getUseValue();
+			injector.injectFields(appRoot, appInstance, new HashSet<>());
+		} else {
+			injector.put(of(appRoot));
+			appInstance = (T) injector.get(appRoot);
 		}
 	}
 
@@ -329,11 +519,25 @@ public class Ngoy {
 				.orElse(null);
 	}
 
+	/**
+	 * Renders the site/page to the given folder.
+	 * <p>
+	 * If a {@link RouterModule} is present, renders a page for each configured
+	 * route.
+	 * 
+	 * @param folder
+	 */
 	public void renderSite(Path folder) {
 		injector.get(SiteRenderer.class)
 				.render(this, folder);
 	}
 
+	/**
+	 * Renders the app to the given ouput stream.
+	 * 
+	 * @param out
+	 *            To where to write the app to
+	 */
 	public void render(OutputStream out) {
 		try {
 			if (appInstance instanceof OnInit) {
@@ -344,7 +548,7 @@ public class Ngoy {
 
 			events.tick();
 
-			parseAndRender(appRoot, createParser(appRoot, resolver, config), ctx, newPrintStream(out));
+			parseAndRender(appRoot, createParser(resolver, config), ctx, newPrintStream(out));
 
 			if (appInstance instanceof OnDestroy) {
 				((OnDestroy) appInstance).ngOnDestroy();
@@ -402,10 +606,8 @@ public class Ngoy {
 			if (cmp != null) {
 				Provider existing = targetCmps.put(cmp.selector(), p);
 				if (existing != null) {
-					throw new NgoyException(
-							"More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
-							cmp.selector(), existing.getProvide()
-									.getName(),
+					throw new NgoyException("More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s", cmp.selector(), existing.getProvide()
+							.getName(),
 							p.getProvide()
 									.getName());
 				}
@@ -419,13 +621,13 @@ public class Ngoy {
 		}
 	}
 
-	protected void parseAndRender(Class<?> appRoot, Parser parser, Ctx ctx, PrintStream out) {
-		invokeRender(cache.get(appRoot.getName(), className -> createTemplate(className, parser, getTemplate(appRoot), getContentType(appRoot, config))), ctx, out);
+	protected void parseAndRender(Class<T> appRoot, Parser parser, Ctx ctx, PrintStream out) {
+		invokeRender(cache.get(appRoot.getName(), className -> createTemplate(className, parser, getTemplate(appRoot), getContentType(config))), ctx, out);
 	}
 
 	private void invokeRender(Class<?> templateClass, Ctx ctx, PrintStream out) {
 		try {
-			ctx.setOut(out, getContentType(appRoot, config));
+			ctx.setOut(out, getContentType(config));
 			Method m = templateClass.getMethod("render", Ctx.class);
 			m.invoke(null, ctx);
 		} catch (Exception e) {
@@ -442,7 +644,7 @@ public class Ngoy {
 				.defineClass();
 	}
 
-	private static String getContentType(@Nullable Class<?> appRoot, Config config) {
+	private String getContentType(Config config) {
 		String contentType = config.contentType;
 		if ((contentType == null || contentType.isEmpty()) && appRoot != null) {
 			Component cmp = appRoot.getAnnotation(Component.class);
@@ -453,21 +655,39 @@ public class Ngoy {
 		return contentType;
 	}
 
-	private static Parser createParser(@Nullable Class<?> appRoot, @Nullable Resolver r, Config config) {
+	private Parser createParser(@Nullable Resolver r, Config config) {
 		Parser parser = new Parser(r);
 		parser.inlineComponents = config.inlineComponents;
 
-		parser.contentType = getContentType(appRoot, config);
+		parser.contentType = getContentType(config);
 		return parser;
 	}
 
-	public <T> Ngoy publish(Object event, T payload) {
+	/**
+	 * experimental.
+	 */
+	public <E> Ngoy<?> publish(Object event, E payload) {
 		events.publish(event, payload);
 		return this;
 	}
 
+	/**
+	 * Destroys the app.
+	 * <p>
+	 * Once called, the app must be built from scratch.
+	 */
 	public void destroy() {
 		appInstance = null;
+	}
+
+	/**
+	 * Returns the app instance.
+	 * 
+	 * @return app instance. Null if the app has been destroyed.
+	 */
+	@Nullable
+	public T getAppInstance() {
+		return appInstance;
 	}
 
 	public static void main(String[] args) {

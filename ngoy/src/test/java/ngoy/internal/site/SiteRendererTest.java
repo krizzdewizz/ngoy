@@ -48,7 +48,7 @@ public class SiteRendererTest extends ANgoyTest {
 				.route("abc/settings", SettingsCmp.class)
 				.build();
 
-		Ngoy ngoy = Ngoy.app(Site.class)
+		Ngoy<Site> ngoy = Ngoy.app(Site.class)
 				.modules(RouterModule.forRoot(routerConfig))
 				.build();
 
