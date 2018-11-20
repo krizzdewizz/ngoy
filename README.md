@@ -10,7 +10,8 @@ enjoy ngoy!
 
 ```java
 Ngoy.renderString("hello {{name}}", Context.of("name", "world"), System.out);
-// output: hello world
+
+// hello world
 ```
 
 ## App with components, directives, pipes and services
@@ -26,7 +27,8 @@ public static void main(String[] args) {
             .build()
             .render(System.out);
 }
-// output: hello WORLD
+
+// hello WORLD
 ```
 
 See also [ngoy-starter-web](https://github.com/krizzdewizz/ngoy-starter-web)
