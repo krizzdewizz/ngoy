@@ -8,13 +8,14 @@ enjoy ngoy!
 
 ## Simple
 
-```
+```java
 Ngoy.renderString("hello {{name}}", Context.of("name", "world"), System.out);
 
 > hello world
 ```
 ## App with components, directives, pipes and services
-```
+
+```java
 @Component(selector = "app", template = "hello {{ name | uppercase }}")
 public class App {
     public String name = "world";
