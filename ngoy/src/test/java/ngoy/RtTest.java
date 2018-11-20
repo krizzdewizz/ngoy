@@ -10,9 +10,6 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.Test;
-
-import ngoy.Ngoy;
 import ngoy.Ngoy.Config;
 import ngoy.core.Injector;
 import ngoy.core.ModuleWithProviders;
@@ -25,7 +22,7 @@ import ngoy.testapp.TestApp;
 
 public class RtTest {
 
-	@Test
+//	@org.junit.Test
 	public void run() {
 		Ngoy<TestApp> rt = new Ngoy<TestApp>(TestApp.class, new Config(), null, new Injector[0], new ModuleWithProviders[0], Provider.of(PersonService.class)) {
 			@Override

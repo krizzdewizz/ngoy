@@ -20,7 +20,7 @@ import ngoy.testapp.TestApp;
 
 public class XTest {
 
-//	@Test
+//	@org.junit.Test
 	public void testNgoy() throws Exception {
 		Ngoy<TestApp> ng = Ngoy.app(TestApp.class)
 				.providers(Provider.of(PersonService.class))
@@ -28,7 +28,7 @@ public class XTest {
 		ng.render(System.out);
 	}
 
-//	@Test
+//	@org.junit.Test
 	public void test() throws Exception {
 		TestApp testApp = new TestApp();
 		testApp.personService = new PersonService();
