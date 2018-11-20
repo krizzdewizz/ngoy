@@ -4,4 +4,4 @@ before_install:
 - cd ngoy
 
 after_success:
-- ./gradlew test jacocoTestReport coveralls
+- gradle test jacocoTestReport coveralls
