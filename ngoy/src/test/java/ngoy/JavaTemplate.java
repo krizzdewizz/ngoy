@@ -43,6 +43,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void documentStart() {
 		$("package ngoy;");
+		$("@SuppressWarnings(\"all\")");
 		$("public class X {");
 		$("  public static void render(", Ctx.class, " ctx) throws Exception {");
 
