@@ -5,6 +5,4 @@ build
 gradle
 .project
 .classpath
-gradlew
-gradlew.bat
 logs/
