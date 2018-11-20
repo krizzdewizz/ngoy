@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.junit.Test;
-
 import jodd.jerry.Jerry;
 import ngoy.ANgoyTest;
 import ngoy.JavaTemplate;
@@ -39,7 +37,7 @@ import ngoy.translate.TranslateService;
 
 public class ParserTest {
 
-	@Test
+	// @org.junit.Test
 	public void parseToByteCode() throws Exception {
 		Parser parser = new Parser();
 		ByteCodeTemplate bb = new ByteCodeTemplate("ngoy.XByteCode", null);
@@ -56,7 +54,7 @@ public class ParserTest {
 		m.invoke(null, ctx);
 	}
 
-	@Test
+	// @org.junit.Test
 	public void parseJavaToJava() throws Exception {
 		DefaultInjector injector = new DefaultInjector(Provider.of(TranslateDirective.class), Provider.of(TranslateService.class),
 				Provider.useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)));

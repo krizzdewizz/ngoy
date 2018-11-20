@@ -52,6 +52,7 @@ sourceSets {
 }
 
 jar {
+	from fileTree(dir: '3rdparty-license', include: '**')
     manifest {
         attributes(
         	"Main-Class": "ngoy.Ngoy",
@@ -60,6 +61,7 @@ jar {
 }
 
 shadowJar {
+	from fileTree(dir: '3rdparty-license', include: '**')
 	minimize()
 }
 
