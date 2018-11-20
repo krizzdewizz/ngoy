@@ -5,10 +5,12 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Provider.useValue;
-import static ngoy.core.Util.findAnnotation;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,9 +21,19 @@ import java.util.stream.Stream;
 
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
+import ngoy.core.Nullable;
 import ngoy.core.Provider;
 
 public class DefaultInjector implements Injector {
+
+	@Nullable
+	private static Annotation findAnnotation(AnnotatedElement el, String name) {
+		return Stream.of(el.getAnnotations())
+				.filter(it -> name.equals(it.annotationType()
+						.getSimpleName()))
+				.findFirst()
+				.orElse(null);
+	}
 
 	private final Map<Class<?>, Provider> providers;
 	private final Map<Class<?>, Object> providerInstances = new HashMap<>();
@@ -143,6 +155,24 @@ public class DefaultInjector implements Injector {
 				Object obj = getInternal(field.getType(), resolving, optional);
 				if (!optional || obj != null) {
 					field.set(inst, obj);
+				}
+			}
+
+			for (Method meth : clazz.getMethods()) {
+				int mods = meth.getModifiers();
+				if (!Modifier.isPublic(mods) || Modifier.isStatic(mods) || findAnnotation(meth, "Inject") == null) {
+					continue;
+				}
+
+				if (meth.getParameterCount() != 1) {
+					throw new NgoyException("Inject setter method must have exactly one parameter: %s.%s", clazz.getName(), meth.getName());
+				}
+
+				boolean optional = findAnnotation(meth, "Optional") != null;
+
+				Object obj = getInternal(meth.getParameterTypes()[0], resolving, optional);
+				if (!optional || obj != null) {
+					meth.invoke(inst, obj);
 				}
 			}
 		} catch (Exception e) {

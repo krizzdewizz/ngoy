@@ -25,7 +25,7 @@ public class OutletComponent implements OnCompile, OnInit {
 	}
 
 	@Override
-	public void ngOnCompile(Jerry el, String cmpClass) {
+	public void ngOnCompile(Jerry el, String componentClass) {
 		int i = 0;
 		for (Route route : router.getRoutes()) {
 			Jerry routeEl = createElement(getSelector(route.getComponent()));

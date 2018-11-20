@@ -5,7 +5,6 @@ import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.escape;
-import static ngoy.core.Util.findSetter;
 
 import java.io.PrintStream;
 import java.lang.reflect.Array;
@@ -20,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
@@ -46,12 +46,12 @@ public class Ctx {
 		return new Ctx();
 	}
 
-	public static Ctx of(Object modelRoot) {
-		return new Ctx(modelRoot, null);
+	public static Ctx of(Object model) {
+		return new Ctx(model, null);
 	}
 
-	public static Ctx of(Object modelRoot, Injector injector) {
-		return new Ctx(modelRoot, injector);
+	public static Ctx of(Object model, Injector injector) {
+		return new Ctx(model, injector);
 	}
 
 	public static boolean eq(Object a, Object b) {
@@ -68,12 +68,12 @@ public class Ctx {
 			}
 		}
 	}
-	
+
 	public static String CTX_VARIABLE = "$ngoyctx";
 
 	private final LinkedList<EvaluationContext> spelCtxs = new LinkedList<>();
 	private final Set<String> variables = new HashSet<>();
-	private final Object modelRoot;
+	private final Object model;
 	private final ExpressionParser exprParser;
 	private final Injector injector;
 	private final LinkedList<Map<String, Object>> iterationVars = new LinkedList<>();
@@ -86,14 +86,14 @@ public class Ctx {
 		this(null, null);
 	}
 
-	private Ctx(@Nullable Object modelRoot, @Nullable Injector injector) {
-		this.modelRoot = modelRoot;
+	private Ctx(@Nullable Object model, @Nullable Injector injector) {
+		this.model = model;
 		this.injector = injector;
-		spelCtxs.push(createContext(modelRoot, emptyMap()));
+		spelCtxs.push(createContext(model, emptyMap()));
 		exprParser = new SpelExpressionParser();
 	}
 
-	private EvalContext createContext(Object modelRoot, Map<String, Object> variables) {
+	private EvalContext createContext(Object model, Map<String, Object> variables) {
 		DataBindingPropertyAccessor defaultAccessor = DataBindingPropertyAccessor.forReadOnlyAccess();
 
 		PropertyAccessor accessor = new PropertyAccessor() {
@@ -134,7 +134,7 @@ public class Ctx {
 		};
 
 		SimpleEvaluationContext evalCtx = SimpleEvaluationContext.forPropertyAccessors(accessor)
-				.withRootObject(modelRoot)
+				.withRootObject(model)
 				.build();
 		Map<String, Object> vars = new HashMap<String, Object>(variables);
 		vars.put(CTX_VARIABLE, api);
@@ -147,7 +147,6 @@ public class Ctx {
 		variables.add(variableName);
 		return this;
 	}
-
 
 	public Object eval(String expr) {
 		EvaluationContext peek = spelCtxs.peek();
@@ -171,7 +170,7 @@ public class Ctx {
 					root = rootClass.getName();
 				}
 			}
-			throw new NgoyException(format("Error while evaluating expression '%s'. modelRoot: %s. templateUrl: %s, message: %s.", expr, root, templateUrl, NgoyException.realException(e)));
+			throw new NgoyException(format("Error while evaluating expression '%s'. model: %s. templateUrl: %s, message: %s.", expr, root, templateUrl, NgoyException.realException(e)));
 		}
 	}
 
@@ -200,7 +199,7 @@ public class Ctx {
 					root = rootClass.getName();
 				}
 			}
-			throw new NgoyException(e, format("Error while converting result of expression '%s' to boolean: %s. modelRoot: %s. templateUrl: %s.", expr, e.getMessage(), root, templateUrl));
+			throw new NgoyException(e, format("Error while converting result of expression '%s' to boolean: %s. model: %s. templateUrl: %s.", expr, e.getMessage(), root, templateUrl));
 		}
 	}
 
@@ -301,7 +300,8 @@ public class Ctx {
 					Object valueType = value == null ? null
 							: value.getClass()
 									.getName();
-					throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", clazz.getName(), field.getName(), expr, fieldType, valueType);
+					throw new NgoyException(e, "Error while setting input field %s.%s to result of expression '%s'. Field type: %s, expression result type: %s", clazz.getName(), field.getName(), expr,
+							fieldType, valueType);
 				}
 			}
 				break;
@@ -314,7 +314,8 @@ public class Ctx {
 					Object valueType = value == null ? null
 							: value.getClass()
 									.getName();
-					throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", clazz.getName(), setter.getName(), expr, parameterType, valueType);
+					throw new NgoyException(e, "Error while invoking input setter %s.%s with result of expression '%s'. Parameter type: %s, expression result type: %s", clazz.getName(),
+							setter.getName(), expr, parameterType, valueType);
 				}
 			}
 				break;
@@ -325,7 +326,7 @@ public class Ctx {
 	}
 
 	public void pushForOfContext(String itemName, Object item) {
-		EvaluationContext iterCtx = createContext(modelRoot, emptyMap());
+		EvaluationContext iterCtx = createContext(model, emptyMap());
 		EvaluationContext parentCtx = spelCtxs.peek();
 		if (parentCtx != null) {
 			variables.forEach(name -> {
@@ -406,20 +407,24 @@ public class Ctx {
 				// Spring EL evals an object literal such as {a: 'hello'}
 				// properly to a map
 				@SuppressWarnings("unchecked")
-				Map<String, String> map = (Map<String, String>) eval(expr);
-				for (Map.Entry<String, String> entry : map.entrySet()) {
+				Map<String, Object> map = (Map<String, Object>) eval(expr);
+				for (Map.Entry<String, Object> entry : map.entrySet()) {
 					String st = entry.getKey();
-					Object[] val = new Object[] { entry.getValue() };
-					String s = parseUnit(st, val);
-					styleList.add(format("%s:%s", s, val[0]));
+					Object v = entry.getValue();
+
+					if (isNullOrEmptyString(v)) {
+						continue;
+					}
+					styleList.add(format("%s:%s", parseUnit(st, v)));
 				}
 			} else {
 				if (expr.isEmpty()) {
 					styleList.add(style);
 				} else {
-					Object[] val = new Object[] { eval(expr) };
-					String s = parseUnit(style, val);
-					styleList.add(format("%s:%s", s, val[0]));
+					Object v = eval(expr);
+					if (!isNullOrEmptyString(v)) {
+						styleList.add(format("%s:%s", parseUnit(style, v)));
+					}
 				}
 			}
 		}
@@ -429,16 +434,19 @@ public class Ctx {
 						.collect(joining(";"));
 	}
 
-	private String parseUnit(String s, Object[] val) {
+	private boolean isNullOrEmptyString(Object v) {
+		return v == null || (v instanceof String && ((String) v).isEmpty());
+	}
+
+	private Object[] parseUnit(String s, Object val) {
 		int pos = s.lastIndexOf('.');
 		if (pos < 0) {
-			return s;
+			return new Object[] { s, val };
 		}
 
 		String style = s.substring(0, pos);
 		String unit = s.substring(pos + 1);
-		val[0] = val[0] + unit;
-		return style;
+		return new Object[] { style, val + unit };
 	}
 
 	public void printEscaped(@Nullable Object obj) {
@@ -461,5 +469,13 @@ public class Ctx {
 	public void resetOut() {
 		this.out = null;
 		this.contentType = null;
+	}
+
+	static Method findSetter(Class<?> clazz, String name) {
+		return Stream.of(clazz.getMethods())
+				.filter(m -> m.getName()
+						.equals(name) && m.getParameterCount() == 1)
+				.findFirst()
+				.orElseThrow(() -> new NgoyException("Setter method %s%s could not be found or has not exactly 1 parameter", clazz.getName(), name));
 	}
 }

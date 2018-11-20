@@ -5,37 +5,35 @@ import java.util.List;
 
 import ngoy.core.NgoyException;
 import ngoy.core.Provider;
-import ngoy.router.RouterConfig.Builder.LocationBuilder;
 
+/**
+ * Configuration for the router.
+ * <p>
+ * Start building the configuration with {@link #baseHref(String)}.
+ * 
+ * @author krizz
+ */
 public class RouterConfig {
 
 	public static class Builder {
 
-		public class LocationBuilder {
-			public RouteBuilder location(Provider locationProvider) {
-				Builder.this.locationProvider = locationProvider;
-				return new RouteBuilder();
-			}
-		}
-
-		public class RouteBuilder {
-			public Builder route(String path, Class<?> component) {
-				return Builder.this.route(path, component);
-			}
-		}
-
 		private final List<Route> routes = new ArrayList<>();
 		private String baseHref;
 		private Provider locationProvider;
+
+		public Builder location(Provider locationProvider) {
+			this.locationProvider = locationProvider;
+			return this;
+		}
 
 		public Builder route(String path, Class<?> component) {
 			routes.add(Route.of(path, component));
 			return this;
 		}
 
-		private LocationBuilder baseHref(String baseHref) {
+		public Builder baseHref(String baseHref) {
 			this.baseHref = baseHref;
-			return new LocationBuilder();
+			return this;
 		}
 
 		public RouterConfig build() {
@@ -43,7 +41,7 @@ public class RouterConfig {
 		}
 	}
 
-	public static LocationBuilder baseHref(String baseHref) {
+	public static Builder baseHref(String baseHref) {
 		return new Builder().baseHref(baseHref);
 	}
 

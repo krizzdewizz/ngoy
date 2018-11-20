@@ -24,7 +24,7 @@ public class StyleUrlsDirective implements OnCompile {
 	public Resolver resolver;
 
 	@Override
-	public void ngOnCompile(Jerry el, String cmpClass) {
+	public void ngOnCompile(Jerry el, String componentClass) {
 		try {
 			Set<Class<?>> cmpClasses = resolver.getCmpClasses();
 			String styles = cmpClasses.stream()

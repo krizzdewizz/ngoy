@@ -1,0 +1,4 @@
+/**
+ * Core
+ */
+package ngoy.core;

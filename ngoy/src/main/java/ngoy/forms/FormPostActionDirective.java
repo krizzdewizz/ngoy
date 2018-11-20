@@ -14,11 +14,16 @@ import ngoy.core.NgoyException;
 import ngoy.core.OnCompile;
 import ngoy.core.Util;
 
+/**
+ * experimental.
+ * 
+ * @author krizz
+ */
 @Directive(selector = "[ngoyFormPost]")
 public class FormPostActionDirective implements OnCompile {
 
 	@Override
-	public void ngOnCompile(Jerry el, String cmpClass) {
+	public void ngOnCompile(Jerry el, String componentClass) {
 		try {
 			String controllerMethod = el.attr("ngoyFormPost");
 
@@ -29,7 +34,7 @@ public class FormPostActionDirective implements OnCompile {
 
 			Class<?> clazz = Thread.currentThread()
 					.getContextClassLoader()
-					.loadClass(cmpClass);
+					.loadClass(componentClass);
 
 			String requestPath = findRequestMapping(clazz).map(this::findPath)
 					.orElse("");
@@ -40,7 +45,7 @@ public class FormPostActionDirective implements OnCompile {
 					.findFirst()
 					.flatMap(this::findPostMapping)
 					.map(this::findPath)
-					.orElseThrow(() -> new NgoyException("Controller method %s.%s with a @PostMapping annotation could not be not found", cmpClass, controllerMethod));
+					.orElseThrow(() -> new NgoyException("Controller method %s.%s with a @PostMapping annotation could not be not found", componentClass, controllerMethod));
 
 			String path = requestPath.isEmpty() ? postPath : format("%s/%s", requestPath, postPath);
 

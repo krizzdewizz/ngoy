@@ -5,6 +5,12 @@ import static java.util.Collections.emptyList;
 
 import java.util.List;
 
+/**
+ * A dynamically configured module.
+ * 
+ * @author krizz
+ * @param <T>
+ */
 public class ModuleWithProviders<T> {
 
 	public static class Builder<T> {

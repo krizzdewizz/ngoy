@@ -22,7 +22,7 @@ import ngoy.routing.settings.SettingsComponent;
 @RequestMapping("/router/*")
 public class RouterMain implements InitializingBean {
 
-	private Ngoy ngoy;
+	private Ngoy<RouterApp> ngoy;
 
 	@Autowired
 	private HttpServletRequest request;

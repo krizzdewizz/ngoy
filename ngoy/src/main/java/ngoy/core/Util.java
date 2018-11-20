@@ -6,19 +6,26 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.util.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
 
+/**
+ * Utils.
+ * 
+ * @author krizz
+ */
 public class Util {
-	private static final String SET_PREFIX = "set";
 
 	private Util() {
 	}
 
+	/**
+	 * Returns a new UTF-8 encoded print stream that prints to the given output
+	 * stream.
+	 * 
+	 * @param out
+	 * @return PrintStream
+	 */
 	public static PrintStream newPrintStream(OutputStream out) {
 		try {
 			return new PrintStream(out, true, "UTF-8");
@@ -27,6 +34,12 @@ public class Util {
 		}
 	}
 
+	/**
+	 * Copies all bytes from in o out.
+	 * 
+	 * @param in
+	 * @param out
+	 */
 	public static void copy(InputStream in, OutputStream out) {
 		byte[] buffer = new byte[1024];
 		int len;
@@ -39,6 +52,12 @@ public class Util {
 		}
 	}
 
+	/**
+	 * Copies all bytes to a string using UTF-8 encoding.
+	 * 
+	 * @param in
+	 * @return String
+	 */
 	public static String copyToString(InputStream in) {
 		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 			copy(in, out);
@@ -48,28 +67,42 @@ public class Util {
 		}
 	}
 
-	@Nullable
-	public static Annotation findAnnotation(AnnotatedElement el, String name) {
-		return Stream.of(el.getAnnotations())
-				.filter(it -> name.equals(it.annotationType()
-						.getSimpleName()))
-				.findFirst()
-				.orElse(null);
-	}
-
+	/**
+	 * @return true if the given string is not null and not empty
+	 */
 	public static boolean isSet(@Nullable String s) {
 		return s != null && !s.isEmpty();
 	}
 
+	/**
+	 * HTML escape's the given text.
+	 * 
+	 * @param text
+	 * @return Escaped text
+	 */
 	public static String escapeHtml(String text) {
 		return StringEscapeUtils.escapeHtml4(text);
 	}
 
+	/**
+	 * XML escape's the given text.
+	 * 
+	 * @param text
+	 * @return Escaped text
+	 */
 	public static String escapeXml(String text) {
 		return StringEscapeUtils.escapeXml11(text);
 	}
 
 	/**
+	 * Escapes based on the given contentType.
+	 * <p>
+	 * <ul>
+	 * <li><code>"text/xml"</code>: {@link #escapeXml(String)}</li>
+	 * <li><code>"text/plain"</code>: don't escape</li>
+	 * <li>All others: {@link #escapeHtml(String)}</li>
+	 * </ul>
+	 * 
 	 * @param contentType null or empty to use default
 	 */
 	public static String escape(String text, @Nullable String contentType) {
@@ -80,29 +113,6 @@ public class Util {
 			return text;
 		}
 		return escapeHtml(text);
-	}
-
-	public static String escapeJava(String text) {
-		return StringEscapeUtils.escapeJava(text);
-	}
-
-	public static String fieldName(String setter) {
-		if (setter.startsWith(SET_PREFIX)) {
-			String right = setter.substring(SET_PREFIX.length());
-			if (right.isEmpty()) {
-				return SET_PREFIX;
-			}
-			return Character.toLowerCase(right.charAt(0)) + right.substring(1);
-		}
-		return setter;
-	}
-
-	public static Method findSetter(Class<?> clazz, String name) {
-		return Stream.of(clazz.getMethods())
-				.filter(m -> m.getName()
-						.equals(name) && m.getParameterCount() == 1)
-				.findFirst()
-				.orElseThrow(() -> new NgoyException("Setter method %s%s could not be found or has not exactly 1 parameter", clazz.getName(), name));
 	}
 
 	/**

@@ -18,6 +18,9 @@ public final class Version {
 	private Version() {
 	}
 
+	/**
+	 * @return The ngoy version.
+	 */
 	public static String getImplementationVersion() {
 		return IMPLEMENTATION_VERSION;
 	}

@@ -66,7 +66,7 @@ import ngoy.translate.TranslateService;
  * The main entry point to ngoy.
  * <p>
  * Use {@link #renderString(String, Context, OutputStream, Config...)} or
- * {@link #renderTemplate(String, boolean, Ctx, OutputStream)} for simple
+ * {@link #renderTemplate(String, Context, OutputStream, Config...) } for simple
  * templates.
  * <p>
  * Use {@link #app(Class)} to build an 'app' using components, directives, pipes
@@ -94,8 +94,7 @@ public class Ngoy<T> {
 		/**
 		 * Adds the given providers to the app.
 		 * 
-		 * @param providers
-		 *            Providers to add
+		 * @param providers Providers to add
 		 * @return this
 		 */
 		public Builder<T> providers(Provider... providers) {
@@ -106,10 +105,9 @@ public class Ngoy<T> {
 		/**
 		 * Adds the given injectors to the app.
 		 * <p>
-		 * Additional injectors may be used to integrate another DI system into
-		 * ngoy.
+		 * Additional injectors may be used to integrate another DI system into ngoy.
 		 * 
-		 * @param injectors
+		 * @param injectors injectors
 		 * @return this
 		 */
 		public Builder<T> injectors(Injector... injectors) {
@@ -121,12 +119,11 @@ public class Ngoy<T> {
 		 * Adds the given runtime module to the app.
 		 * <p>
 		 * Some modules like the {@link RouterModule} cannot be declared using
-		 * annotations only. They need 'runtime' information, usually passed
-		 * with a call to a static 'forRoot' method such as
+		 * annotations only. They need 'runtime' information, usually passed with a call
+		 * to a static 'forRoot' method such as
 		 * {@link RouterModule#forRoot(ngoy.router.RouterConfig)}.
 		 * 
-		 * @param modules
-		 *            Modules to add
+		 * @param modules Modules to add
 		 * @return this
 		 */
 		public Builder<T> modules(ModuleWithProviders<?>... modules) {
@@ -137,7 +134,7 @@ public class Ngoy<T> {
 		/**
 		 * Whether to inline components.
 		 * 
-		 * @param inlineComponents
+		 * @param inlineComponents whether to inline components
 		 * @return this
 		 */
 		public Builder<T> inlineComponents(boolean inlineComponents) {
@@ -146,15 +143,15 @@ public class Ngoy<T> {
 		}
 
 		/**
-		 * The content type. Known values are: <code>text/xml</code>,
-		 * <code>text/plain</code> and <code>text/html</code>. Default is
-		 * <code>text/html</code>.
+		 * The content type.
 		 * <p>
-		 * This affects the output escaping. With <code>text/plain</code>, no
-		 * escaping takes place.
+		 * Known values are: <code>text/xml</code>, <code>text/plain</code> and
+		 * <code>text/html</code>. Default is <code>text/html</code>.
+		 * <p>
+		 * This affects the output escaping. With <code>text/plain</code>, no escaping
+		 * takes place.
 		 * 
-		 * @param contentType
-		 *            The content type
+		 * @param contentType The content type
 		 * @return this
 		 */
 		public Builder<T> contentType(String contentType) {
@@ -165,8 +162,8 @@ public class Ngoy<T> {
 		/**
 		 * Provide an own cache instance.
 		 * <p>
-		 * Once a template first used, it is compiled to byte code and stored in
-		 * the cache for later retrieval when the template is run again
+		 * Once a template first used, it is compiled to byte code and stored in the
+		 * cache for later retrieval when the template is run again
 		 * 
 		 * @param cache
 		 * @return this
@@ -181,8 +178,7 @@ public class Ngoy<T> {
 		 * <p>
 		 * This affects i.e. formatting of the {@link DatePipe}
 		 * 
-		 * @param locale
-		 *            Default is the system locale
+		 * @param locale Default is the system locale
 		 * @return this
 		 */
 		public Builder<T> locale(Locale locale) {
@@ -191,14 +187,12 @@ public class Ngoy<T> {
 		}
 
 		/**
-		 * Load a translation bundle such as <code>messages</code>. If this
-		 * member is set, the {@link TranslationModule} is automatically added
-		 * to the app.
+		 * Load a translation bundle such as <code>messages</code>. If this member is
+		 * set, the {@link TranslateModule} is automatically added to the app.
 		 * 
-		 * @param translateBundle
-		 *            translation bundle such as <code>messages</code>. Same as
-		 *            you would pass to
-		 *            {@link PropertyResourceBundle#getBundle(String)}
+		 * @param translateBundle translation bundle such as <code>messages</code>. Same
+		 *                        as you would pass to
+		 *                        {@link PropertyResourceBundle#getBundle(String)}
 		 * @return this
 		 */
 		public Builder<T> translateBundle(String translateBundle) {
@@ -207,8 +201,8 @@ public class Ngoy<T> {
 		}
 
 		/**
-		 * Builds the app instance, on which then
-		 * {@link Ngoy#render(OutputStream)} can be called.
+		 * Builds the app instance, on which then {@link Ngoy#render(OutputStream)} can
+		 * be called.
 		 * 
 		 * @return App
 		 */
@@ -225,12 +219,12 @@ public class Ngoy<T> {
 	/**
 	 * Begins building an 'app' using components, pipes etc.
 	 * 
-	 * @param appRoot
-	 *            The root component. The class must have at least the
-	 *            {@link Component} annotation set. It may have the
-	 *            {@link NgModule} annotation set if the app is using other
-	 *            components
+	 * @param appRoot The root component. The class must have at least the
+	 *                {@link Component} annotation set. It may have the
+	 *                {@link NgModule} annotation set if the app is using other
+	 *                components
 	 * @return A new builder
+	 * @param <T> The type of the app
 	 */
 	public static <T> Builder<T> app(Class<T> appRoot) {
 		return new Builder<T>(appRoot);
@@ -268,15 +262,11 @@ public class Ngoy<T> {
 	 * 
 	 * </pre>
 	 * 
-	 * @param template
-	 *            The template
-	 * @param context
-	 *            Execution context used to provide variables and/or a 'model'
-	 *            to the template
-	 * @param out
-	 *            Where the processed template is written to
-	 * @param config
-	 *            Optional configuration
+	 * @param template The template
+	 * @param context  Execution context used to provide variables and/or a 'model'
+	 *                 to the template
+	 * @param out      Where the processed template is written to
+	 * @param config   Optional configuration
 	 */
 	public static void renderString(String template, Context context, OutputStream out, Config... config) {
 		if (context == null) {
@@ -291,18 +281,13 @@ public class Ngoy<T> {
 	 * Same as {@link #renderString(String, Context, OutputStream, Config...)},
 	 * except that the template is read from the given path.
 	 * 
-	 * @param templatePath
-	 *            path to the template. The template resource is loaded with
-	 *            {@link Class#getResourceAsStream(String)}
-	 * @param context
-	 *            Execution context used to provide variables and/or a 'model'
-	 *            to the template
-	 * @param out
-	 *            Where the processed template is written to
-	 * @param config
-	 *            Optional configuration
-	 * @see {@link #renderString(String, Context, OutputStream, Config...)} for
-	 *      examples
+	 * @param templatePath path to the template. The template resource is loaded
+	 *                     with {@link Class#getResourceAsStream(String)}
+	 * @param context      Execution context used to provide variables and/or a
+	 *                     'model' to the template
+	 * @param out          Where the processed template is written to
+	 * @param config       Optional configuration
+	 * @see #renderString(String, Context, OutputStream, Config...)
 	 */
 	public static void renderTemplate(String templatePath, Context context, OutputStream out, Config... config) {
 		if (context == null) {
@@ -359,8 +344,8 @@ public class Ngoy<T> {
 		 * <code>text/plain</code> and <code>text/html</code>. Default is
 		 * <code>text/html</code>.
 		 * <p>
-		 * This affects the output escaping. With <code>text/plain</code>, no
-		 * escaping takes place.
+		 * This affects the output escaping. With <code>text/plain</code>, no escaping
+		 * takes place.
 		 */
 		public String contentType;
 	}
@@ -525,7 +510,7 @@ public class Ngoy<T> {
 	 * If a {@link RouterModule} is present, renders a page for each configured
 	 * route.
 	 * 
-	 * @param folder
+	 * @param folder target folder. Subdirectories are created as needed
 	 */
 	public void renderSite(Path folder) {
 		injector.get(SiteRenderer.class)
@@ -535,8 +520,7 @@ public class Ngoy<T> {
 	/**
 	 * Renders the app to the given ouput stream.
 	 * 
-	 * @param out
-	 *            To where to write the app to
+	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
 		try {
@@ -606,8 +590,10 @@ public class Ngoy<T> {
 			if (cmp != null) {
 				Provider existing = targetCmps.put(cmp.selector(), p);
 				if (existing != null) {
-					throw new NgoyException("More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s", cmp.selector(), existing.getProvide()
-							.getName(),
+					throw new NgoyException(
+							"More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
+							cmp.selector(), existing.getProvide()
+									.getName(),
 							p.getProvide()
 									.getName());
 				}
@@ -665,6 +651,11 @@ public class Ngoy<T> {
 
 	/**
 	 * experimental.
+	 * 
+	 * @param event   The 'token'
+	 * @param payload payload
+	 * @param         <E> Type of payload
+	 * @return this
 	 */
 	public <E> Ngoy<?> publish(Object event, E payload) {
 		events.publish(event, payload);
@@ -690,6 +681,11 @@ public class Ngoy<T> {
 		return appInstance;
 	}
 
+	/**
+	 * The entry point for the {@link Cli}.
+	 * 
+	 * @param args arguments
+	 */
 	public static void main(String[] args) {
 		new Cli().run(args, System.out);
 	}

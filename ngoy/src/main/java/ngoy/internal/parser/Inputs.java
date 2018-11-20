@@ -1,7 +1,6 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
-import static ngoy.core.Util.fieldName;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -14,6 +13,19 @@ import ngoy.core.Input;
 import ngoy.core.NgoyException;
 
 public class Inputs {
+
+	private static final String SET_PREFIX = "set";
+
+	static String fieldName(String setter) {
+		if (setter.startsWith(SET_PREFIX)) {
+			String right = setter.substring(SET_PREFIX.length());
+			if (right.isEmpty()) {
+				return SET_PREFIX;
+			}
+			return Character.toLowerCase(right.charAt(0)) + right.substring(1);
+		}
+		return setter;
+	}
 
 	private Inputs() {
 	}

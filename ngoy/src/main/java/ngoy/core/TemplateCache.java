@@ -5,6 +5,12 @@ import static java.lang.String.format;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Once a template first used, it is compiled to byte code and stored in the
+ * cache for later retrieval when the template is run again.
+ * 
+ * @author krizz
+ */
 public class TemplateCache {
 
 	public static final TemplateCache DEFAULT = new TemplateCache();
@@ -37,12 +43,20 @@ public class TemplateCache {
 		return clazz;
 	}
 
+	/**
+	 * @return Whether the cache is disabled.
+	 */
 	public boolean isDisabled() {
 		return disabled;
 	}
 
+	/**
+	 * While developing, disable the cache to get changes to the template and/or
+	 * model upon every rendering.
+	 * 
+	 * @param disabled
+	 */
 	public void setDisabled(boolean disabled) {
 		this.disabled = disabled;
 	}
-
 }

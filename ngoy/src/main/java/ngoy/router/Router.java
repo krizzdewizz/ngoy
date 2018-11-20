@@ -4,6 +4,12 @@ import java.util.List;
 
 import ngoy.core.Inject;
 
+/**
+ * The router determines the active route based on the current location and
+ * configured routes.
+ * 
+ * @author krizz
+ */
 public class Router {
 
 	@Inject

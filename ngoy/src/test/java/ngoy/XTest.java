@@ -22,7 +22,7 @@ public class XTest {
 
 //	@Test
 	public void testNgoy() throws Exception {
-		Ngoy ng = Ngoy.app(TestApp.class)
+		Ngoy<TestApp> ng = Ngoy.app(TestApp.class)
 				.providers(Provider.of(PersonService.class))
 				.build();
 		ng.render(System.out);

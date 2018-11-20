@@ -8,6 +8,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * experimental.
+ * <p>
+ * Events are all synchronous. Upon {@link OnInit}, components have the chance
+ * to {@link #subscribe(Object, Consumer)} or {@link #publish(Object, Object)}.
+ * Just before the rendering phase, when all components have
+ * subscribed/published, the event queue is flushed and the events are sent to
+ * subscribers. Their event handlers will update the state which is then
+ * rendered.
+ * 
+ * @author krizz
+ */
 public class Events {
 	private static class Event {
 		Object topic;

@@ -19,7 +19,7 @@ import ngoy.core.TemplateCache;
 @RequestMapping("/todo")
 public class TodoMain implements InitializingBean {
 
-	private Ngoy ngoy;
+	private Ngoy<TodoApp> ngoy;
 
 	@Autowired
 	private BeanInjector beanInjector;

@@ -6,6 +6,25 @@ import ngoy.core.Nullable;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
 
+/**
+ * Transforms the input to uppercase using the current locale.
+ * <p>
+ * Example:
+ * <p>
+ * 
+ * <pre>
+ *  
+ * {{ 'hello' | lowercase }}
+ * </pre>
+ * <p>
+ * Output:
+ * 
+ * <pre>
+ * HELLO
+ * </pre>
+ * 
+ * @author krizz
+ */
 @Pipe("uppercase")
 public class UpperCasePipe implements PipeTransform {
 

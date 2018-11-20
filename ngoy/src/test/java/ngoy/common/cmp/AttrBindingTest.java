@@ -18,23 +18,27 @@ public class AttrBindingTest extends ANgoyTest {
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	@Component(selector = "person", template = "hello: {{name}}{{title}}")
+	@Component(selector = "person", template = "hello {{title}} {{name}}")
 	public static class PersonCmp {
 		@Input()
 		public String name;
 
-		@Input()
 		public String title;
+
+		@Input()
+		public void setTitle(String title) {
+			this.title = title;
+		}
 	}
 
-	@Component(selector = "test", template = "<person name=\"x\" [title]=\"'abc'\"></person>")
+	@Component(selector = "test", template = "<person name=\"Peter\" [title]=\"'Sir'\"></person>")
 	@NgModule(declarations = { PersonCmp.class })
 	public static class Attr {
 	}
 
 	@Test
 	public void testAttr() {
-		assertThat(render(Attr.class)).isEqualTo("<person>hello: xabc</person>");
+		assertThat(render(Attr.class)).isEqualTo("<person>hello Sir Peter</person>");
 	}
 
 	//

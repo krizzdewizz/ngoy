@@ -35,8 +35,13 @@ public class CmpTest extends ANgoyTest {
 	@Component(selector = "test", template = "<person [person]=\"persons[0]\"></person><person [person]=\"persons[1]\"></person><person [person]=\"persons[2]\"></person>")
 	@NgModule(declarations = { PersonCmp.class })
 	public static class Cmp {
+
+		private TestService<List<Person>> service;
+
 		@Inject
-		public TestService<List<Person>> service;
+		public void setSetIt(TestService<List<Person>> service) {
+			this.service = service;
+		}
 
 		public List<Person> getPersons() {
 			return service.value;

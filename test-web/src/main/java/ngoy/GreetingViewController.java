@@ -19,7 +19,7 @@ import ngoy.testapp.TestApp;
 @Controller
 public class GreetingViewController implements InitializingBean {
 
-	private Ngoy ngoy;
+	private Ngoy<TestApp> ngoy;
 
 	@GetMapping(path = "/")
 	public void greeting(@RequestParam(name = "name", required = false, defaultValue = "world") String name, HttpServletResponse response) throws Exception {
@@ -28,7 +28,7 @@ public class GreetingViewController implements InitializingBean {
 
 		Context ctx = Context.of()
 				.variable("name", name);
-		Ngoy.render("/templates/greeting.html", ctx, response.getOutputStream());
+		Ngoy.renderTemplate("/templates/greeting.html", ctx, response.getOutputStream());
 	}
 
 	@GetMapping(path = "/more")
@@ -47,5 +47,8 @@ public class GreetingViewController implements InitializingBean {
 				.locale(Locale.GERMAN)
 				.translateBundle("ngoy.testapp.messages")
 				.build();
+
+		ngoy.getAppInstance()
+				.toString();
 	}
 }

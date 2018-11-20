@@ -2,7 +2,6 @@ package ngoy;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
-import static ngoy.core.Util.escapeJava;
 
 import java.io.PrintStream;
 import java.util.LinkedList;
@@ -11,6 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import org.apache.commons.text.StringEscapeUtils;
 
 import ngoy.core.Util;
 import ngoy.core.internal.CmpRef;
@@ -22,6 +23,10 @@ import ngoy.util.CodeBuilder;
 import ngoy.util.PrintStreamPrinter;
 
 public class JavaTemplate extends CodeBuilder implements ParserHandler {
+
+	public static String escapeJava(String text) {
+		return StringEscapeUtils.escapeJava(text);
+	}
 
 	private final TextOutput out;
 	private int nextLocalVarIndex;
@@ -240,7 +245,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private void printOut(Object... s) {
 		String arg = Stream.of(s)
 				.map(Object::toString)
-				.map(Util::escapeJava)
+				.map(JavaTemplate::escapeJava)
 				.collect(joining(""));
 		String text = format("%s", arg);
 		out.print(text, false, false, null);

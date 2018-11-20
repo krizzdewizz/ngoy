@@ -5,6 +5,17 @@ import ngoy.core.Nullable;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
 
+/**
+ * Transforms a translation key into the translated message.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ * &lt;a&gt;{{'MSG_HELLO' | translate}}&lt;/a&gt;
+ * </pre>
+ * 
+ * @author krizz
+ */
 @Pipe("translate")
 public class TranslatePipe implements PipeTransform {
 

@@ -8,6 +8,21 @@ import java.util.ResourceBundle;
 import ngoy.core.Inject;
 import ngoy.core.LocaleProvider;
 
+/**
+ * Service for translation/message bundles.
+ * <p>
+ * Call {@link #setBundle(String)} to load the bundle. Call
+ * {@link #translate(String, Object...)} to translate a message into the current
+ * locale.
+ * <p>
+ * If the locale changes, the bundle is reloaded.
+ * <p>
+ * A warning is printed if a translation is requested without having the bundle
+ * configured.
+ *
+ * @see LocaleProvider
+ * @author krizz
+ */
 public class TranslateService {
 
 	@Inject
@@ -19,10 +34,18 @@ public class TranslateService {
 	private String bundleBaseName;
 	private Locale prevLocale;
 
-	public String translate(String msg, Object... params) {
+	/**
+	 * Translates the given message key.
+	 * 
+	 * @param messageKey
+	 * @param params
+	 * @return Translated message
+	 * @see MessageFormat
+	 */
+	public String translate(String messageKey, Object... params) {
 		loadBundle();
 		missingBundleWarning();
-		return bundle != null && bundle.containsKey(msg) ? format(bundle.getString(msg), params) : msg;
+		return bundle != null && bundle.containsKey(messageKey) ? format(bundle.getString(messageKey), params) : messageKey;
 	}
 
 	private void missingBundleWarning() {
@@ -43,6 +66,12 @@ public class TranslateService {
 		return MessageFormat.format(string, params);
 	}
 
+	/**
+	 * Sets the required bundle base name.
+	 * 
+	 * @param baseName See also
+	 *                 {@link PropertyResourceBundle#getBundle(String, Locale)}
+	 */
 	public void setBundle(String baseName) {
 		this.bundleBaseName = baseName;
 	}

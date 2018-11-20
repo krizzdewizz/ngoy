@@ -6,6 +6,25 @@ import ngoy.core.Nullable;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
 
+/**
+ * Transforms the input to lowercase using the current locale.
+ * <p>
+ * Example:
+ * <p>
+ * 
+ * <pre>
+ *  
+ * {{ 'HELLO' | lowercase }}
+ * </pre>
+ * <p>
+ * Output:
+ * 
+ * <pre>
+ * hello
+ * </pre>
+ * 
+ * @author krizz
+ */
 @Pipe("lowercase")
 public class LowerCasePipe implements PipeTransform {
 

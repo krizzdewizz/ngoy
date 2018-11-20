@@ -4,6 +4,11 @@ import static java.lang.String.format;
 
 import java.lang.reflect.InvocationTargetException;
 
+/**
+ * Exception thrown from within ngoy.
+ * 
+ * @author krizz
+ */
 public class NgoyException extends RuntimeException {
 
 	public static Throwable realException(Throwable t) {
