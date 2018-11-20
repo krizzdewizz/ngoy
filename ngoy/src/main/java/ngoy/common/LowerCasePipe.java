@@ -29,7 +29,7 @@ import ngoy.core.PipeTransform;
 public class LowerCasePipe implements PipeTransform {
 
 	@Inject
-	public LocaleProvider locale;
+	public LocaleProvider localeProvider;
 
 	@Override
 	public Object transform(@Nullable Object obj, Object... params) {
@@ -38,7 +38,7 @@ public class LowerCasePipe implements PipeTransform {
 		}
 
 		return obj.toString()
-				.toLowerCase(locale.get());
+				.toLowerCase(localeProvider.getLocale());
 	}
 
 }

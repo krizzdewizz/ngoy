@@ -35,7 +35,7 @@ public class DatePipe implements PipeTransform {
 	private static final String DEFAULT_PATTERN = "dd.MM.yyyy hh:mm:ss";
 
 	@Inject
-	public LocaleProvider locale;
+	public LocaleProvider localeProvider;
 
 	@Override
 	public Object transform(@Nullable Object obj, Object... params) {
@@ -56,7 +56,7 @@ public class DatePipe implements PipeTransform {
 	 * @see DateTimeFormatter
 	 */
 	public String format(LocalDateTime date, String pattern) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern, locale.get());
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern, localeProvider.getLocale());
 		return date.format(formatter);
 	}
 }

@@ -26,7 +26,7 @@ import ngoy.core.LocaleProvider;
 public class TranslateService {
 
 	@Inject
-	public LocaleProvider locale;
+	public LocaleProvider localeProvider;
 
 	private ResourceBundle bundle;
 	private boolean hadMissingBundleWarning;
@@ -82,7 +82,7 @@ public class TranslateService {
 			return;
 		}
 
-		Locale localeNow = locale.get();
+		Locale localeNow = localeProvider.getLocale();
 		if (bundle == null || !localeNow.equals(prevLocale)) {
 			bundle = PropertyResourceBundle.getBundle(bundleBaseName, localeNow);
 			prevLocale = localeNow;

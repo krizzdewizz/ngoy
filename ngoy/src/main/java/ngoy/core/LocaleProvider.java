@@ -18,10 +18,10 @@ public interface LocaleProvider {
 			this.locale = locale;
 		}
 
-		public Locale get() {
+		public Locale getLocale() {
 			return locale;
 		}
 	}
 
-	Locale get();
+	Locale getLocale();
 }
