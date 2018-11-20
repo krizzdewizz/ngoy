@@ -76,7 +76,7 @@ public class Cli {
 
 		boolean expr = cmd.hasOption('e');
 		String template = readTemplate(argList.get(0), cmd.hasOption('f'));
-		String tpl = expr ? format("{{ %s }}", template) : template;
+		String tpl = expr ? format("{{%s}}", template) : template;
 
 		if (cmd.hasOption("in")) {
 			eachLine(System.in, line -> {
@@ -110,7 +110,7 @@ public class Cli {
 
 	void eachLine(InputStream in, Consumer<String> lineConsumer) {
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 			String line;
 			while ((line = reader.readLine()) != null) {
 				lineConsumer.accept(line);
