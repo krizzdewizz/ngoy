@@ -26,8 +26,37 @@ public class ExprParser {
 
 	static final TemplateParserContext TEMPLATE_CONTEXT = new TemplateParserContext("{{", "}}");
 
+	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
+
+	static String convertPipesToTransformCalls(String expressionString, Resolver resolver) {
+		Matcher matcher = PIPE_PATTERN.matcher(expressionString);
+		matcher.find();
+		String exprHead = matcher.group(1)
+				.trim();
+		String e = exprHead;
+		while (matcher.find()) {
+			String pipe = matcher.group(1)
+					.trim();
+
+			List<String> pipeParams = new ArrayList<>();
+			pipe = parsePipe(pipe, pipeParams);
+			String params = pipeParams.stream()
+					.collect(joining(","));
+
+			Class<?> resolvedPipe = resolver.resolvePipe(pipe);
+			if (resolvedPipe == null) {
+				throw new ParseException("Pipe not found for name '%s'", pipe);
+			} else if (!PipeTransform.class.isAssignableFrom(resolvedPipe)) {
+				throw new ParseException("Pipe %s must implement %s", resolvedPipe.getName(), PipeTransform.class.getName());
+			}
+
+			e = format("%s.pipe(\"%s\").transform(%s%s)", Ctx.CTX_VARIABLE, resolvedPipe.getName(), e, params.isEmpty() ? "" : format(",%s", params));
+		}
+		return e;
+	}
+
 	private static class ExpressionWithPipesParser extends SpelExpressionParser {
-		private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
+
 		private final Resolver resolver;
 
 		public ExpressionWithPipesParser(Resolver resolver) {
@@ -36,36 +65,10 @@ public class ExprParser {
 
 		@Override
 		protected SpelExpression doParseExpression(String expressionString, ParserContext context) throws ParseException {
-			String e = convertPipesToTransformCalls(expressionString);
+			String e = convertPipesToTransformCalls(expressionString, resolver);
 			return new SpelExpression(e, null, null);
 		}
 
-		private String convertPipesToTransformCalls(String expressionString) {
-			Matcher matcher = PIPE_PATTERN.matcher(expressionString);
-			matcher.find();
-			String exprHead = matcher.group(1)
-					.trim();
-			String e = exprHead;
-			while (matcher.find()) {
-				String pipe = matcher.group(1)
-						.trim();
-
-				List<String> pipeParams = new ArrayList<>();
-				pipe = parsePipe(pipe, pipeParams);
-				String params = pipeParams.stream()
-						.collect(joining(","));
-
-				Class<?> resolvedPipe = resolver.resolvePipe(pipe);
-				if (resolvedPipe == null) {
-					throw new ParseException("Pipe not found for name '%s'", pipe);
-				} else if (!PipeTransform.class.isAssignableFrom(resolvedPipe)) {
-					throw new ParseException("Pipe %s must implement %s", resolvedPipe.getName(), PipeTransform.class.getName());
-				}
-
-				e = format("%s.pipe(\"%s\").transform(%s%s)", Ctx.CTX_VARIABLE, resolvedPipe.getName(), e, params.isEmpty() ? "" : format(",%s", params));
-			}
-			return e;
-		}
 	}
 
 	interface TextHandler {

@@ -47,7 +47,7 @@ public class TranslateDirective {
 		translateService = s;
 	}
 
-	@HostBinding("text")
+	@HostBinding("ngText")
 	public String translation;
 
 	@Input
