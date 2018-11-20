@@ -91,7 +91,7 @@ public @interface HostBinding {
 	 * </pre>
 	 * <p>
 	 * 
-	 * An <b>text</b> binding binds an expression to the text content of the
+	 * An <b>ngText</b> binding binds an expression to the text content of the
 	 * element.
 	 * <p>
 	 * If more than one text binding is encountered, it is undetermined, which one
@@ -101,7 +101,7 @@ public @interface HostBinding {
 	 * &#64;Component(selector = "person", template = "")
 	 * public class PersonCmp {
 	 * 
-	 * 	&#64;HostBinding("text")
+	 * 	&#64;HostBinding("ngText")
 	 * 	public String name = "Peter";
 	 * }
 	 * </pre>

@@ -66,9 +66,9 @@ public class CmpRefParser {
 		splitComponentsAndDirectives(cmpRefs, allCmps, allDirs);
 
 		Set<String> excludeBindings = new HashSet<>();
-		List<String> cmpInputs = allCmps.isEmpty() ? emptyList() : cmpInputs(el, allCmps.get(0).clazz, excludeBindings);
+		List<String> cmpInputs = allCmps.isEmpty() ? emptyList() : cmpInputs(el, allCmps.get(0).clazz, excludeBindings, parser.resolver);
 		List<List<String>> dirInputs = allDirs.stream()
-				.map(ref -> cmpInputs(el, ref.clazz, excludeBindings))
+				.map(ref -> cmpInputs(el, ref.clazz, excludeBindings, parser.resolver))
 				.collect(toList());
 
 		boolean hadElementHead = false;
@@ -145,7 +145,7 @@ public class CmpRefParser {
 
 		Jerry parent = ngContentEl.parent();
 
-		Jerry childNodes = parent.contents();// new ArrayList<>(asList(parent.getChildNodes()));
+		Jerry childNodes = parent.contents();
 		int ngContentIndex = childNodes.index(ngContentEll);
 
 		List<Jerry> nodesBefore = new ArrayList<>();

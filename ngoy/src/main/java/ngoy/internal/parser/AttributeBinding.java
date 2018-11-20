@@ -16,34 +16,36 @@ public class AttributeBinding {
 
 	private static final String BINDING_CLASS = "class.";
 	private static final String BINDING_ATTR = "attr.";
-	private static final String BINDING_TEXT = "text";
+	private static final String BINDING_TEXT = "ngText";
 	private static final String BINDING_STYLE = "style.";
 
-	static void addAttributeBinding(Parser parser, String name, String value, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames, List<String[]> targetStyleNames) {
+	static void addAttributeBinding(Parser parser, String name, String expr, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames, List<String[]> targetStyleNames) {
 
 		String rawName = name.substring(1, name.length() - 1);
 
 		if (exclude.contains(rawName.toLowerCase())) {
 			return;
 		}
+		
+		expr = ExprParser.convertPipesToTransformCalls(expr, parser.resolver);
 
 		if (rawName.equals("ngClass")) {
-			targetClassNames.add(new String[] { rawName, value });
+			targetClassNames.add(new String[] { rawName, expr });
 		} else if (rawName.equals("ngStyle")) {
-			targetStyleNames.add(new String[] { rawName, value });
+			targetStyleNames.add(new String[] { rawName, expr });
 		} else if (rawName.startsWith(BINDING_CLASS)) {
 			String className = rawName.substring(BINDING_CLASS.length());
-			targetClassNames.add(new String[] { className, value });
+			targetClassNames.add(new String[] { className, expr });
 		} else if (rawName.startsWith(BINDING_ATTR)) {
 			String attrName = rawName.substring(BINDING_ATTR.length());
-			targetAttrNames.add(new String[] { attrName, value });
-		} else if (rawName.startsWith(BINDING_STYLE)) {
+			targetAttrNames.add(new String[] { attrName, expr });
+		} else if (rawName.startsWith(BINDING_STYLE)) {	
 			String attrName = rawName.substring(BINDING_STYLE.length());
-			targetStyleNames.add(new String[] { attrName, value });
+			targetStyleNames.add(new String[] { attrName, expr });
 		} else if (rawName.equals(BINDING_TEXT)) {
-			parser.handler.textOverride(value);
+			parser.handler.textOverride(expr);
 		} else {
-			parser.handler.attributeExpr(rawName, value);
+			parser.handler.attributeExpr(rawName, expr);
 		}
 	}
 

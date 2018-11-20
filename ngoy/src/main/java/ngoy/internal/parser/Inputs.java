@@ -11,6 +11,7 @@ import java.util.Set;
 import jodd.jerry.Jerry;
 import ngoy.core.Input;
 import ngoy.core.NgoyException;
+import ngoy.core.internal.Resolver;
 
 public class Inputs {
 
@@ -35,7 +36,7 @@ public class Inputs {
 	public static final char VALUE_EXPR = '0';
 	public static final char VALUE_TEXT = '1';
 
-	public static List<String> cmpInputs(Jerry el, Class<?> clazz, Set<String> excludeBindings) {
+	public static List<String> cmpInputs(Jerry el, Class<?> clazz, Set<String> excludeBindings, Resolver resolver) {
 		List<String> result = new ArrayList<>();
 		for (Field f : clazz.getFields()) {
 			Input input = f.getAnnotation(Input.class);
@@ -49,8 +50,8 @@ public class Inputs {
 				binding = fieldName;
 			}
 
-			addInput(FIELD_INPUT, VALUE_TEXT, result, el, binding, fieldName, f.getType(), clazz, excludeBindings);
-			addInput(FIELD_INPUT, VALUE_EXPR, result, el, binding, fieldName, f.getType(), clazz, excludeBindings);
+			addInput(FIELD_INPUT, VALUE_TEXT, result, el, binding, fieldName, f.getType(), clazz, excludeBindings, resolver);
+			addInput(FIELD_INPUT, VALUE_EXPR, result, el, binding, fieldName, f.getType(), clazz, excludeBindings, resolver);
 		}
 
 		for (Method m : clazz.getMethods()) {
@@ -70,24 +71,24 @@ public class Inputs {
 			}
 
 			Class<?> paramType = m.getParameters()[0].getType();
-			addInput(METHOD_INPUT, VALUE_TEXT, result, el, binding, methodName, paramType, clazz, excludeBindings);
-			addInput(METHOD_INPUT, VALUE_EXPR, result, el, binding, methodName, paramType, clazz, excludeBindings);
+			addInput(METHOD_INPUT, VALUE_TEXT, result, el, binding, methodName, paramType, clazz, excludeBindings, resolver);
+			addInput(METHOD_INPUT, VALUE_EXPR, result, el, binding, methodName, paramType, clazz, excludeBindings, resolver);
 		}
 		return result;
 	}
 
-	private static void addInput(char inputType, char valueType, List<String> result, Jerry el, String input, String fieldName, Class<?> fieldType, Class<?> clazz, Set<String> excludeBindings) {
-		String attr = valueType == VALUE_EXPR ? format("[%s]", input) : input;
+	private static void addInput(char inputType, char valueType, List<String> result, Jerry el, String input, String fieldName, Class<?> fieldType, Class<?> clazz, Set<String> excludeBindings, Resolver resolver) {
+		boolean isExpr = valueType == VALUE_EXPR;
+		String attr = isExpr ? format("[%s]", input) : input;
 		String inp = el.attr(attr);
 		if (inp != null) {
 
 			if (valueType == VALUE_TEXT && !fieldType.equals(String.class)) {
-				throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(),
-						fieldType.getName(), format("[%s]", input));
+				throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(), fieldType.getName(), format("[%s]", input));
 			}
 
 			result.add(format("%s%s%s", inputType, valueType, fieldName));
-			result.add(inp);
+			result.add(isExpr ? ExprParser.convertPipesToTransformCalls(inp, resolver) : inp);
 			excludeBindings.add(input.toLowerCase());
 			excludeBindings.add(fieldName.toLowerCase());
 		}

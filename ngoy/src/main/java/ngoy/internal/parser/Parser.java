@@ -96,7 +96,7 @@ public class Parser {
 
 	final Set<Jerry> cmpElements = new HashSet<>();
 	MyHandler handler;
-	private Resolver resolver;
+	Resolver resolver;
 	private final CmpRefParser cmpRefParser;
 
 	NodeVisitor visitor;

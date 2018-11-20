@@ -9,12 +9,12 @@ import ngoy.core.Component;
 
 public class UpperCasePipeTest extends ANgoyTest {
 
-	@Component(selector = "test", template = "{{ 'HALLÖCHEN' | uppercase }}")
+	@Component(selector = "test", template = "<a [q]=\"'a' | uppercase\">{{ 'HALLÖCHEN' | uppercase }}</a>")
 	public static class Cmp {
 	}
 
 	@Test
 	public void test() {
-		assertThat(render(Cmp.class)).isEqualTo("HALL&Ouml;CHEN");
+		assertThat(render(Cmp.class)).isEqualTo("<a q=\"A\">HALL&Ouml;CHEN</a>");
 	}
 }
