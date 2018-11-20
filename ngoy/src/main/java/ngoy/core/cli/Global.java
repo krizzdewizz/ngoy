@@ -1,4 +1,4 @@
-package ngoy.internal.cli;
+package ngoy.core.cli;
 
 public class Global {
 	public Integer Int(Object s) {
