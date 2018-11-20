@@ -2,7 +2,7 @@ apply plugin: 'java-library'
 apply plugin: 'com.github.johnrengelman.shadow'
 sourceCompatibility = 1.8
 
-version = '0.0.8'
+version = '0.0.8-SNAPSHOT'
 
 project.ext.buildTimestamp = new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
 def implementationVersion = "${version} (${project.ext.buildTimestamp})"
