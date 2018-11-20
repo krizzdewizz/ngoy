@@ -30,7 +30,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 
 			Jerry elClone = cloneNode(el);
 
-			Jerry tpl = XDom.createElement(NG_TEMPLATE);
+			Jerry tpl = XDom.createElement(NG_TEMPLATE, el);
 			XDom.removeContents(el);
 			XDom.appendChild(el, tpl);
 

@@ -29,7 +29,7 @@ public class InvalidSyntaxTest extends ANgoyTest {
 	public void testBinding() {
 		expectedEx.expect(NgoyException.class);
 		expectedEx.expectMessage(containsString(CmpNested.class.getName()));
-		expectedEx.expectMessage(containsString("templateUrl: invalid-syntax-nested.html"));
+		expectedEx.expectMessage(containsString("templateUrl: 'invalid-syntax-nested.html'"));
 		expectedEx.expectMessage(containsString("position: [11:")); // line
 		render(CmpBinding.class);
 	}

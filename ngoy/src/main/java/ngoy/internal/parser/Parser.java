@@ -34,9 +34,9 @@ import ngoy.internal.parser.visitor.SwitchToElseIfVisitor;
 
 public class Parser {
 
-	public static Jerry parseHtml(String template) {
+	public static Jerry parseHtml(String template, int baseLineNumber) {
 		try {
-			Jerry doc = Jerry.jerry(new NgoyDomBuilder())
+			Jerry doc = Jerry.jerry(new NgoyDomBuilder(baseLineNumber))
 					.parse(template);
 			return doc;
 		} catch (Exception e) {
@@ -46,11 +46,11 @@ public class Parser {
 
 	public Jerry parse(String template) {
 		try {
-			Jerry doc = parseHtml(template);
+			Jerry doc = parseHtml(template, 0);
 
 			if ("text/plain".equals(contentType)) {
 				doc = parseHtml(ForOfMicroParser.parse(doc.get(0)
-						.getHtml()));
+						.getHtml()), 0);
 			}
 
 			return doc;
@@ -162,7 +162,7 @@ public class Parser {
 			acceptDocument(nodes);
 		} catch (Exception e) {
 			String message = e.getMessage();
-			throw new NgoyException(e, "Error while parsing: %s%s", isSet(message) ? message : e, exceptionInfo());
+			throw new NgoyException(e, "Error while parsing: %s. %s", isSet(message) ? message : e, exceptionInfo());
 		}
 	}
 
@@ -327,24 +327,21 @@ public class Parser {
 	}
 
 	String exceptionInfo() {
-		CmpRef peek = handler.cmpClassesStack.peek();
-		Class<?> topCmpClass = null;
+		Jerry currentEl = replacingVisitor.currentEl;
+		String position = currentEl == null ? "" : getPosition(currentEl).toString();
+
 		String templateUrl = "";
 		String className = "";
-		Jerry currentEl = replacingVisitor.currentEl;
-		String position = currentEl == null ? "" : getPosition(currentEl);
-		if (peek != null) {
-			topCmpClass = topCmpClass();
-			if (topCmpClass != null) {
-				className = topCmpClass.getName();
-				Component cmp = topCmpClass.getAnnotation(Component.class);
-				if (cmp != null) {
-					templateUrl = cmp.templateUrl();
-				}
+		Class<?> topCmpClass = topCmpClass();
+		if (topCmpClass != null) {
+			className = topCmpClass.getName();
+			Component cmp = topCmpClass.getAnnotation(Component.class);
+			if (cmp != null) {
+				templateUrl = cmp.templateUrl();
 			}
 		}
 
-		return format("\nComponent: %s\ntemplateUrl: %s\nposition: %s", className, templateUrl, position);
+		return format("\nComponent: %s\ntemplateUrl: '%s'\nposition: %s", className, templateUrl, position);
 	}
 
 	private void replaceCommentLikeNodes(Jerry node) {

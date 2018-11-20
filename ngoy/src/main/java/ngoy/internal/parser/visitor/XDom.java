@@ -3,6 +3,7 @@ package ngoy.internal.parser.visitor;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static ngoy.internal.parser.NgoyElement.getPosition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +77,9 @@ public class XDom {
 	}
 
 	public static Jerry cloneNode(Jerry node) {
-		return Parser.parseHtml(getHtml(node));
+		return Parser.parseHtml(getHtml(node), getPosition(node).getLine())
+				.children()
+				.first();
 	}
 
 	public static String getHtml(Jerry node) {
@@ -84,8 +87,12 @@ public class XDom {
 				.getHtml();
 	}
 
-	public static Jerry createElement(String name) {
-		return Parser.parseHtml(format("<%s></%s>", name, name))
+	public static Jerry createElement(String name, Jerry baseNodeForLineNumber) {
+		return createElement(name, getPosition(baseNodeForLineNumber).getLine());
+	}
+
+	public static Jerry createElement(String name, int baseLineNumber) {
+		return Parser.parseHtml(format("<%s></%s>", name, name), baseLineNumber)
 				.children()
 				.first();
 	}

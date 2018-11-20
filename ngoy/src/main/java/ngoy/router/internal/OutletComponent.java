@@ -28,7 +28,7 @@ public class OutletComponent implements OnCompile, OnInit {
 	public void ngOnCompile(Jerry el, String componentClass) {
 		int i = 0;
 		for (Route route : router.getRoutes()) {
-			Jerry routeEl = createElement(getSelector(route.getComponent()));
+			Jerry routeEl = createElement(getSelector(route.getComponent()), el);
 			routeEl.attr("*ngIf", format("activeRoute == %s", i));
 			appendChild(el, routeEl);
 			i++;

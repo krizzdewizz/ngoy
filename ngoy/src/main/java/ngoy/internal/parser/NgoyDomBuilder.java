@@ -9,7 +9,10 @@ import jodd.lagarto.dom.LagartoDOMBuilderTagVisitor;
 
 public class NgoyDomBuilder extends LagartoDOMBuilder {
 
-	public NgoyDomBuilder() {
+	private final int baseLineNumber;
+
+	public NgoyDomBuilder(int baseLineNumber) {
+		this.baseLineNumber = baseLineNumber;
 		config //
 				.setCalculatePosition(true)
 				.setCaseSensitive(true)
@@ -24,7 +27,7 @@ public class NgoyDomBuilder extends LagartoDOMBuilder {
 			@Override
 			protected Element createElementNode(Tag tag) {
 				Element el = super.createElementNode(tag);
-				return new NgoyElement(rootNode, tag, el.isVoidElement(), el.isSelfClosed(), tag.getPosition());
+				return new NgoyElement(rootNode, tag, el.isVoidElement(), el.isSelfClosed(), tag.getPosition(), baseLineNumber);
 			}
 		};
 

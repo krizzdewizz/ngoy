@@ -39,7 +39,7 @@ public class StyleUrlsDirective implements OnCompile {
 
 			Jerry styleEl = el.$("style");
 			if (styleEl.length() == 0) {
-				Jerry ell = XDom.createElement("style");
+				Jerry ell = XDom.createElement("style", el);
 				ell.attr("type", "text/css");
 				ell.text(styles);
 				XDom.appendChild(findParent(el), ell);
