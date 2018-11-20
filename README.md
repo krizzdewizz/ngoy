@@ -1,4 +1,4 @@
-[master](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=master) [develop](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=develop)
+[![master](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=master)](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=master) [![develop](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=develop)](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=develop)
 
 # ngoy
 
