@@ -1,3 +1,5 @@
+[master](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=master) [develop](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=develop)
+
 # ngoy
 
 A template engine for the JVM, based on the Angular+ component architecture.
