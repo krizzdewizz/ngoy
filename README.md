@@ -8,7 +8,9 @@ ngoy == Template + JVM + Angular
 
 enjoy ngoy!
 
-## Simple
+## Examples
+
+### Simple
 
 ```java
 Ngoy.renderString("hello {{name}}", Context.of("name", "world"), System.out);
@@ -16,7 +18,7 @@ Ngoy.renderString("hello {{name}}", Context.of("name", "world"), System.out);
 // hello world
 ```
 
-## App with components, directives, pipes and services
+### App with components, directives, pipes and services
 
 ```java
 @Component(selector = "app", template = "hello {{ name | uppercase }}")
@@ -33,6 +35,6 @@ public static void main(String[] args) {
 // hello WORLD
 ```
 
-See also [ngoy-starter-web](https://github.com/krizzdewizz/ngoy-starter-web)
+Clone [ngoy-starter-web](https://github.com/krizzdewizz/ngoy-starter-web) to get started.
 
 More docs about to come...
