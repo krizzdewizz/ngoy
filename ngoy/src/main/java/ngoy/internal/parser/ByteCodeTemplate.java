@@ -151,7 +151,6 @@ public class ByteCodeTemplate implements ParserHandler {
 			flushOut();
 
 			run.loadLocal(ctxParam);
-			run.loadLocal(ctxParam);
 			run.loadLocal(textOverrideVar);
 			run.invokeVirtual(ctxType, "printEscaped", null, singleObjectParamType);
 

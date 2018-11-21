@@ -13,7 +13,6 @@ import ngoy.BeanInjector;
 import ngoy.Ngoy;
 import ngoy.core.LocaleProvider;
 import ngoy.core.Provider;
-import ngoy.core.TemplateCache;
 
 @Controller
 @RequestMapping("/todo")
@@ -27,14 +26,17 @@ public class TodoMain implements InitializingBean {
 	@GetMapping()
 	public void home(HttpServletResponse response) throws Exception {
 		ngoy.render(response.getOutputStream());
+
+		// remove in production!
+		createApp();
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		createApp();
+	}
 
-		// do not disable in production
-		TemplateCache.DEFAULT.setDisabled(true);
-
+	private void createApp() {
 		LocaleProvider sessionLocale = () -> LocaleContextHolder.getLocale();
 
 		ngoy = Ngoy.app(TodoApp.class)

@@ -13,8 +13,6 @@ import java.util.Map;
  */
 public class TemplateCache {
 
-	public static final TemplateCache DEFAULT = new TemplateCache();
-
 	public interface CreateTemplate {
 		Class<?> run(String className);
 	}

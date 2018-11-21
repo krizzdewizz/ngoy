@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import ngoy.Ngoy;
 import ngoy.core.Provider;
-import ngoy.core.TemplateCache;
 import ngoy.router.Location;
 import ngoy.router.RouterConfig;
 import ngoy.router.RouterModule;
@@ -31,15 +30,18 @@ public class RouterMain implements InitializingBean {
 	public void home(HttpServletResponse response) throws Exception {
 //		ngoy.renderSite(java.nio.file.Paths.get("d:/downloads/abc"));
 
+		// remove in production!
+		createApp();
+
 		ngoy.render(response.getOutputStream());
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		createApp();
+	}
 
-		// do not disable in production
-		TemplateCache.DEFAULT.setDisabled(true);
-
+	private void createApp() {
 		RouterConfig routerConfig = RouterConfig //
 				.baseHref("/router")
 				.location(Provider.useValue(Location.class, () -> request.getRequestURI()))

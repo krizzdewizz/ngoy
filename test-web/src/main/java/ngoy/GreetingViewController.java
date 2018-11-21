@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import ngoy.core.Context;
-import ngoy.core.TemplateCache;
 import ngoy.testapp.PersonService;
 import ngoy.testapp.TestApp;
 
@@ -33,14 +32,18 @@ public class GreetingViewController implements InitializingBean {
 
 	@GetMapping(path = "/more")
 	public void persons(HttpServletResponse response) throws Exception {
-		// do not disable in production
-		TemplateCache.DEFAULT.setDisabled(true);
+		// remove in production!
+		createApp();
 
 		ngoy.render(response.getOutputStream());
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		createApp();
+	}
+
+	private void createApp() {
 		PersonService personService = new PersonService();
 		ngoy = Ngoy.app(TestApp.class)
 				.providers(useValue(PersonService.class, personService))

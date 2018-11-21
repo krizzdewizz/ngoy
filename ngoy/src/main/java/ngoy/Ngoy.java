@@ -71,7 +71,7 @@ import ngoy.translate.TranslateService;
  * <p>
  * Use {@link #app(Class)} to build an 'app' using components, directives, pipes
  * etc.
- * 
+ *
  * @author krizz
  */
 public class Ngoy<T> {
@@ -84,7 +84,6 @@ public class Ngoy<T> {
 		private final Config config = new Config();
 		private Provider[] providers;
 		private Injector[] injectors;
-		private TemplateCache cache;
 		private ModuleWithProviders<?>[] modules;
 
 		private Builder(Class<T> appRoot) {
@@ -93,7 +92,7 @@ public class Ngoy<T> {
 
 		/**
 		 * Adds the given providers to the app.
-		 * 
+		 *
 		 * @param providers Providers to add
 		 * @return this
 		 */
@@ -106,7 +105,7 @@ public class Ngoy<T> {
 		 * Adds the given injectors to the app.
 		 * <p>
 		 * Additional injectors may be used to integrate another DI system into ngoy.
-		 * 
+		 *
 		 * @param injectors injectors
 		 * @return this
 		 */
@@ -122,7 +121,7 @@ public class Ngoy<T> {
 		 * annotations only. They need 'runtime' information, usually passed with a call
 		 * to a static 'forRoot' method such as
 		 * {@link RouterModule#forRoot(ngoy.router.RouterConfig)}.
-		 * 
+		 *
 		 * @param modules Modules to add
 		 * @return this
 		 */
@@ -133,7 +132,7 @@ public class Ngoy<T> {
 
 		/**
 		 * Whether to inline components.
-		 * 
+		 *
 		 * @param inlineComponents whether to inline components
 		 * @return this
 		 */
@@ -150,7 +149,7 @@ public class Ngoy<T> {
 		 * <p>
 		 * This affects the output escaping. With <code>text/plain</code>, no escaping
 		 * takes place.
-		 * 
+		 *
 		 * @param contentType The content type
 		 * @return this
 		 */
@@ -160,24 +159,10 @@ public class Ngoy<T> {
 		}
 
 		/**
-		 * Provide an own cache instance.
-		 * <p>
-		 * Once a template first used, it is compiled to byte code and stored in the
-		 * cache for later retrieval when the template is run again
-		 * 
-		 * @param cache
-		 * @return this
-		 */
-		public Builder<T> cache(TemplateCache cache) {
-			this.cache = cache;
-			return this;
-		}
-
-		/**
 		 * The locale to use.
 		 * <p>
 		 * This affects i.e. formatting of the {@link DatePipe}
-		 * 
+		 *
 		 * @param locale Default is the system locale
 		 * @return this
 		 */
@@ -189,7 +174,7 @@ public class Ngoy<T> {
 		/**
 		 * Load a translation bundle such as <code>messages</code>. If this member is
 		 * set, the {@link TranslateModule} is automatically added to the app.
-		 * 
+		 *
 		 * @param translateBundle translation bundle such as <code>messages</code>. Same
 		 *                        as you would pass to
 		 *                        {@link PropertyResourceBundle#getBundle(String)}
@@ -203,13 +188,12 @@ public class Ngoy<T> {
 		/**
 		 * Builds the app instance, on which then {@link Ngoy#render(OutputStream)} can
 		 * be called.
-		 * 
+		 *
 		 * @return App
 		 */
 		public Ngoy<T> build() {
 			return new Ngoy<T>(appRoot, //
 					config, //
-					cache, //
 					injectors != null ? injectors : new Injector[0], //
 					modules != null ? modules : new ModuleWithProviders[0], //
 					providers != null ? providers : new Provider[0]);
@@ -218,7 +202,7 @@ public class Ngoy<T> {
 
 	/**
 	 * Begins building an 'app' using components, pipes etc.
-	 * 
+	 *
 	 * @param appRoot The root component. The class must have at least the
 	 *                {@link Component} annotation set. It may have the
 	 *                {@link NgModule} annotation set if the app is using other
@@ -234,15 +218,15 @@ public class Ngoy<T> {
 	 * Renders the given string.
 	 * <p>
 	 * Example with variable:
-	 * 
+	 *
 	 * <pre>
 	 * Ngoy.renderString("hello: {{name}}", Context.of("name", "peter"), System.out);
-	 * 
+	 *
 	 * &gt;&gt; hello peter
 	 * </pre>
-	 * 
+	 *
 	 * Example with model:
-	 * 
+	 *
 	 * <pre>
 	 * public class Person {
 	 * 	private final String name;
@@ -255,13 +239,13 @@ public class Ngoy<T> {
 	 * 		return name;
 	 * 	}
 	 * }
-	 * 
+	 *
 	 * Ngoy.renderString("hello: {{name}}", Context.of(new Person("sam")), System.out);
-	 * 
+	 *
 	 * &gt;&gt; hello sam
-	 * 
+	 *
 	 * </pre>
-	 * 
+	 *
 	 * @param template The template
 	 * @param context  Execution context used to provide variables and/or a 'model'
 	 *                 to the template
@@ -280,7 +264,7 @@ public class Ngoy<T> {
 	 * <p>
 	 * Same as {@link #renderString(String, Context, OutputStream, Config...)},
 	 * except that the template is read from the given path.
-	 * 
+	 *
 	 * @param templatePath path to the template. The template resource is loaded
 	 *                     with {@link Class#getResourceAsStream(String)}
 	 * @param context      Execution context used to provide variables and/or a
@@ -355,18 +339,17 @@ public class Ngoy<T> {
 	private T appInstance;
 	private Resolver resolver;
 	private DefaultInjector injector;
-	private final TemplateCache cache;
+	private final TemplateCache cache = new TemplateCache();
 	private final Events events = new Events();
 
 	protected Ngoy(Config config) {
-		this(Object.class, config, null, new Injector[0], new ModuleWithProviders[0]);
+		this(Object.class, config, new Injector[0], new ModuleWithProviders[0]);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Ngoy(Class<?> appRoot, Config config, TemplateCache cache, Injector[] injectors, ModuleWithProviders<?>[] modules, Provider... rootProviders) {
+	protected Ngoy(Class<?> appRoot, Config config, Injector[] injectors, ModuleWithProviders<?>[] modules, Provider... rootProviders) {
 		this.appRoot = (Class<T>) appRoot;
 		this.config = config;
-		this.cache = cache != null ? cache : TemplateCache.DEFAULT;
 		this.init(injectors, modules, rootProviders);
 	}
 
@@ -509,7 +492,7 @@ public class Ngoy<T> {
 	 * <p>
 	 * If a {@link RouterModule} is present, renders a page for each configured
 	 * route.
-	 * 
+	 *
 	 * @param folder target folder. Subdirectories are created as needed
 	 */
 	public void renderSite(Path folder) {
@@ -519,7 +502,7 @@ public class Ngoy<T> {
 
 	/**
 	 * Renders the app to the given ouput stream.
-	 * 
+	 *
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
@@ -651,7 +634,7 @@ public class Ngoy<T> {
 
 	/**
 	 * experimental.
-	 * 
+	 *
 	 * @param event   The 'token'
 	 * @param payload payload
 	 * @param         <E> Type of payload
@@ -673,7 +656,7 @@ public class Ngoy<T> {
 
 	/**
 	 * Returns the app instance.
-	 * 
+	 *
 	 * @return app instance. Null if the app has been destroyed.
 	 */
 	@Nullable
@@ -683,7 +666,7 @@ public class Ngoy<T> {
 
 	/**
 	 * The entry point for the {@link Cli}.
-	 * 
+	 *
 	 * @param args arguments
 	 */
 	public static void main(String[] args) {
