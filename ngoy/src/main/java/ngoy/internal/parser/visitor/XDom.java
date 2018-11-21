@@ -3,6 +3,7 @@ package ngoy.internal.parser.visitor;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static ngoy.internal.parser.NgoyElement.getPosition;
 
 import java.util.ArrayList;
@@ -23,8 +24,7 @@ public class XDom {
 	private static void accept(Jerry nodes, NodeVisitor visitor) {
 		nodes.each((n, i) -> {
 			visitor.head(n, 0);
-			Jerry children = n.contents();
-			accept(children, visitor);
+			accept(n.contents(), visitor);
 			visitor.tail(n, 0);
 			return true;
 		});
@@ -41,27 +41,21 @@ public class XDom {
 	}
 
 	public static List<String> classNames(Jerry el) {
-		String clazz = el.attr("class");
-		return clazz == null ? emptyList() : asList(clazz.split(" "));
+		return split(el, "class", " ");
 	}
 
 	public static List<String> styleNames(Jerry el) {
-		List<String> all = new ArrayList<>();
-		String style = el.attr("style");
-		if (style != null) {
-			parseStyles(style, all);
-		}
-		return all;
+		return split(el, "style", ";");
 	}
 
-	private static void parseStyles(String style, List<String> target) {
-		String[] splits = style.split(";");
-		for (String split : splits) {
-			split = split.trim();
-			if (!split.isEmpty()) {
-				target.add(split);
-			}
-		}
+	private static List<String> split(Jerry el, String attr, String delimiter) {
+		String value = el.attr(attr);
+		return value == null //
+				? emptyList()
+				: asList(value.split(delimiter)).stream()
+						.map(String::trim)
+						.filter(s -> !s.isEmpty())
+						.collect(toList());
 	}
 
 	public static void removeContents(Jerry el) {
@@ -71,7 +65,7 @@ public class XDom {
 	}
 
 	public static boolean matchesAttributeBinding(Jerry node, String attrName) {
-//		// directive name same as @Input
+		// directive name same as @Input
 		String raw = attrName.substring(1, attrName.length() - 1);
 		return node.is(format("[\\[%s\\]]", raw));
 	}

@@ -11,7 +11,8 @@ import java.lang.annotation.Target;
  * <p>
  * The annotated field must be public, non-final, non-static.<br>
  * The annotated setter method must be public, non-static and must have exactly
- * one parameter.
+ * one parameter.<br>
+ * Constructor parameters must not be annotated.
  * <p>
  * Example:
  * 

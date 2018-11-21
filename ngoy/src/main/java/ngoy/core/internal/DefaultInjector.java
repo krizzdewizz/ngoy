@@ -2,12 +2,10 @@ package ngoy.core.internal;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Provider.useValue;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -17,7 +15,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
@@ -27,12 +24,14 @@ import ngoy.core.Provider;
 public class DefaultInjector implements Injector {
 
 	@Nullable
-	private static Annotation findAnnotation(AnnotatedElement el, String name) {
-		return Stream.of(el.getAnnotations())
-				.filter(it -> name.equals(it.annotationType()
-						.getSimpleName()))
-				.findFirst()
-				.orElse(null);
+	private static Annotation findAnnotation(Annotation[] anns, String name) {
+		for (Annotation a : anns) {
+			if (name.equals(a.annotationType()
+					.getSimpleName())) {
+				return a;
+			}
+		}
+		return null;
 	}
 
 	private final Map<Class<?>, Provider> providers;
@@ -48,11 +47,12 @@ public class DefaultInjector implements Injector {
 		Map<Class<?>, Provider> all = new LinkedHashMap<>();
 		for (Provider p : providers) {
 			all.put(p.getProvide(), p);
-//			Provider existing = all.put(p.getProvide(), p);
-//			if (existing != null) {
-//				throw new NgoyException("More than one provider for %s: %s, %s", p.getProvide()
-//						.getName(), existing, p);
-//			}
+			// Provider existing = all.put(p.getProvide(), p);
+			// if (existing != null) {
+			// throw new NgoyException("More than one provider for %s: %s, %s",
+			// p.getProvide()
+			// .getName(), existing, p);
+			// }
 		}
 		all.put(Injector.class, useValue(Injector.class, this));
 		this.providers = all;
@@ -103,7 +103,7 @@ public class DefaultInjector implements Injector {
 				if (nullIfNone) {
 					return null;
 				}
-				throw new NgoyException("No provider for %s", clazz.getName());
+				throw new NgoyException("No provider found for %s", clazz.getName());
 			}
 
 			Object useValue = provider.getUseValue();
@@ -124,10 +124,15 @@ public class DefaultInjector implements Injector {
 				throw new NgoyException("No constructor found: %s", useClass.getName());
 			} else {
 				Constructor<?> ctor = ctors[0];
-				inst = ctor.newInstance(Stream.of(ctor.getParameterTypes())
-						.map(pt -> getInternal(pt, resolving, false))
-						.collect(toList())
-						.toArray());
+				int nParams = ctor.getParameterCount();
+				Object[] arr = new Object[nParams];
+				Class<?>[] paramTypes = ctor.getParameterTypes();
+				Annotation[][] paramAnns = ctor.getParameterAnnotations();
+				for (int i = 0; i < nParams; i++) {
+					Annotation optional = findAnnotation(paramAnns[i], "Optional");
+					arr[i] = getInternal(paramTypes[i], resolving, optional != null);
+				}
+				inst = ctor.newInstance(arr);
 			}
 
 			injectFields(useClass, inst, resolving);
@@ -146,11 +151,11 @@ public class DefaultInjector implements Injector {
 		try {
 			for (Field field : clazz.getFields()) {
 				int mods = field.getModifiers();
-				if (!Modifier.isPublic(mods) || Modifier.isStatic(mods) || Modifier.isFinal(mods) || findAnnotation(field, "Inject") == null) {
+				if (!Modifier.isPublic(mods) || Modifier.isStatic(mods) || Modifier.isFinal(mods) || findAnnotation(field.getAnnotations(), "Inject") == null) {
 					continue;
 				}
 
-				boolean optional = findAnnotation(field, "Optional") != null;
+				boolean optional = findAnnotation(field.getAnnotations(), "Optional") != null;
 
 				Object obj = getInternal(field.getType(), resolving, optional);
 				if (!optional || obj != null) {
@@ -160,7 +165,7 @@ public class DefaultInjector implements Injector {
 
 			for (Method meth : clazz.getMethods()) {
 				int mods = meth.getModifiers();
-				if (!Modifier.isPublic(mods) || Modifier.isStatic(mods) || findAnnotation(meth, "Inject") == null) {
+				if (!Modifier.isPublic(mods) || Modifier.isStatic(mods) || findAnnotation(meth.getAnnotations(), "Inject") == null) {
 					continue;
 				}
 
@@ -168,7 +173,7 @@ public class DefaultInjector implements Injector {
 					throw new NgoyException("Inject setter method must have exactly one parameter: %s.%s", clazz.getName(), meth.getName());
 				}
 
-				boolean optional = findAnnotation(meth, "Optional") != null;
+				boolean optional = findAnnotation(meth.getAnnotations(), "Optional") != null;
 
 				Object obj = getInternal(meth.getParameterTypes()[0], resolving, optional);
 				if (!optional || obj != null) {
