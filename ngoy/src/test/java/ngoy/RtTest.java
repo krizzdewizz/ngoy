@@ -24,7 +24,7 @@ public class RtTest {
 
 //	@org.junit.Test
 	public void run() {
-		Ngoy<TestApp> rt = new Ngoy<TestApp>(TestApp.class, new Config(), null, new Injector[0], new ModuleWithProviders[0], Provider.of(PersonService.class)) {
+		Ngoy<TestApp> rt = new Ngoy<TestApp>(TestApp.class, new Config(), new Injector[0], new ModuleWithProviders[0], Provider.of(PersonService.class)) {
 			@Override
 			protected void parseAndRender(Class<TestApp> appRoot, Parser parser, Ctx ctx, PrintStream out) {
 				try {
