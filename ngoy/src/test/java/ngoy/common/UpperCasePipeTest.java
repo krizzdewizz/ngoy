@@ -15,6 +15,6 @@ public class UpperCasePipeTest extends ANgoyTest {
 
 	@Test
 	public void test() {
-		assertThat(render(Cmp.class)).isEqualTo("<a q=\"A\">HALL&Ouml;CHEN</a>");
+		assertThat(render(Cmp.class)).isEqualTo("<a q=\"A\">HALLÖCHEN</a>");
 	}
 }

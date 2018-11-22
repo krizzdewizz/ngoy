@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import org.apache.commons.text.StringEscapeUtils;
-
 /**
  * Utils.
  * 
@@ -75,23 +73,33 @@ public class Util {
 	}
 
 	/**
-	 * HTML escape's the given text.
+	 * HTML/XML escape's the given text.
 	 * 
 	 * @param text
 	 * @return Escaped text
 	 */
-	public static String escapeHtml(String text) {
-		return StringEscapeUtils.escapeHtml4(text);
-	}
-
-	/**
-	 * XML escape's the given text.
-	 * 
-	 * @param text
-	 * @return Escaped text
-	 */
-	public static String escapeXml(String text) {
-		return StringEscapeUtils.escapeXml11(text);
+	public static String escapeHtmlXml(String text) {
+		// why 20?: doubleling seems to much as those chars don't occur often
+		StringBuilder sb = new StringBuilder(text.length() + 20);
+		for (int i = 0, n = text.length(); i < n; i++) {
+			switch (text.charAt(i)) {
+			case '"':
+				sb.append("&quot;");
+				break;
+			case '&':
+				sb.append("&amp;");
+				break;
+			case '<':
+				sb.append("&lt;");
+				break;
+			case '>':
+				sb.append("&gt;");
+				break;
+			default:
+				sb.append(text.charAt(i));
+			}
+		}
+		return sb.toString();
 	}
 
 	/**
@@ -106,13 +114,10 @@ public class Util {
 	 * @param contentType null or empty to use default
 	 */
 	public static String escape(String text, @Nullable String contentType) {
-		if ("text/xml".equals(contentType)) {
-			return escapeXml(text);
-		}
 		if ("text/plain".equals(contentType)) {
 			return text;
 		}
-		return escapeHtml(text);
+		return escapeHtmlXml(text);
 	}
 
 	/**

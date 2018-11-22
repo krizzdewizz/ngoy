@@ -15,6 +15,6 @@ public class LowerCasePipeTest extends ANgoyTest {
 
 	@Test
 	public void test() {
-		assertThat(render(Cmp.class)).isEqualTo("hall&ouml;chen");
+		assertThat(render(Cmp.class)).isEqualTo("hallöchen");
 	}
 }
