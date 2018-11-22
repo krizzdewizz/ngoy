@@ -1,12 +1,12 @@
-package ngoy.internal.parser;
+package ngoy.core.dom;
 
-import static ngoy.internal.parser.NgoyElement.getPosition;
+import static ngoy.core.dom.NgoyElement.getPosition;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
 import jodd.jerry.Jerry;
-import ngoy.core.XDom;
+import ngoy.core.dom.XDom;
 
 public class NgoyElementTest {
 

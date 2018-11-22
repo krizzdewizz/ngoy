@@ -1,4 +1,4 @@
-package ngoy.internal.parser;
+package ngoy.core.dom.internal;
 
 import jodd.lagarto.LagartoParser;
 import jodd.lagarto.Tag;
@@ -6,6 +6,7 @@ import jodd.lagarto.dom.Document;
 import jodd.lagarto.dom.Element;
 import jodd.lagarto.dom.LagartoDOMBuilder;
 import jodd.lagarto.dom.LagartoDOMBuilderTagVisitor;
+import ngoy.core.dom.NgoyElement;
 
 public class NgoyDomBuilder extends LagartoDOMBuilder {
 

@@ -1,4 +1,4 @@
-package ngoy.internal.parser;
+package ngoy.core.dom;
 
 import static java.lang.String.format;
 

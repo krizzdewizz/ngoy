@@ -1,11 +1,11 @@
-package ngoy.core;
+package ngoy.core.dom;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static ngoy.core.NgoyException.wrap;
-import static ngoy.internal.parser.NgoyElement.getPosition;
+import static ngoy.core.dom.NgoyElement.getPosition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,26 +14,9 @@ import java.util.stream.Stream;
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Attribute;
 import jodd.lagarto.dom.Node;
-import ngoy.internal.parser.NgoyDomBuilder;
+import ngoy.core.dom.internal.NgoyDomBuilder;
 
 public class XDom {
-
-	public interface NodeVisitor {
-
-		public class Default implements NodeVisitor {
-			@Override
-			public void head(Jerry node) {
-			}
-
-			@Override
-			public void tail(Jerry node) {
-			}
-		}
-
-		void head(Jerry node);
-
-		void tail(Jerry node);
-	}
 
 	public static Jerry parseHtml(String template, int baseLineNumber) {
 		try {

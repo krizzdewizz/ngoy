@@ -1,7 +1,7 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
-import static ngoy.core.XDom.attributes;
+import static ngoy.core.dom.XDom.attributes;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

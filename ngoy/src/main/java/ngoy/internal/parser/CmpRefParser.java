@@ -3,10 +3,10 @@ package ngoy.internal.parser;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
-import static ngoy.core.XDom.classNames;
-import static ngoy.core.XDom.nodeName;
-import static ngoy.core.XDom.styleNames;
-import static ngoy.core.XDom.traverse;
+import static ngoy.core.dom.XDom.classNames;
+import static ngoy.core.dom.XDom.nodeName;
+import static ngoy.core.dom.XDom.styleNames;
+import static ngoy.core.dom.XDom.traverse;
 import static ngoy.internal.parser.Inputs.cmpInputs;
 
 import java.util.ArrayList;

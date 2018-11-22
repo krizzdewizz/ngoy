@@ -4,8 +4,8 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.copyToString;
-import static ngoy.core.XDom.appendChild;
-import static ngoy.core.XDom.createElement;
+import static ngoy.core.dom.XDom.appendChild;
+import static ngoy.core.dom.XDom.createElement;
 
 import java.io.InputStream;
 import java.util.Optional;

@@ -1,7 +1,7 @@
 package ngoy.router.internal;
 
-import static ngoy.core.XDom.appendChild;
-import static ngoy.core.XDom.createElement;
+import static ngoy.core.dom.XDom.appendChild;
+import static ngoy.core.dom.XDom.createElement;
 
 import jodd.jerry.Jerry;
 import ngoy.core.Component;

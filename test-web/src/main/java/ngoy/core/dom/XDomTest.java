@@ -1,7 +1,7 @@
-package ngoy.core;
+package ngoy.core.dom;
 
 import static java.util.Arrays.asList;
-import static ngoy.core.XDom.parseHtml;
+import static ngoy.core.dom.XDom.parseHtml;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
@@ -9,7 +9,6 @@ import org.junit.Test;
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Node;
 import jodd.lagarto.dom.Node.NodeType;
-import ngoy.internal.parser.NgoyElement;
 
 public class XDomTest {
 	@Test

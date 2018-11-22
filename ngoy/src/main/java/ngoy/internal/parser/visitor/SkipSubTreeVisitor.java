@@ -2,7 +2,7 @@ package ngoy.internal.parser.visitor;
 
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Document;
-import ngoy.core.XDom.NodeVisitor;
+import ngoy.core.dom.NodeVisitor;
 
 public class SkipSubTreeVisitor implements NodeVisitor {
 

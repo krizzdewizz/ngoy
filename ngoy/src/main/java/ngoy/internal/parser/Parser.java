@@ -3,11 +3,11 @@ package ngoy.internal.parser;
 import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
-import static ngoy.core.XDom.attributes;
-import static ngoy.core.XDom.nodeName;
-import static ngoy.core.XDom.parseHtml;
-import static ngoy.core.XDom.traverse;
-import static ngoy.internal.parser.NgoyElement.getPosition;
+import static ngoy.core.dom.NgoyElement.getPosition;
+import static ngoy.core.dom.XDom.attributes;
+import static ngoy.core.dom.XDom.nodeName;
+import static ngoy.core.dom.XDom.parseHtml;
+import static ngoy.core.dom.XDom.traverse;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -25,8 +25,7 @@ import ngoy.core.Component;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnCompile;
-import ngoy.core.XDom;
-import ngoy.core.XDom.NodeVisitor;
+import ngoy.core.dom.NodeVisitor;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.ContainerComponent;
 import ngoy.core.internal.Resolver;
@@ -91,7 +90,7 @@ public class Parser {
 	Resolver resolver;
 	private final CmpRefParser cmpRefParser;
 
-	XDom.NodeVisitor visitor;
+	NodeVisitor visitor;
 	SkipSubTreeVisitor skipSubTreeVisitor;
 	Visitor replacingVisitor;
 
