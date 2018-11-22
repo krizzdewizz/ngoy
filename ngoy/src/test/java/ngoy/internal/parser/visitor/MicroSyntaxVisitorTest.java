@@ -1,6 +1,6 @@
 package ngoy.internal.parser.visitor;
 
-import static ngoy.internal.parser.XDom.traverse;
+import static ngoy.core.XDom.traverse;
 import static ngoy.internal.parser.visitor.MicroSyntaxVisitor.parseVariables;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
@@ -16,10 +16,9 @@ import org.junit.rules.ExpectedException;
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Element;
 import ngoy.core.NgoyException;
+import ngoy.core.XDom.NodeVisitor;
 import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.Parser;
-import ngoy.internal.parser.visitor.MicroSyntaxVisitor;
-import ngoy.internal.parser.visitor.NodeVisitor;
 
 public class MicroSyntaxVisitorTest {
 

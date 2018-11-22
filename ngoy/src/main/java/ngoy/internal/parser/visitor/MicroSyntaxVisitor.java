@@ -2,11 +2,11 @@ package ngoy.internal.parser.visitor;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static ngoy.core.XDom.appendChild;
+import static ngoy.core.XDom.cloneNode;
+import static ngoy.core.XDom.removeContents;
 import static ngoy.internal.parser.NgoyElement.setNodeName;
 import static ngoy.internal.parser.Parser.NG_TEMPLATE;
-import static ngoy.internal.parser.XDom.appendChild;
-import static ngoy.internal.parser.XDom.cloneNode;
-import static ngoy.internal.parser.XDom.removeContents;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Element;
 import ngoy.core.NgoyException;
+import ngoy.core.XDom.NodeVisitor;
 import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.ParseException;
 
@@ -33,7 +34,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 	}
 
 	@Override
-	public void head(Jerry el, int depth) {
+	public void head(Jerry el) {
 		if (el.get(0) instanceof Element) {
 			replaceNgIf(el);
 			replaceNgFor(el);
@@ -41,7 +42,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 			replaceSwitchDefault(el);
 		}
 
-		src.head(el, depth);
+		src.head(el);
 	}
 
 	private void replaceSwitchCase(Jerry el) {
@@ -113,8 +114,8 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 	}
 
 	@Override
-	public void tail(Jerry node, int depth) {
-		src.tail(node, depth);
+	public void tail(Jerry node) {
+		src.tail(node);
 	}
 
 	static String[] parseNgFor(String expr) {

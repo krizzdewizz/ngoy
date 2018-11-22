@@ -1,12 +1,15 @@
 package ngoy.internal.parser.visitor;
 
 import static java.lang.String.format;
+import static ngoy.core.XDom.appendChild;
+import static ngoy.core.XDom.cloneNode;
+import static ngoy.core.XDom.createElement;
 import static ngoy.internal.parser.Parser.NG_TEMPLATE;
-import static ngoy.internal.parser.XDom.cloneNode;
 
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Element;
-import ngoy.internal.parser.XDom;
+import ngoy.core.XDom;
+import ngoy.core.XDom.NodeVisitor;
 
 public class SwitchToElseIfVisitor implements NodeVisitor {
 
@@ -18,12 +21,12 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 	}
 
 	@Override
-	public void head(Jerry el, int depth) {
+	public void head(Jerry el) {
 		if (el.get(0) instanceof Element) {
 
 			String ngSwitch = el.attr("[ngSwitch]");
 			if (ngSwitch == null) {
-				src.head(el, depth);
+				src.head(el);
 				return;
 			}
 
@@ -31,9 +34,8 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 
 			Jerry elClone = cloneNode(el);
 
-			Jerry tpl = XDom.createElement(NG_TEMPLATE, el);
 			XDom.removeContents(el);
-			XDom.appendChild(el, tpl);
+			Jerry tpl = appendChild(el, createElement(NG_TEMPLATE, el));
 
 			tpl.attr("ngIfForSwitch", null);
 			tpl.attr("[ngIf]", ngSwitch);
@@ -62,7 +64,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 					.insertChild(elClone.get(0), 0);
 		}
 
-		src.head(el, depth);
+		src.head(el);
 	}
 
 	private String nextRef() {
@@ -70,8 +72,8 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 	}
 
 	@Override
-	public void tail(Jerry node, int depth) {
-		src.tail(node, depth);
+	public void tail(Jerry node) {
+		src.tail(node);
 	}
 
 }

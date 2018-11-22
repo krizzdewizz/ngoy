@@ -6,10 +6,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import jodd.jerry.Jerry;
+import ngoy.core.XDom;
+import ngoy.core.XDom.NodeVisitor;
 import ngoy.internal.parser.Parser;
-import ngoy.internal.parser.XDom;
-import ngoy.internal.parser.visitor.NodeVisitor;
-import ngoy.internal.parser.visitor.SwitchToElseIfVisitor;
 
 public class SwitchToElseIfVisitorTest {
 

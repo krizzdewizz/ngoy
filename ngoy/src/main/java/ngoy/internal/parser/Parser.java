@@ -3,10 +3,11 @@ package ngoy.internal.parser;
 import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
+import static ngoy.core.XDom.attributes;
+import static ngoy.core.XDom.nodeName;
+import static ngoy.core.XDom.parseHtml;
+import static ngoy.core.XDom.traverse;
 import static ngoy.internal.parser.NgoyElement.getPosition;
-import static ngoy.internal.parser.XDom.attributes;
-import static ngoy.internal.parser.XDom.nodeName;
-import static ngoy.internal.parser.XDom.traverse;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -24,25 +25,16 @@ import ngoy.core.Component;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnCompile;
+import ngoy.core.XDom;
+import ngoy.core.XDom.NodeVisitor;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.ContainerComponent;
 import ngoy.core.internal.Resolver;
 import ngoy.internal.parser.visitor.MicroSyntaxVisitor;
-import ngoy.internal.parser.visitor.NodeVisitor;
 import ngoy.internal.parser.visitor.SkipSubTreeVisitor;
 import ngoy.internal.parser.visitor.SwitchToElseIfVisitor;
 
 public class Parser {
-
-	public static Jerry parseHtml(String template, int baseLineNumber) {
-		try {
-			Jerry doc = Jerry.jerry(new NgoyDomBuilder(baseLineNumber))
-					.parse(template);
-			return doc;
-		} catch (Exception e) {
-			throw wrap(e);
-		}
-	}
 
 	public Jerry parse(String template) {
 		try {
@@ -64,7 +56,7 @@ public class Parser {
 		Jerry currentEl;
 
 		@Override
-		public void head(Jerry node, int depth) {
+		public void head(Jerry node) {
 
 			replaceCommentLikeNodes(node);
 
@@ -78,7 +70,7 @@ public class Parser {
 		}
 
 		@Override
-		public void tail(Jerry node, int depth) {
+		public void tail(Jerry node) {
 			if (node.get(0) instanceof Element) {
 				endElement(node);
 			}
@@ -99,7 +91,7 @@ public class Parser {
 	Resolver resolver;
 	private final CmpRefParser cmpRefParser;
 
-	NodeVisitor visitor;
+	XDom.NodeVisitor visitor;
 	SkipSubTreeVisitor skipSubTreeVisitor;
 	Visitor replacingVisitor;
 

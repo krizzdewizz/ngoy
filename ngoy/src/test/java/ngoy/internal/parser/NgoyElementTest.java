@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import jodd.jerry.Jerry;
+import ngoy.core.XDom;
 
 public class NgoyElementTest {
 
@@ -31,7 +32,7 @@ public class NgoyElementTest {
 
 	@Test
 	public void lineFix() {
-		Jerry html = Parser.parseHtml(HTML, 0);
+		Jerry html = XDom.parseHtml(HTML, 0);
 
 		Jerry ul = html.$("ul");
 		assertThat(getLine(ul)).isEqualTo(8);

@@ -10,7 +10,7 @@ import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.getTemplate;
 import static ngoy.core.Util.isSet;
 import static ngoy.core.Util.newPrintStream;
-import static ngoy.internal.parser.XDom.matchesAttributeBinding;
+import static ngoy.core.XDom.matchesAttributeBinding;
 
 import java.io.InputStream;
 import java.io.OutputStream;

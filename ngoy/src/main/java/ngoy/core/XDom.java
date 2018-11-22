@@ -1,9 +1,10 @@
-package ngoy.internal.parser;
+package ngoy.core;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static ngoy.core.NgoyException.wrap;
 import static ngoy.internal.parser.NgoyElement.getPosition;
 
 import java.util.ArrayList;
@@ -13,9 +14,36 @@ import java.util.stream.Stream;
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Attribute;
 import jodd.lagarto.dom.Node;
-import ngoy.internal.parser.visitor.NodeVisitor;
+import ngoy.internal.parser.NgoyDomBuilder;
 
 public class XDom {
+
+	public interface NodeVisitor {
+
+		public class Default implements NodeVisitor {
+			@Override
+			public void head(Jerry node) {
+			}
+
+			@Override
+			public void tail(Jerry node) {
+			}
+		}
+
+		void head(Jerry node);
+
+		void tail(Jerry node);
+	}
+
+	public static Jerry parseHtml(String template, int baseLineNumber) {
+		try {
+			Jerry doc = Jerry.jerry(new NgoyDomBuilder(baseLineNumber))
+					.parse(template);
+			return doc;
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
 
 	public static void traverse(Jerry node, NodeVisitor visitor) {
 		accept(node, visitor);
@@ -23,16 +51,17 @@ public class XDom {
 
 	private static void accept(Jerry nodes, NodeVisitor visitor) {
 		nodes.each((n, i) -> {
-			visitor.head(n, 0);
+			visitor.head(n);
 			accept(n.contents(), visitor);
-			visitor.tail(n, 0);
+			visitor.tail(n);
 			return true;
 		});
 	}
 
-	public static void appendChild(Jerry parent, Jerry el) {
+	public static Jerry appendChild(Jerry parent, Jerry el) {
 		parent.get(0)
 				.addChild(el.get(0));
+		return el;
 	}
 
 	public static void remove(Node node) {
@@ -71,8 +100,7 @@ public class XDom {
 	}
 
 	public static Jerry cloneNode(Jerry node) {
-		return Parser.parseHtml(getHtml(node), getPosition(node).getLine())
-				.children()
+		return parseHtml(getHtml(node), getPosition(node).getLine()).children()
 				.first();
 	}
 
@@ -86,8 +114,7 @@ public class XDom {
 	}
 
 	public static Jerry createElement(String name, int baseLineNumber) {
-		return Parser.parseHtml(format("<%s></%s>", name, name), baseLineNumber)
-				.children()
+		return parseHtml(format("<%s></%s>", name, name), baseLineNumber).children()
 				.first();
 	}
 

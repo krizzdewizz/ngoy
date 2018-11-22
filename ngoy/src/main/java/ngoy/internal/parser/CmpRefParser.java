@@ -3,11 +3,11 @@ package ngoy.internal.parser;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
+import static ngoy.core.XDom.classNames;
+import static ngoy.core.XDom.nodeName;
+import static ngoy.core.XDom.styleNames;
+import static ngoy.core.XDom.traverse;
 import static ngoy.internal.parser.Inputs.cmpInputs;
-import static ngoy.internal.parser.XDom.classNames;
-import static ngoy.internal.parser.XDom.nodeName;
-import static ngoy.internal.parser.XDom.styleNames;
-import static ngoy.internal.parser.XDom.traverse;
 
 import java.util.ArrayList;
 import java.util.HashSet;
