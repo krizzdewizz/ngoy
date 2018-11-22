@@ -1,7 +1,7 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
-import static ngoy.core.dom.XDom.attributes;
+import static ngoy.core.dom.XDom.getAttributes;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -50,7 +50,7 @@ public class AttributeBinding {
 	}
 
 	static void replaceAttrs(Parser parser, Jerry el, Set<String> excludeBindings, List<String[]> targetClassNames, List<String[]> targetAttrNames, List<String[]> targetStyleNames) {
-		for (Attribute attr : attributes(el)) {
+		for (Attribute attr : getAttributes(el)) {
 			String name = attr.getName();
 			if (name.equals("class") || name.equals("style") || name.startsWith("*")) {
 				continue;

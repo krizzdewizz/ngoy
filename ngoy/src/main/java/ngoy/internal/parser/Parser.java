@@ -4,8 +4,8 @@ import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
 import static ngoy.core.dom.NgoyElement.getPosition;
-import static ngoy.core.dom.XDom.attributes;
-import static ngoy.core.dom.XDom.nodeName;
+import static ngoy.core.dom.XDom.getAttributes;
+import static ngoy.core.dom.XDom.getNodeName;
 import static ngoy.core.dom.XDom.parseHtml;
 import static ngoy.core.dom.XDom.traverse;
 
@@ -22,6 +22,7 @@ import jodd.lagarto.dom.Node;
 import jodd.lagarto.dom.Node.NodeType;
 import jodd.lagarto.dom.Text;
 import ngoy.core.Component;
+import ngoy.core.Injector;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnCompile;
@@ -165,7 +166,7 @@ public class Parser {
 
 	private boolean replaceElement(Jerry el) {
 
-		if (nodeName(el).equals(NG_TEMPLATE)) {
+		if (getNodeName(el).equals(NG_TEMPLATE)) {
 			String ngIf = el.attr("[ngIf]");
 			if (ngIf != null) {
 				replaceNgIf(el, ngIf);
@@ -199,7 +200,7 @@ public class Parser {
 		String firstCaseTpl = "";
 		String switchExpr = "";
 		if (isSwitch) {
-			for (Attribute attr : attributes(el)) {
+			for (Attribute attr : getAttributes(el)) {
 				if (attr.getName()
 						.startsWith("ngElseIfFirst-")) {
 					firstCaseTpl = attr.getName()
@@ -256,7 +257,7 @@ public class Parser {
 	}
 
 	private void elementConditionalElseIf(Jerry el) {
-		for (Attribute attr : attributes(el)) {
+		for (Attribute attr : getAttributes(el)) {
 			String name = attr.getName();
 			if (!name.startsWith("ngElseIf-")) {
 				continue;
@@ -271,12 +272,14 @@ public class Parser {
 	}
 
 	private void compileCmps(List<CmpRef> cmpRefs, Jerry el) {
+		String topClass = topCmpClass().getName();
+		Injector injector = resolver.getInjector();
+
 		for (CmpRef cmpRef : cmpRefs) {
-			Object cmp = resolver.getInjector()
-					.get(cmpRef.clazz);
+			Object cmp = injector.get(cmpRef.clazz);
 
 			if (cmp instanceof OnCompile) {
-				((OnCompile) cmp).ngOnCompile(el, topCmpClass().getName());
+				((OnCompile) cmp).ngOnCompile(el, topClass);
 			}
 		}
 	}

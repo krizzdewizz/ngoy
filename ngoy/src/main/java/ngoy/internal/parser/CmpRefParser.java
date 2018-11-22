@@ -4,7 +4,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
 import static ngoy.core.dom.XDom.classNames;
-import static ngoy.core.dom.XDom.nodeName;
+import static ngoy.core.dom.XDom.getNodeName;
 import static ngoy.core.dom.XDom.styleNames;
 import static ngoy.core.dom.XDom.traverse;
 import static ngoy.internal.parser.Inputs.cmpInputs;
@@ -53,7 +53,7 @@ public class CmpRefParser {
 			if (parser.inlineComponent(el)) {
 				parser.cmpElements.add(el);
 			} else {
-				parser.handler.elementHead(nodeName(el));
+				parser.handler.elementHead(getNodeName(el));
 				AttributeBinding.replaceAttrs(parser, el, emptySet(), classNames, attrNames, styleNames);
 				AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
 				parser.handler.elementHeadEnd();
@@ -74,7 +74,7 @@ public class CmpRefParser {
 		boolean hadElementHead = false;
 
 		if (!allDirs.isEmpty()) {
-			parser.handler.elementHead(nodeName(el));
+			parser.handler.elementHead(getNodeName(el));
 			AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames);
 			AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
 			hadElementHead = true;
@@ -105,7 +105,7 @@ public class CmpRefParser {
 				parser.cmpElements.add(el);
 			} else {
 				if (!hadElementHead) {
-					parser.handler.elementHead(nodeName(el));
+					parser.handler.elementHead(getNodeName(el));
 					AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames);
 					AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
 				}

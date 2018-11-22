@@ -1,7 +1,6 @@
 package ngoy.core.dom;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static ngoy.core.NgoyException.wrap;
@@ -64,7 +63,7 @@ public class XDom {
 		String value = el.attr(attr);
 		return value == null //
 				? emptyList()
-				: asList(value.split(delimiter)).stream()
+				: Stream.of(value.split(delimiter))
 						.map(String::trim)
 						.filter(s -> !s.isEmpty())
 						.collect(toList());
@@ -92,8 +91,8 @@ public class XDom {
 				.getHtml();
 	}
 
-	public static Jerry createElement(String name, Jerry baseNodeForLineNumber) {
-		return createElement(name, getPosition(baseNodeForLineNumber).getLine());
+	public static Jerry createElement(String name, Jerry nodeForBaseLineNumber) {
+		return createElement(name, getPosition(nodeForBaseLineNumber).getLine());
 	}
 
 	public static Jerry createElement(String name, int baseLineNumber) {
@@ -101,12 +100,12 @@ public class XDom {
 				.first();
 	}
 
-	public static String nodeName(Jerry el) {
+	public static String getNodeName(Jerry el) {
 		return el.get(0)
 				.getNodeName();
 	}
 
-	public static List<Attribute> attributes(Jerry el) {
+	public static List<Attribute> getAttributes(Jerry el) {
 		Node ell = el.get(0);
 		List<Attribute> all = new ArrayList<>();
 		for (int i = 0, n = ell.getAttributesCount(); i < n; i++) {

@@ -16,19 +16,11 @@ public class NgoyElement extends Element {
 
 		private static final Pattern POSITION_PATTERN = Pattern.compile("\\[(\\d*):(\\d*) @(.*)\\]");
 
-		private static Position fixPositionLine(String position, int baseLineNumber) {
-			return parse(position).withBaseLineNumber(baseLineNumber);
-		}
-
-		public Position withBaseLineNumber(int baseLineNumber) {
-			return baseLineNumber > 1 ? new Position(line + baseLineNumber - 1, col, pos) : this;
-		}
-
-		private static Position parse(String s) {
-			Matcher matcher = POSITION_PATTERN.matcher(s);
+		private static Position parse(String position, int baseLineNumber) {
+			Matcher matcher = POSITION_PATTERN.matcher(position);
 			if (matcher.find()) {
 				return new Position( //
-						Integer.parseInt(matcher.group(1)), //
+						Integer.parseInt(matcher.group(1)) + baseLineNumber, //
 						Integer.parseInt(matcher.group(2)), //
 						Integer.parseInt(matcher.group(3)));
 			}
@@ -83,7 +75,7 @@ public class NgoyElement extends Element {
 
 	public NgoyElement(Document ownerNode, Tag tag, boolean voidElement, boolean selfClosed, String position, int baseLineNumber) {
 		super(ownerNode, tag, voidElement, selfClosed);
-		this.position = Position.fixPositionLine(position, baseLineNumber);
+		this.position = Position.parse(position, baseLineNumber);
 		writableNodeName = String.valueOf(tag.getName());
 	}
 
