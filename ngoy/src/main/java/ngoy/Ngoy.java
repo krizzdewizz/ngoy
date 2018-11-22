@@ -53,7 +53,6 @@ import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.CoreInternalModule;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.DefaultInjector;
-import ngoy.core.internal.MinimalEnv;
 import ngoy.core.internal.Resolver;
 import ngoy.internal.parser.ByteCodeTemplate;
 import ngoy.internal.parser.Parser;
@@ -253,10 +252,7 @@ public class Ngoy<T> {
 	 * @param config   Optional configuration
 	 */
 	public static void renderString(String template, Context context, OutputStream out, Config... config) {
-		if (context == null) {
-			context = Context.of();
-		}
-		new Ngoy<Void>(optionalConfig(config)).doRender(template, false, (Ctx) context.internal(), out);
+		new Ngoy<Void>(config.length > 0 ? config[0] : new Config()).render(template, context, out);
 	}
 
 	/**
@@ -274,34 +270,15 @@ public class Ngoy<T> {
 	 * @see #renderString(String, Context, OutputStream, Config...)
 	 */
 	public static void renderTemplate(String templatePath, Context context, OutputStream out, Config... config) {
-		if (context == null) {
-			context = Context.of();
+		InputStream in = Ngoy.class.getResourceAsStream(templatePath);
+		if (in == null) {
+			throw new NgoyException("Template could not be found: '%s'", templatePath);
 		}
-		new Ngoy<Void>(optionalConfig(config)).doRender(templatePath, true, (Ctx) context.internal(), out);
-	}
-
-	private void doRender(String templateOrPath, boolean templateIsPath, Ctx ctx, OutputStream out) {
-		String tpl;
-		if (templateIsPath) {
-			InputStream in = getClass().getResourceAsStream(templateOrPath);
-			if (in == null) {
-				throw new NgoyException("Template could not be found: '%s'", templateOrPath);
-			}
-			try (InputStream inn = in) {
-				tpl = copyToString(inn);
-			} catch (Exception e) {
-				throw wrap(e);
-			}
-		} else {
-			tpl = templateOrPath;
+		try (InputStream inn = in) {
+			renderString(copyToString(inn), context, out, config);
+		} catch (Exception e) {
+			throw wrap(e);
 		}
-
-		Class<?> clazz = createTemplate(cache.key(templateOrPath), createParser(MinimalEnv.RESOLVER, config), tpl, config.contentType);
-		invokeRender(clazz, ctx, newPrintStream(out));
-	}
-
-	private static Config optionalConfig(Config... config) {
-		return config.length > 0 ? config[0] : new Config();
 	}
 
 	/**
@@ -500,29 +477,42 @@ public class Ngoy<T> {
 				.render(this, folder);
 	}
 
+	private void render(String template, Context context, OutputStream out) {
+		try {
+
+			Object app = context == null ? appInstance : context.getModel();
+
+			if (app instanceof OnInit) {
+				((OnInit) app).ngOnInit();
+			}
+
+			Ctx ctx = Ctx.of(app, injector);
+			if (context != null) {
+				for (Map.Entry<String, Object> v : context.getVariables()
+						.entrySet()) {
+					ctx.variable(v.getKey(), v.getValue());
+				}
+			}
+
+			events.tick();
+
+			parseAndRender(appRoot, template, createParser(resolver, config), ctx, newPrintStream(out));
+
+			if (app instanceof OnDestroy) {
+				((OnDestroy) app).ngOnDestroy();
+			}
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
 	/**
 	 * Renders the app to the given ouput stream.
 	 *
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		try {
-			if (appInstance instanceof OnInit) {
-				((OnInit) appInstance).ngOnInit();
-			}
-
-			Ctx ctx = Ctx.of(appInstance, injector);
-
-			events.tick();
-
-			parseAndRender(appRoot, createParser(resolver, config), ctx, newPrintStream(out));
-
-			if (appInstance instanceof OnDestroy) {
-				((OnDestroy) appInstance).ngOnDestroy();
-			}
-		} catch (Exception e) {
-			throw wrap(e);
-		}
+		render(null, null, out);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -590,8 +580,8 @@ public class Ngoy<T> {
 		}
 	}
 
-	protected void parseAndRender(Class<T> appRoot, Parser parser, Ctx ctx, PrintStream out) {
-		invokeRender(cache.get(appRoot.getName(), className -> createTemplate(className, parser, getTemplate(appRoot), getContentType(config))), ctx, out);
+	protected void parseAndRender(Class<T> appRoot, String template, Parser parser, Ctx ctx, PrintStream out) {
+		invokeRender(cache.get(appRoot.getName(), className -> createTemplate(className, parser, template != null ? template : getTemplate(appRoot), getContentType(config))), ctx, out);
 	}
 
 	private void invokeRender(Class<?> templateClass, Ctx ctx, PrintStream out) {

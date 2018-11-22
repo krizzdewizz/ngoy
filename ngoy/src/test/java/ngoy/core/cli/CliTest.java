@@ -16,8 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import ngoy.core.cli.Cli;
-
 public class CliTest {
 
 	private ByteArrayOutputStream out;
@@ -110,6 +108,11 @@ public class CliTest {
 		System.setIn(new ByteArrayInputStream("line1\nline2\n".getBytes()));
 		String sep = System.lineSeparator();
 		assertThat(run(true, "-e", "-in", "$ + 'a' + nl")).isEqualTo(format("line1a%sline2a%s", sep, sep));
+	}
+
+	@Test
+	public void testPipe() {
+		assertThat(run("-e", "'hello' | uppercase")).isEqualTo("HELLO");
 	}
 
 	@Test
