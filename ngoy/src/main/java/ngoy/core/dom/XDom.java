@@ -123,30 +123,69 @@ public class XDom {
 				.forEach(XDom::remove);
 	}
 
+	/**
+	 * Clones the given node.
+	 * 
+	 * @param node
+	 * @return Clone
+	 */
 	public static Jerry cloneNode(Jerry node) {
 		return parseHtml(getHtml(node), getPosition(node).getLine()).children()
 				.first();
 	}
 
+	/**
+	 * Returns the HTML presentation of the given node.
+	 * 
+	 * @param node
+	 * @return HTML
+	 */
 	public static String getHtml(Jerry node) {
 		return node.get(0)
 				.getHtml();
 	}
 
-	public static Jerry createElement(String name, Jerry nodeForBaseLineNumber) {
-		return createElement(name, getPosition(nodeForBaseLineNumber).getLine());
+	/**
+	 * Creates a new element with the base line number obtained from the given
+	 * element.
+	 * 
+	 * @param name
+	 * @param elForBaseLineNumber
+	 * @return Element
+	 */
+	public static Jerry createElement(String name, Jerry elForBaseLineNumber) {
+		return createElement(name, getPosition(elForBaseLineNumber).getLine());
 	}
 
+	/**
+	 * Creates a new Element with the given name.
+	 * 
+	 * @param name
+	 * @param baseLineNumber Offset line number, starting at 0
+	 * @return Element
+	 */
 	public static Jerry createElement(String name, int baseLineNumber) {
 		return parseHtml(format("<%s></%s>", name, name), baseLineNumber).children()
 				.first();
 	}
 
-	public static String getNodeName(Jerry el) {
-		return el.get(0)
+	/**
+	 * Returns the name of the given node.
+	 * 
+	 * @param node
+	 * @return Node name
+	 */
+	public static String getNodeName(Jerry node) {
+		return node.get(0)
 				.getNodeName();
 	}
 
+	/**
+	 * Returns the attributes of the given element.
+	 * 
+	 * @param el
+	 * @return Attributes
+	 */
 	public static List<Attribute> getAttributes(Jerry el) {
 		Node ell = el.get(0);
 		List<Attribute> all = new ArrayList<>();
