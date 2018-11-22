@@ -44,7 +44,7 @@ public class NgoyScript {
 					result = ctx.eval(returnMatcher.group(1));
 					break;
 				} else {
-					ctx.eval(line);
+					result = ctx.eval(line);
 				}
 			}
 

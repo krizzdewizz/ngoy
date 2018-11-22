@@ -8,8 +8,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import ngoy.core.NgoyException;
+import ngoy.core.cli.Global;
 import ngoy.core.internal.Ctx;
-import ngoy.internal.script.NgoyScript;
 
 public class NgoyScriptTest {
 
@@ -24,10 +24,17 @@ public class NgoyScriptTest {
 	}
 
 	@Test
+	public void testIff() {
+		Ctx ctx = Ctx.of(new Global())
+				.variable("x", "peter");
+		assertThat(run("iif(x == 'peter', 'a', 'b')", ctx)).isEqualTo("a");
+	}
+
+	@Test
 	public void testSplit() {
 		Ctx ctx = Ctx.of()
 				.variable("$", "peter");
-		assertThat(run("let q = $.toUpperCase() \n let n = q.length()\nreturn q + ': ' + n", ctx)).isEqualTo("PETER: 5");
+		assertThat(run("let q = $.toUpperCase() \n let n = q.length()\nq + ': ' + n", ctx)).isEqualTo("PETER: 5");
 	}
 
 	@Test
