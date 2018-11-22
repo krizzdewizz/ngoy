@@ -1,6 +1,6 @@
 package ngoy.internal.parser.visitor;
 
-import static ngoy.core.dom.XDom.traverse;
+import static ngoy.core.dom.XDom.accept;
 import static ngoy.internal.parser.visitor.MicroSyntaxVisitor.parseVariables;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
@@ -36,7 +36,7 @@ public class MicroSyntaxVisitorTest {
 
 		Jerry nodes = parser.parse("<div *ngIf=\"true\">xx</div>");
 
-		traverse(nodes, visitor);
+		accept(nodes, visitor);
 		assertThat(nodes).hasSize(1);
 		Element el = (Element) nodes.get(0)
 				.getChild(0);
@@ -48,7 +48,7 @@ public class MicroSyntaxVisitorTest {
 	public void testElse() {
 		Jerry nodes = parser.parse("<div *ngIf=\"true ; else qbert\">xx</div>");
 
-		traverse(nodes, visitor);
+		accept(nodes, visitor);
 		assertThat(nodes).hasSize(1);
 		assertThat(nodes.get(0)
 				.getHtml()).isEqualTo("<ng-template [ngIf]=\"true\" ngElse=\"qbert\"><div>xx</div></ng-template>");
@@ -58,7 +58,7 @@ public class MicroSyntaxVisitorTest {
 	public void testSwitchCase() {
 		Jerry nodes = parser.parse("<div *ngSwitchCase=\"'happy'\">HAPPY</div>");
 
-		traverse(nodes, visitor);
+		accept(nodes, visitor);
 		assertThat(nodes).hasSize(1);
 		assertThat(nodes.get(0)
 				.getHtml()).isEqualTo("<ng-template [ngSwitchCase]=\"'happy'\"><div>HAPPY</div></ng-template>");
@@ -68,7 +68,7 @@ public class MicroSyntaxVisitorTest {
 	public void testSwitchDefault() {
 		Jerry nodes = parser.parse("<div *ngSwitchDefault>HAPPY</div>");
 
-		traverse(nodes, visitor);
+		accept(nodes, visitor);
 		assertThat(nodes).hasSize(1);
 		assertThat(nodes.get(0)
 				.getHtml()).isEqualTo("<ng-template ngSwitchDefault><div>HAPPY</div></ng-template>");
@@ -78,7 +78,7 @@ public class MicroSyntaxVisitorTest {
 	public void testFor() {
 		Jerry nodes = parser.parse("<div *ngFor=\"let p of persons; index as i; first as f; last as l; even as e; odd as o\">xx</div>");
 
-		traverse(nodes, visitor);
+		accept(nodes, visitor);
 		assertThat(nodes.get(0)
 				.getHtml()).isEqualTo("<ng-template ngFor let-p [ngForOf]=\"persons\" let-i=\"index\" let-f=\"first\" let-l=\"last\" let-e=\"even\" let-o=\"odd\"><div>xx</div></ng-template>");
 	}

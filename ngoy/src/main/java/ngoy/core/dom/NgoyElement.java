@@ -10,6 +10,11 @@ import jodd.lagarto.Tag;
 import jodd.lagarto.dom.Document;
 import jodd.lagarto.dom.Element;
 
+/**
+ * Enhanced element with parsing position information and a mutable node name.
+ * 
+ * @author krizz
+ */
 public class NgoyElement extends Element {
 
 	public static class Position {
@@ -32,7 +37,7 @@ public class NgoyElement extends Element {
 		private final int col;
 		private final int pos;
 
-		public Position(int line, int col, int pos) {
+		private Position(int line, int col, int pos) {
 			this.line = line;
 			this.col = col;
 			this.pos = pos;

@@ -15,47 +15,90 @@ import jodd.lagarto.dom.Attribute;
 import jodd.lagarto.dom.Node;
 import ngoy.core.dom.internal.NgoyDomBuilder;
 
+/**
+ * DOM utilities.
+ * 
+ * @author krizz
+ */
 public class XDom {
 
-	public static Jerry parseHtml(String template, int baseLineNumber) {
+	/**
+	 * Parse the given html.
+	 * <p>
+	 * Position information are kept.
+	 * 
+	 * @param html           HTML to parse
+	 * @param baseLineNumber Offset the parsed nodes line by this number, starting a
+	 *                       <code>0</code>. When appending a new node, it is
+	 *                       important to maintain the new node's line number for
+	 *                       better debugging experience
+	 * @return Jerry
+	 */
+	public static Jerry parseHtml(String html, int baseLineNumber) {
 		try {
 			Jerry doc = Jerry.jerry(new NgoyDomBuilder(baseLineNumber))
-					.parse(template);
+					.parse(html);
 			return doc;
 		} catch (Exception e) {
 			throw wrap(e);
 		}
 	}
 
-	public static void traverse(Jerry node, NodeVisitor visitor) {
-		accept(node, visitor);
-	}
-
-	private static void accept(Jerry nodes, NodeVisitor visitor) {
+	/**
+	 * Depth-first accept the given visitor on the nodes.
+	 * 
+	 * @param nodes
+	 * @param visitor
+	 */
+	public static void accept(Jerry nodes, NodeVisitor visitor) {
 		nodes.each((n, i) -> {
-			visitor.head(n);
+			visitor.start(n);
 			accept(n.contents(), visitor);
-			visitor.tail(n);
+			visitor.end(n);
 			return true;
 		});
 	}
 
+	/**
+	 * Append a node.
+	 * 
+	 * @param parent Node to where to append to
+	 * @param el     Node to append
+	 * @return The appended node <code>el</code>
+	 */
 	public static Jerry appendChild(Jerry parent, Jerry el) {
 		parent.get(0)
 				.addChild(el.get(0));
 		return el;
 	}
 
+	/**
+	 * Removes the given node from its parent.
+	 * 
+	 * @param node Node to remove
+	 */
 	public static void remove(Node node) {
 		node.getParentNode()
 				.removeChild(node);
 	}
 
-	public static List<String> classNames(Jerry el) {
+	/**
+	 * Returns a list of all the element's class names.
+	 * 
+	 * @param el
+	 * @return List of class names
+	 */
+	public static List<String> getClassList(Jerry el) {
 		return split(el, "class", " ");
 	}
 
-	public static List<String> styleNames(Jerry el) {
+	/**
+	 * Returns a list of all the element's styles.
+	 * 
+	 * @param el
+	 * @return List of styles
+	 */
+	public static List<String> getStyleList(Jerry el) {
 		return split(el, "style", ";");
 	}
 
@@ -69,16 +112,15 @@ public class XDom {
 						.collect(toList());
 	}
 
+	/**
+	 * Removes al content from the given element.
+	 * 
+	 * @param el
+	 */
 	public static void removeContents(Jerry el) {
 		Stream.of(el.contents()
 				.get())
 				.forEach(XDom::remove);
-	}
-
-	public static boolean matchesAttributeBinding(Jerry node, String attrName) {
-		// directive name same as @Input
-		String raw = attrName.substring(1, attrName.length() - 1);
-		return node.is(format("[\\[%s\\]]", raw));
 	}
 
 	public static Jerry cloneNode(Jerry node) {

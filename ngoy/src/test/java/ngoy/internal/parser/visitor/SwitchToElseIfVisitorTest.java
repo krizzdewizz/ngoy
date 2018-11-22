@@ -31,7 +31,7 @@ public class SwitchToElseIfVisitorTest {
 		Parser parser = new Parser();
 		Jerry nodes = parser.parse(template);
 
-		nodes.forEach(n -> XDom.traverse(n, visitor));
+		nodes.forEach(n -> XDom.accept(n, visitor));
 		assertThat(XDom.getHtml(nodes)).isEqualTo("<div><ng-template ngIfForSwitch [ngIf]=\"emotion\" ngElseIfFirst-case0=\"'happy'\" ngElseIf-case1=\"'sad'\" ngElse=\"case2\"><div>\n" + //
 				"    <ng-template #case0><div>HAPPY</div></ng-template>\n" + //
 				"    <ng-template #case1><div>SAD</div></ng-template>\n" + //

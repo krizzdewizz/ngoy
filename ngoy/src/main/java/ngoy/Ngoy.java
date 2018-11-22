@@ -1,5 +1,6 @@
 package ngoy;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static ngoy.core.NgoyException.wrap;
@@ -10,7 +11,6 @@ import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.getTemplate;
 import static ngoy.core.Util.isSet;
 import static ngoy.core.Util.newPrintStream;
-import static ngoy.core.dom.XDom.matchesAttributeBinding;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -674,5 +674,11 @@ public class Ngoy<T> {
 	 */
 	public static void main(String[] args) {
 		new Cli().run(args, System.out);
+	}
+
+	private static boolean matchesAttributeBinding(Jerry node, String attrName) {
+		// directive name same as @Input
+		String raw = attrName.substring(1, attrName.length() - 1);
+		return node.is(format("[\\[%s\\]]", raw));
 	}
 }

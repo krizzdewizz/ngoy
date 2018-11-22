@@ -21,12 +21,12 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 	}
 
 	@Override
-	public void head(Jerry el) {
+	public void start(Jerry el) {
 		if (el.get(0) instanceof Element) {
 
 			String ngSwitch = el.attr("[ngSwitch]");
 			if (ngSwitch == null) {
-				src.head(el);
+				src.start(el);
 				return;
 			}
 
@@ -64,7 +64,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 					.insertChild(elClone.get(0), 0);
 		}
 
-		src.head(el);
+		src.start(el);
 	}
 
 	private String nextRef() {
@@ -72,8 +72,8 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 	}
 
 	@Override
-	public void tail(Jerry node) {
-		src.tail(node);
+	public void end(Jerry node) {
+		src.end(node);
 	}
 
 }

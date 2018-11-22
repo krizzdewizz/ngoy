@@ -3,10 +3,10 @@ package ngoy.internal.parser;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
-import static ngoy.core.dom.XDom.classNames;
+import static ngoy.core.dom.XDom.accept;
+import static ngoy.core.dom.XDom.getClassList;
 import static ngoy.core.dom.XDom.getNodeName;
-import static ngoy.core.dom.XDom.styleNames;
-import static ngoy.core.dom.XDom.traverse;
+import static ngoy.core.dom.XDom.getStyleList;
 import static ngoy.internal.parser.Inputs.cmpInputs;
 
 import java.util.ArrayList;
@@ -39,11 +39,11 @@ public class CmpRefParser {
 
 	boolean acceptCmpRefs(Jerry el, List<CmpRef> cmpRefs) {
 
-		List<String[]> classNames = classNames(el).stream()
+		List<String[]> classNames = getClassList(el).stream()
 				.map(it -> new String[] { it, "" })
 				.collect(toList());
 
-		List<String[]> styleNames = styleNames(el).stream()
+		List<String[]> styleNames = getStyleList(el).stream()
 				.map(it -> new String[] { it, "" })
 				.collect(toList());
 
@@ -172,7 +172,7 @@ public class CmpRefParser {
 		if (selector == null) {
 			parser.accept(el.contents());
 		} else {
-			traverse(el.$(selector), parser.visitor);
+			accept(el.$(selector), parser.visitor);
 		}
 
 		if (invokeHandler) {

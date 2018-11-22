@@ -34,7 +34,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 	}
 
 	@Override
-	public void head(Jerry el) {
+	public void start(Jerry el) {
 		if (el.get(0) instanceof Element) {
 			replaceNgIf(el);
 			replaceNgFor(el);
@@ -42,7 +42,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 			replaceSwitchDefault(el);
 		}
 
-		src.head(el);
+		src.start(el);
 	}
 
 	private void replaceSwitchCase(Jerry el) {
@@ -114,8 +114,8 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 	}
 
 	@Override
-	public void tail(Jerry node) {
-		src.tail(node);
+	public void end(Jerry node) {
+		src.end(node);
 	}
 
 	static String[] parseNgFor(String expr) {

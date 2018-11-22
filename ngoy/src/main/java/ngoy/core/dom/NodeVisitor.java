@@ -2,19 +2,39 @@ package ngoy.core.dom;
 
 import jodd.jerry.Jerry;
 
+/**
+ * Callback for {@link XDom#accept(Jerry, NodeVisitor)}.
+ * 
+ * @author krizz
+ */
 public interface NodeVisitor {
 
+	/**
+	 * Implementation that does nothing.
+	 * 
+	 * @author krizz
+	 */
 	public class Default implements NodeVisitor {
 		@Override
-		public void head(Jerry node) {
+		public void start(Jerry node) {
 		}
 
 		@Override
-		public void tail(Jerry node) {
+		public void end(Jerry node) {
 		}
 	}
 
-	void head(Jerry node);
+	/**
+	 * Called when the node is being traversed.
+	 * 
+	 * @param node
+	 */
+	void start(Jerry node);
 
-	void tail(Jerry node);
+	/**
+	 * Called after all the node's descendants have been traversed.
+	 * 
+	 * @param node
+	 */
+	void end(Jerry node);
 }

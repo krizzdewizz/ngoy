@@ -7,7 +7,6 @@ import static ngoy.core.dom.NgoyElement.getPosition;
 import static ngoy.core.dom.XDom.getAttributes;
 import static ngoy.core.dom.XDom.getNodeName;
 import static ngoy.core.dom.XDom.parseHtml;
-import static ngoy.core.dom.XDom.traverse;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -27,6 +26,7 @@ import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnCompile;
 import ngoy.core.dom.NodeVisitor;
+import ngoy.core.dom.XDom;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.ContainerComponent;
 import ngoy.core.internal.Resolver;
@@ -56,7 +56,7 @@ public class Parser {
 		Jerry currentEl;
 
 		@Override
-		public void head(Jerry node) {
+		public void start(Jerry node) {
 
 			replaceCommentLikeNodes(node);
 
@@ -70,7 +70,7 @@ public class Parser {
 		}
 
 		@Override
-		public void tail(Jerry node) {
+		public void end(Jerry node) {
 			if (node.get(0) instanceof Element) {
 				endElement(node);
 			}
@@ -225,7 +225,7 @@ public class Parser {
 	}
 
 	public void accept(Jerry nodes) {
-		traverse(nodes, visitor);
+		XDom.accept(nodes, visitor);
 	}
 
 	private void acceptTemplate(String ref, Jerry document) {

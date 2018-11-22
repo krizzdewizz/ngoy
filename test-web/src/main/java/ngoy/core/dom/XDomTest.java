@@ -13,13 +13,13 @@ import jodd.lagarto.dom.Node.NodeType;
 public class XDomTest {
 	@Test
 	public void classNames() {
-		assertThat(XDom.classNames(parseHtml("<a class=\"x   a  s\"></a>", 0).children()
+		assertThat(XDom.getClassList(parseHtml("<a class=\"x   a  s\"></a>", 0).children()
 				.first())).isEqualTo(asList("x", "a", "s"));
 	}
 
 	@Test
 	public void styleNames() {
-		assertThat(XDom.styleNames(parseHtml("<a style=\"color:  red;  white-space: nowrap;x:y\"></a>", 0).children()
+		assertThat(XDom.getStyleList(parseHtml("<a style=\"color:  red;  white-space: nowrap;x:y\"></a>", 0).children()
 				.first())).isEqualTo(asList("color:  red", "white-space: nowrap", "x:y"));
 	}
 

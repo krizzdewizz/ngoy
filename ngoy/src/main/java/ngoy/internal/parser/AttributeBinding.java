@@ -26,7 +26,7 @@ public class AttributeBinding {
 		if (exclude.contains(rawName.toLowerCase())) {
 			return;
 		}
-		
+
 		expr = ExprParser.convertPipesToTransformCalls(expr, parser.resolver);
 
 		if (rawName.equals("ngClass")) {
@@ -39,7 +39,7 @@ public class AttributeBinding {
 		} else if (rawName.startsWith(BINDING_ATTR)) {
 			String attrName = rawName.substring(BINDING_ATTR.length());
 			targetAttrNames.add(new String[] { attrName, expr });
-		} else if (rawName.startsWith(BINDING_STYLE)) {	
+		} else if (rawName.startsWith(BINDING_STYLE)) {
 			String attrName = rawName.substring(BINDING_STYLE.length());
 			targetStyleNames.add(new String[] { attrName, expr });
 		} else if (rawName.equals(BINDING_TEXT)) {

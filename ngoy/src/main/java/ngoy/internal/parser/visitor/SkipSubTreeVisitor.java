@@ -29,7 +29,7 @@ public class SkipSubTreeVisitor implements NodeVisitor {
 	}
 
 	@Override
-	public void head(Jerry node) {
+	public void start(Jerry node) {
 		if (skip(node)) {
 			return;
 		}
@@ -39,11 +39,11 @@ public class SkipSubTreeVisitor implements NodeVisitor {
 			return;
 		}
 
-		target.head(node);
+		target.start(node);
 	}
 
 	@Override
-	public void tail(Jerry node) {
+	public void end(Jerry node) {
 		if (shallSkip(node)) {
 			skip = false;
 			return;
@@ -53,6 +53,6 @@ public class SkipSubTreeVisitor implements NodeVisitor {
 			return;
 		}
 
-		target.tail(node);
+		target.end(node);
 	}
 }
