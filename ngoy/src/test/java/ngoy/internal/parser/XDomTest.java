@@ -1,4 +1,4 @@
-package ngoy.internal.parser.visitor;
+package ngoy.internal.parser;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,6 +10,7 @@ import jodd.lagarto.dom.Node;
 import jodd.lagarto.dom.Node.NodeType;
 import ngoy.internal.parser.NgoyElement;
 import ngoy.internal.parser.Parser;
+import ngoy.internal.parser.XDom;
 
 public class XDomTest {
 	@Test

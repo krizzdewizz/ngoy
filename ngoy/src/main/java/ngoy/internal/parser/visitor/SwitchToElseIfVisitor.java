@@ -2,10 +2,11 @@ package ngoy.internal.parser.visitor;
 
 import static java.lang.String.format;
 import static ngoy.internal.parser.Parser.NG_TEMPLATE;
-import static ngoy.internal.parser.visitor.XDom.cloneNode;
+import static ngoy.internal.parser.XDom.cloneNode;
 
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Element;
+import ngoy.internal.parser.XDom;
 
 public class SwitchToElseIfVisitor implements NodeVisitor {
 

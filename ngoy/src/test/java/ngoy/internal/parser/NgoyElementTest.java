@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import jodd.jerry.Jerry;
-import ngoy.internal.parser.visitor.XDom;
 
 public class NgoyElementTest {
 

@@ -4,9 +4,9 @@ import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
 import static ngoy.internal.parser.NgoyElement.getPosition;
-import static ngoy.internal.parser.visitor.XDom.attributes;
-import static ngoy.internal.parser.visitor.XDom.nodeName;
-import static ngoy.internal.parser.visitor.XDom.traverse;
+import static ngoy.internal.parser.XDom.attributes;
+import static ngoy.internal.parser.XDom.nodeName;
+import static ngoy.internal.parser.XDom.traverse;
 
 import java.util.HashSet;
 import java.util.LinkedList;

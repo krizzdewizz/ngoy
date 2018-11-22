@@ -62,7 +62,7 @@ public class OptionalTest extends ANgoyTest {
 	@Component(selector = "test", template = "")
 	public static class NoProviderFoundCmp {
 		@Inject
-		public void setSetIt(TestService<String> service) {
+		public void setSetIt(@SuppressWarnings("unused") TestService<String> service) {
 		}
 	}
 
@@ -78,7 +78,7 @@ public class OptionalTest extends ANgoyTest {
 
 	@Component(selector = "test", template = "")
 	public static class CtorMissingCmp {
-		public CtorMissingCmp(TestService<String> service) {
+		public CtorMissingCmp(@SuppressWarnings("unused") TestService<String> service) {
 		}
 	}
 

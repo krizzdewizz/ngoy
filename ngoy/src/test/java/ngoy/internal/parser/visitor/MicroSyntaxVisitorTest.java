@@ -1,7 +1,7 @@
 package ngoy.internal.parser.visitor;
 
+import static ngoy.internal.parser.XDom.traverse;
 import static ngoy.internal.parser.visitor.MicroSyntaxVisitor.parseVariables;
-import static ngoy.internal.parser.visitor.XDom.traverse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.hamcrest.CoreMatchers.containsString;

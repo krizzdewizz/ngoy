@@ -4,9 +4,9 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static ngoy.internal.parser.NgoyElement.setNodeName;
 import static ngoy.internal.parser.Parser.NG_TEMPLATE;
-import static ngoy.internal.parser.visitor.XDom.appendChild;
-import static ngoy.internal.parser.visitor.XDom.cloneNode;
-import static ngoy.internal.parser.visitor.XDom.removeContents;
+import static ngoy.internal.parser.XDom.appendChild;
+import static ngoy.internal.parser.XDom.cloneNode;
+import static ngoy.internal.parser.XDom.removeContents;
 
 import java.util.EnumMap;
 import java.util.List;

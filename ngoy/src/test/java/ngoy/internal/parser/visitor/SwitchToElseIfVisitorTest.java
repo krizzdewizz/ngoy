@@ -7,9 +7,9 @@ import org.junit.Test;
 
 import jodd.jerry.Jerry;
 import ngoy.internal.parser.Parser;
+import ngoy.internal.parser.XDom;
 import ngoy.internal.parser.visitor.NodeVisitor;
 import ngoy.internal.parser.visitor.SwitchToElseIfVisitor;
-import ngoy.internal.parser.visitor.XDom;
 
 public class SwitchToElseIfVisitorTest {
 

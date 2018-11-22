@@ -16,7 +16,7 @@ import ngoy.core.Directive;
 import ngoy.core.Inject;
 import ngoy.core.NgoyException;
 import ngoy.core.OnCompile;
-import ngoy.internal.parser.visitor.XDom;
+import ngoy.internal.parser.XDom;
 
 @Directive(selector = "html")
 public class StyleUrlsDirective implements OnCompile {

@@ -1,8 +1,8 @@
 package ngoy.router.internal;
 
 import static java.lang.String.format;
-import static ngoy.internal.parser.visitor.XDom.appendChild;
-import static ngoy.internal.parser.visitor.XDom.createElement;
+import static ngoy.internal.parser.XDom.appendChild;
+import static ngoy.internal.parser.XDom.createElement;
 
 import jodd.jerry.Jerry;
 import ngoy.core.Component;

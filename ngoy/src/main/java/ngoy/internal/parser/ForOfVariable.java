@@ -1,6 +1,6 @@
 package ngoy.internal.parser;
 
-import static ngoy.internal.parser.visitor.XDom.attributes;
+import static ngoy.internal.parser.XDom.attributes;
 
 import java.util.EnumMap;
 import java.util.Map;

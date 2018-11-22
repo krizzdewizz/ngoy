@@ -1,4 +1,4 @@
-package ngoy.internal.parser.visitor;
+package ngoy.internal.parser;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Attribute;
 import jodd.lagarto.dom.Node;
-import ngoy.internal.parser.Parser;
+import ngoy.internal.parser.visitor.NodeVisitor;
 
 public class XDom {
 
@@ -30,9 +30,9 @@ public class XDom {
 		});
 	}
 
-	public static void appendChild(Jerry parent, Jerry ell) {
+	public static void appendChild(Jerry parent, Jerry el) {
 		parent.get(0)
-				.addChild(ell.get(0));
+				.addChild(el.get(0));
 	}
 
 	public static void remove(Node node) {
