@@ -100,7 +100,13 @@ public class CliTest {
 
 	@Test
 	public void testNewLine() {
-		assertThat(run(true, "-e", "'\n'")).isEqualTo("\n");
+		assertThat(run(true, "{{'\n'}}")).isEqualTo("\n");
+	}
+
+	@Test
+	public void testNewLine_spel_wrong_question_mark() {
+		// shouldn't it be .isEqualTo("a\na");
+		assertThat(run(true, "-e", "'\\n'")).isEqualTo("\\n");
 	}
 
 	@Test

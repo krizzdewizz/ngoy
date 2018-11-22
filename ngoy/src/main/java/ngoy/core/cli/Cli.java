@@ -1,6 +1,5 @@
 package ngoy.core.cli;
 
-import static java.lang.String.format;
 import static ngoy.Ngoy.renderString;
 import static ngoy.core.NgoyException.wrap;
 
@@ -21,6 +20,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import ngoy.Ngoy.Config;
 import ngoy.Version;
 import ngoy.core.Context;
 
@@ -76,15 +76,15 @@ public class Cli {
 
 		boolean expr = cmd.hasOption('e');
 		String template = readTemplate(argList.get(0), cmd.hasOption('f'));
-		String tpl = expr ? format("{{%s}}", template) : template;
-
+		Config config = new Config();
+		config.templateIsExpression = expr;
 		if (cmd.hasOption("in")) {
 			eachLine(System.in, line -> {
 				context.variable("$", line);
-				renderString(tpl, context, out);
+				renderString(template, context, out, config);
 			});
 		} else {
-			renderString(tpl, context, out);
+			renderString(template, context, out, config);
 		}
 	}
 

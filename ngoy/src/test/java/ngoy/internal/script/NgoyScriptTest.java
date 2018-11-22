@@ -53,6 +53,6 @@ public class NgoyScriptTest {
 	}
 
 	private Object run(String script, Ctx ctx) {
-		return new NgoyScript().run(script, ctx);
+		return new NgoyScript(null).run(script, ctx);
 	}
 }

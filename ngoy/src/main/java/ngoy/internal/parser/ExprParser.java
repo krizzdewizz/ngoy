@@ -28,7 +28,7 @@ public class ExprParser {
 
 	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
 
-	static String convertPipesToTransformCalls(String expressionString, Resolver resolver) {
+	public static String convertPipesToTransformCalls(String expressionString, Resolver resolver) {
 		Matcher matcher = PIPE_PATTERN.matcher(expressionString);
 		matcher.find();
 		String exprHead = matcher.group(1)

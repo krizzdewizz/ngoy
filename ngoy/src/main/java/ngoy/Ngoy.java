@@ -56,6 +56,7 @@ import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.Resolver;
 import ngoy.internal.parser.ByteCodeTemplate;
 import ngoy.internal.parser.Parser;
+import ngoy.internal.script.NgoyScript;
 import ngoy.internal.site.SiteRenderer;
 import ngoy.router.RouterModule;
 import ngoy.translate.TranslateModule;
@@ -252,7 +253,8 @@ public class Ngoy<T> {
 	 * @param config   Optional configuration
 	 */
 	public static void renderString(String template, Context context, OutputStream out, Config... config) {
-		new Ngoy<Void>(config.length > 0 ? config[0] : new Config()).render(template, context, out);
+		Config cfg = config.length > 0 ? config[0] : new Config();
+		new Ngoy<Void>(cfg).render(template, cfg.templateIsExpression, context, out);
 	}
 
 	/**
@@ -309,6 +311,11 @@ public class Ngoy<T> {
 		 * takes place.
 		 */
 		public String contentType;
+
+		/**
+		 * Whether to treat the template as an expression.
+		 */
+		public boolean templateIsExpression;
 	}
 
 	private final Config config;
@@ -477,7 +484,7 @@ public class Ngoy<T> {
 				.render(this, folder);
 	}
 
-	private void render(String template, Context context, OutputStream out) {
+	private void render(String template, boolean templateIsExpr, Context context, OutputStream out) {
 		try {
 
 			Object app = context == null ? appInstance : context.getModel();
@@ -496,7 +503,13 @@ public class Ngoy<T> {
 
 			events.tick();
 
-			parseAndRender(appRoot, template, createParser(resolver, config), ctx, newPrintStream(out));
+			if (templateIsExpr) {
+				NgoyScript script = new NgoyScript(resolver);
+				Object result = script.run(template, ctx);
+				newPrintStream(out).print(result);
+			} else {
+				parseAndRender(appRoot, template, createParser(resolver, config), ctx, newPrintStream(out));
+			}
 
 			if (app instanceof OnDestroy) {
 				((OnDestroy) app).ngOnDestroy();
@@ -512,7 +525,7 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		render(null, null, out);
+		render(null, false, null, out);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
