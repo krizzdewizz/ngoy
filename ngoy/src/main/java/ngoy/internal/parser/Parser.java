@@ -1,6 +1,7 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
+import static jodd.lagarto.dom.Node.NodeType.ELEMENT;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
 import static ngoy.core.dom.NgoyElement.getPosition;
@@ -60,18 +61,38 @@ public class Parser {
 
 			replaceCommentLikeNodes(node);
 
+			if (isScriptOrStyleElement(node)) {
+				insideScriptOrStyle++;
+			}
+
 			Node n = node.get(0);
-			if (n instanceof Text) {
+			switch (n.getNodeType()) {
+			case TEXT:
 				replaceExpr(((Text) n).getTextContent());
-			} else if (n instanceof Element) {
+				break;
+			case ELEMENT:
 				currentEl = node;
 				replaceElement(node);
+				break;
+			default:
+				// do nothing
 			}
+		}
+
+		private boolean isScriptOrStyleElement(Jerry node) {
+			Node n = node.get(0);
+			String nodeName = n.getNodeName();
+			return n.getNodeType() == ELEMENT && (nodeName.equals("script") || nodeName.equals("style"));
 		}
 
 		@Override
 		public void end(Jerry node) {
-			if (node.get(0) instanceof Element) {
+			if (isScriptOrStyleElement(node)) {
+				insideScriptOrStyle--;
+			}
+
+			if (node.get(0)
+					.getNodeType() == ELEMENT) {
 				endElement(node);
 			}
 			currentEl = null;
@@ -90,6 +111,8 @@ public class Parser {
 	MyHandler handler;
 	Resolver resolver;
 	private final CmpRefParser cmpRefParser;
+	// if > 0, is inside a script or style element
+	private int insideScriptOrStyle;
 
 	NodeVisitor visitor;
 	SkipSubTreeVisitor skipSubTreeVisitor;
@@ -165,7 +188,6 @@ public class Parser {
 	}
 
 	private void replaceElement(Jerry el) {
-
 		if (getNodeName(el).equals(NG_TEMPLATE)) {
 			String ngIf = el.attr("[ngIf]");
 			if (ngIf != null) {
@@ -241,7 +263,8 @@ public class Parser {
 			return;
 		}
 
-		ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, true));
+		boolean escapeText = insideScriptOrStyle == 0;
+		ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText));
 	}
 
 	private void elementConditionalElse(Jerry el) {

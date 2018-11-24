@@ -2,6 +2,7 @@ package ngoy.internal.parser.visitor;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static jodd.lagarto.dom.Node.NodeType.ELEMENT;
 import static ngoy.core.dom.NgoyElement.setNodeName;
 import static ngoy.core.dom.XDom.appendChild;
 import static ngoy.core.dom.XDom.cloneNode;
@@ -16,7 +17,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
-import jodd.lagarto.dom.Element;
 import ngoy.core.NgoyException;
 import ngoy.core.dom.NodeVisitor;
 import ngoy.internal.parser.ForOfVariable;
@@ -35,7 +35,8 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 
 	@Override
 	public void start(Jerry el) {
-		if (el.get(0) instanceof Element) {
+		if (el.get(0)
+				.getNodeType() == ELEMENT) {
 			replaceNgIf(el);
 			replaceNgFor(el);
 			replaceSwitchCase(el);

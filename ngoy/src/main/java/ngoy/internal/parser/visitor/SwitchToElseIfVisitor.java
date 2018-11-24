@@ -1,13 +1,13 @@
 package ngoy.internal.parser.visitor;
 
 import static java.lang.String.format;
+import static jodd.lagarto.dom.Node.NodeType.ELEMENT;
 import static ngoy.core.dom.XDom.appendChild;
 import static ngoy.core.dom.XDom.cloneNode;
 import static ngoy.core.dom.XDom.createElement;
 import static ngoy.internal.parser.Parser.NG_TEMPLATE;
 
 import jodd.jerry.Jerry;
-import jodd.lagarto.dom.Element;
 import ngoy.core.dom.NodeVisitor;
 import ngoy.core.dom.XDom;
 
@@ -22,7 +22,8 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 
 	@Override
 	public void start(Jerry el) {
-		if (el.get(0) instanceof Element) {
+		if (el.get(0)
+				.getNodeType() == ELEMENT) {
 
 			String ngSwitch = el.attr("[ngSwitch]");
 			if (ngSwitch == null) {
