@@ -92,21 +92,21 @@ public class GeneratorTest {
 	}
 
 	@Test
-	public void testModule() throws Exception {
-		GenModel genModel = new GenModel("org.qbert", "clock-wise");
-		File fldr = folder.newFolder();
-
-		generator.module(genModel, fldr.toPath());
-
-		Path packFolder = fldr.toPath()
-				.resolve("org/qbert");
-		assertThat(packFolder.toFile()
-				.listFiles()).hasSize(1);
-		try (InputStream in = new FileInputStream(packFolder.resolve("ClockWiseModule.java")
-				.toFile())) {
-			String cmp = Util.copyToString(in);
-			assertThat(cmp).contains("public class ClockWiseModule");
-			assertThat(cmp).contains("@NgModule(");
+		public void testMod() throws Exception {
+			GenModel genModel = new GenModel("org.qbert", "clock-wise");
+			File fldr = folder.newFolder();
+	
+			generator.mod(genModel, fldr.toPath());
+	
+			Path packFolder = fldr.toPath()
+					.resolve("org/qbert");
+			assertThat(packFolder.toFile()
+					.listFiles()).hasSize(1);
+			try (InputStream in = new FileInputStream(packFolder.resolve("ClockWiseModule.java")
+					.toFile())) {
+				String cmp = Util.copyToString(in);
+				assertThat(cmp).contains("public class ClockWiseModule");
+				assertThat(cmp).contains("@NgModule(");
+			}
 		}
-	}
 }

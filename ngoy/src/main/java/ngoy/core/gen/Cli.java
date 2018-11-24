@@ -12,7 +12,6 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 import ngoy.Version;
 import ngoy.core.NgoyException;
@@ -54,7 +53,7 @@ public class Cli {
 				printHelp();
 				return;
 			}
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		} finally {
 			generator.setLog(null);
@@ -86,7 +85,7 @@ public class Cli {
 			generator.pipe(model, target);
 			return true;
 		case 'm':
-			generator.module(model, target);
+			generator.mod(model, target);
 			return true;
 		default:
 			throw new NgoyException("Unknown artifact type '%s'", kind);

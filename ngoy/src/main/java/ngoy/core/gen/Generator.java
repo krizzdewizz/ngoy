@@ -11,7 +11,6 @@ import ngoy.Ngoy;
 import ngoy.Ngoy.Config;
 import ngoy.core.Context;
 import ngoy.core.NgoyException;
-import ngoy.core.Util;
 
 public class Generator {
 
@@ -27,19 +26,19 @@ public class Generator {
 	}
 
 	public void directive(GenModel genModel, Path targetFolder) {
-		generateArtifacts(genModel, targetFolder, "tpl/directive", "$nameDirective.java.tpl");
+		generateArtifacts(genModel, targetFolder, "directive", "$nameDirective.java.tpl");
 	}
 
-	public void module(GenModel genModel, Path targetFolder) {
-		generateArtifacts(genModel, targetFolder, "tpl/mod", "$nameModule.java.tpl");
+	public void mod(GenModel genModel, Path targetFolder) {
+		generateArtifacts(genModel, targetFolder, "mod", "$nameModule.java.tpl");
 	}
 
 	public void pipe(GenModel genModel, Path targetFolder) {
-		generateArtifacts(genModel, targetFolder, "tpl/pipe", "$namePipe.java.tpl");
+		generateArtifacts(genModel, targetFolder, "pipe", "$namePipe.java.tpl");
 	}
 
 	public void component(GenModel genModel, Path targetFolder) {
-		generateArtifacts(genModel, targetFolder, "tpl/component", "$nameComponent.java.tpl", "$name.component.html.tpl", "$name.component.css.tpl");
+		generateArtifacts(genModel, targetFolder, "component", "$nameComponent.java.tpl", "$name.component.html.tpl", "$name.component.css.tpl");
 	}
 
 	private void generateArtifacts(GenModel genModel, Path targetFolder, String tplRoot, String... tpls) {
@@ -58,7 +57,8 @@ public class Generator {
 
 				String className = tpl.contains(".java") ? genModel.getClassName() : name;
 
-				String file = tpl.replace("$name", className)
+				String file = tpl //
+						.replace("$name", className)
 						.replace(".tpl", "");
 
 				Path targetFile = targetFolder.resolve(packDir)
@@ -68,7 +68,7 @@ public class Generator {
 
 				try (OutputStream out = Files.newOutputStream(targetFile)) {
 					log.accept(format("generating artifact '%s'...", targetFile));
-					Ngoy.renderTemplate(format("/%s/%s/%s", genTplRoot, tplRoot, tpl), context, out, config);
+					Ngoy.renderTemplate(format("/%s/tpl/%s/%s", genTplRoot, tplRoot, tpl), context, out, config);
 				}
 			}
 		} catch (Exception e) {
