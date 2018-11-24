@@ -89,7 +89,7 @@ public class Cli {
 	}
 
 	private void printHelp() {
-		new HelpFormatter().printHelp("ngoy [options] template", "\nOptions", options, "");
+		new HelpFormatter().printHelp("ngoy [options] template", "\nOptions:", options, "");
 	}
 
 	private void printVersion() {

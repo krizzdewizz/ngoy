@@ -9,6 +9,6 @@ import ngoy.core.NgModule;
  * 
  * @author krizz
  */
-@NgModule(declarations = { UpperCasePipe.class, LowerCasePipe.class, DatePipe.class })
+@NgModule(declarations = { UpperCasePipe.class, LowerCasePipe.class, DatePipe.class, CapitalizePipe.class })
 public class PipesModule {
 }

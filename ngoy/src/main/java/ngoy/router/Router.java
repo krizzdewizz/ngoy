@@ -35,7 +35,9 @@ public class Router {
 			return 0;
 		}
 
-		sub = sub.substring(1); // remove slash
+		if (!base.equals("/")) {
+			sub = sub.substring(1); // remove slash
+		}
 
 		List<Route> routes = getRoutes();
 		for (int i = 0, n = routes.size(); i < n; i++) {

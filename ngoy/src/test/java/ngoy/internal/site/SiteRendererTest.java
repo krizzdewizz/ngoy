@@ -3,8 +3,6 @@ package ngoy.internal.site;
 import static ngoy.core.Provider.useValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -63,7 +61,7 @@ public class SiteRendererTest extends ANgoyTest {
 		assertThat(settings).isEqualTo("site:<router-outlet><settings>hello settings</settings></router-outlet>");
 	}
 
-	private String readFile(Path file) throws UnsupportedEncodingException, IOException {
+	private String readFile(Path file) throws Exception {
 		return new String(Files.readAllBytes(file), "UTF-8");
 	}
 }
