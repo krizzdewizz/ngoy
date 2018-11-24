@@ -1,3 +1,18 @@
 
 # make executable
 git update-index --chmod=+x <file>
+
+# make release
+git checkout master
+git pull
+git merge develop
+gradle build
+git push
+
+# does not work with jitpack anymore -> create release manually on github
+git tag <release>
+git push origin <release>
+
+# update version in shell scripts
+
+git checkout develop

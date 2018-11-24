@@ -40,14 +40,6 @@ public class StyleUrlsDirectiveTest extends ANgoyTest {
 	public static class CmpUseExistingStyleElement {
 	}
 
-	@Test
-	public void testUseExistingStyleElement() {
-		assertThat(render(CmpUseExistingStyleElement.class)).isEqualTo("<html><body><style>body: { color: cyan; }\n" + //
-				"a { color: red; }\n" + //
-				"a { display: none; }\n" + //
-				"b { color: green; }</style></body></html>");
-	}
-
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

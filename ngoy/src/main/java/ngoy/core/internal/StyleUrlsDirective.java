@@ -1,15 +1,14 @@
 package ngoy.core.internal;
 
-import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.copyToString;
+import static ngoy.core.Util.isSet;
 import static ngoy.core.dom.XDom.appendChild;
 import static ngoy.core.dom.XDom.createElement;
 
 import java.io.InputStream;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
@@ -24,35 +23,39 @@ public class StyleUrlsDirective implements OnCompile {
 	@Inject
 	public Resolver resolver;
 
+	public String href;
+
 	@Override
 	public void ngOnCompile(Jerry el, String componentClass) {
 		try {
-			Set<Class<?>> cmpClasses = resolver.getCmpClasses();
-			String styles = cmpClasses.stream()
-					.map(this::getStyles)
-					.filter(style -> !style.isEmpty())
-					.collect(joining("\n"));
+			String styles = getStyles();
 
-			if (styles.trim()
-					.isEmpty()) {
+			if (styles.isEmpty()) {
 				return;
 			}
 
-			Jerry styleEl = el.$("style");
-			if (styleEl.length() == 0) {
-				Jerry ell = appendChild(findParent(el), createElement("style", el));
-				ell.attr("type", "text/css");
-				ell.text(styles);
+			if (isSet(href)) {
+				Jerry lnk = appendChild(findParent(el), createElement("link", el));
+				lnk.attr("rel", "stylesheet");
+				lnk.attr("type", "text/css");
+				lnk.attr("href", href);
 			} else {
-				StringBuilder existingStyles = new StringBuilder();
-				styleEl.contents()
-						.forEach(s -> existingStyles.append(s.text()));
-				styleEl.text(format("%s\n%s", existingStyles, styles));
+				Jerry st = appendChild(findParent(el), createElement("style", el));
+				st.attr("type", "text/css");
+				st.text(styles);
 			}
-
 		} catch (Exception e) {
 			throw wrap(e);
 		}
+	}
+
+	public String getStyles() {
+		return resolver.getCmpClasses()
+				.stream()
+				.map(this::getStyles)
+				.filter(style -> !style.isEmpty())
+				.collect(joining("\n"))
+				.trim();
 	}
 
 	private String getStyles(Class<?> clazz) {
