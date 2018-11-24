@@ -37,7 +37,7 @@ public class CmpRefParser {
 		this.parser = parser;
 	}
 
-	boolean acceptCmpRefs(Jerry el, List<CmpRef> cmpRefs) {
+	void acceptCmpRefs(Jerry el, List<CmpRef> cmpRefs) {
 
 		List<String[]> classNames = getClassList(el).stream()
 				.map(it -> new String[] { it, "" })
@@ -58,7 +58,7 @@ public class CmpRefParser {
 				AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
 				parser.handler.elementHeadEnd();
 			}
-			return false;
+			return;
 		}
 
 		List<CmpRef> allDirs = new ArrayList<>();
@@ -124,8 +124,6 @@ public class CmpRefParser {
 
 			parser.skipSubTreeVisitor.skipSubTree(el);
 		}
-
-		return true;
 	}
 
 	private void acceptCmpRef(Jerry el, CmpRef ref) {

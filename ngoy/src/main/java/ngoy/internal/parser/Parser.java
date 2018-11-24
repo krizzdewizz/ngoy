@@ -164,7 +164,7 @@ public class Parser {
 		this.handler.documentEnd();
 	}
 
-	private boolean replaceElement(Jerry el) {
+	private void replaceElement(Jerry el) {
 
 		if (getNodeName(el).equals(NG_TEMPLATE)) {
 			String ngIf = el.attr("[ngIf]");
@@ -175,21 +175,18 @@ public class Parser {
 			} else {
 				skipSubTreeVisitor.skipSubTree(el);
 			}
-
-			return false;
+			return;
 		}
 
 		List<CmpRef> cmpRefs = resolver.resolveCmps(el);
 		compileCmps(cmpRefs, el);
 
-		boolean hasCmps = cmpRefParser.acceptCmpRefs(el, cmpRefs);
+		cmpRefParser.acceptCmpRefs(el, cmpRefs);
 
 		if (isSet(handler.textOverrideExpr)) {
 			skipSubTreeVisitor.skipSubTree(el);
 			handler.textOverrideExpr = null;
 		}
-
-		return hasCmps;
 	}
 
 	private void replaceNgIf(Jerry el, String ngIf) {

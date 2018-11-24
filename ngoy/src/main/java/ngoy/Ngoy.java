@@ -340,7 +340,7 @@ public class Ngoy<T> {
 	private void init(Injector[] injectors, ModuleWithProviders<?>[] modules, Provider... rootProviders) {
 
 		List<Provider> cmpProviders = new ArrayList<>();
-		Map<String, Provider> cmpDecls = new LinkedHashMap<>(); // order of css
+		Map<String, List<Provider>> cmpDecls = new LinkedHashMap<>(); // order of css
 		Map<String, Provider> pipeDecls = new HashMap<>();
 
 		if (provides(LocaleProvider.class, rootProviders) == null) {
@@ -375,7 +375,10 @@ public class Ngoy<T> {
 		all.add(useValue(Events.class, events));
 		all.add(of(SiteRenderer.class));
 		all.addAll(cmpProviders);
-		all.addAll(cmpDecls.values());
+		cmpDecls.values()
+				.stream()
+				.flatMap(List::stream)
+				.forEach(all::add);
 		all.addAll(pipeDecls.values());
 		all.addAll(asList(rootProviders));
 
@@ -407,7 +410,7 @@ public class Ngoy<T> {
 				.collect(toList());
 	}
 
-	private Resolver createResolver(Map<String, Provider> cmpDecls, Map<String, Provider> pipeDecls) {
+	private Resolver createResolver(Map<String, List<Provider>> cmpDecls, Map<String, Provider> pipeDecls) {
 		return new Resolver() {
 			@Override
 			public List<CmpRef> resolveCmps(Jerry node) {
@@ -426,6 +429,7 @@ public class Ngoy<T> {
 							return false;
 						})
 						.map(Map.Entry::getValue)
+						.flatMap(List::stream)
 						.map(Provider::getProvide)
 						.map(clazz -> {
 							boolean directive = clazz.getAnnotation(Directive.class) != null;
@@ -456,6 +460,7 @@ public class Ngoy<T> {
 				all.add(appRoot);
 				cmpDecls.values()
 						.stream()
+						.flatMap(List::stream)
 						.map(Provider::getProvide)
 						.forEach(all::add);
 				return all;
@@ -529,7 +534,7 @@ public class Ngoy<T> {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void addModuleDecls(Class<?> clazz, Map<String, Provider> targetCmps, Map<String, Provider> targetPipes, List<Provider> providers) {
+	private void addModuleDecls(Class<?> clazz, Map<String, List<Provider>> targetCmps, Map<String, Provider> targetPipes, List<Provider> providers) {
 		Component cmp = clazz.getAnnotation(Component.class);
 		if (cmp != null) {
 
@@ -563,7 +568,7 @@ public class Ngoy<T> {
 		}
 	}
 
-	private void addDecls(List<Provider> providers, Map<String, Provider> targetCmps, Map<String, Provider> targetPipes) {
+	private void addDecls(List<Provider> providers, Map<String, List<Provider>> targetCmps, Map<String, Provider> targetPipes) {
 		for (Provider p : providers) {
 			Pipe pipe = p.getProvide()
 					.getAnnotation(Pipe.class);
@@ -574,23 +579,33 @@ public class Ngoy<T> {
 			Component cmp = p.getProvide()
 					.getAnnotation(Component.class);
 			if (cmp != null) {
-				Provider existing = targetCmps.put(cmp.selector(), p);
-				if (existing != null) {
-					throw new NgoyException(
-							"More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
-							cmp.selector(), existing.getProvide()
-									.getName(),
-							p.getProvide()
-									.getName());
-				}
+				putCmp(cmp.selector(), p, targetCmps, false);
 			}
 
 			Directive dir = p.getProvide()
 					.getAnnotation(Directive.class);
 			if (dir != null) {
-				targetCmps.put(dir.selector(), p);
+				putCmp(dir.selector(), p, targetCmps, true);
 			}
 		}
+	}
+
+	private void putCmp(String selector, Provider p, Map<String, List<Provider>> targetCmps, boolean allowMulti) {
+		List<Provider> list = targetCmps.get(selector);
+		if (list != null && !allowMulti) {
+			Provider existing = list.get(0);
+			throw new NgoyException("More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
+					selector, existing.getProvide()
+							.getName(),
+					p.getProvide()
+							.getName());
+		}
+
+		if (list == null) {
+			list = new ArrayList<>();
+			targetCmps.put(selector, list);
+		}
+		list.add(p);
 	}
 
 	protected void parseAndRender(Class<T> appRoot, String template, Parser parser, Ctx ctx, PrintStream out) {
