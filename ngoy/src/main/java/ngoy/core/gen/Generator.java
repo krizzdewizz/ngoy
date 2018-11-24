@@ -27,31 +27,28 @@ public class Generator {
 	}
 
 	public void directive(GenModel genModel, Path targetFolder) {
-		generateArtifacts(genModel, targetFolder, "tpl/directive");
+		generateArtifacts(genModel, targetFolder, "tpl/directive", "$nameDirective.java.tpl");
 	}
 
 	public void module(GenModel genModel, Path targetFolder) {
-		generateArtifacts(genModel, targetFolder, "tpl/mod");
+		generateArtifacts(genModel, targetFolder, "tpl/mod", "$nameModule.java.tpl");
 	}
 
 	public void pipe(GenModel genModel, Path targetFolder) {
-		generateArtifacts(genModel, targetFolder, "tpl/pipe");
+		generateArtifacts(genModel, targetFolder, "tpl/pipe", "$namePipe.java.tpl");
 	}
 
 	public void component(GenModel genModel, Path targetFolder) {
-		generateArtifacts(genModel, targetFolder, "tpl/component");
+		generateArtifacts(genModel, targetFolder, "tpl/component", "$nameComponent.java.tpl", "$name.component.html.tpl", "$name.component.css.tpl");
 	}
 
-	private void generateArtifacts(GenModel genModel, Path targetFolder, String tplRoot) {
+	private void generateArtifacts(GenModel genModel, Path targetFolder, String tplRoot, String... tpls) {
 		try {
 			Context context = Context.of(genModel);
 
-			String genRoot = getClass().getPackage()
+			String genTplRoot = getClass().getPackage()
 					.getName()
 					.replace('.', '/');
-
-			String[] tpls = Util.copyToString(getClass().getResourceAsStream(tplRoot))
-					.split("\\n");
 
 			String packDir = genModel.getPack()
 					.replace('.', '/');
@@ -71,7 +68,7 @@ public class Generator {
 
 				try (OutputStream out = Files.newOutputStream(targetFile)) {
 					log.accept(format("generating artifact '%s'...", targetFile));
-					Ngoy.renderTemplate(format("/%s/%s/%s", genRoot, tplRoot, tpl), context, out, config);
+					Ngoy.renderTemplate(format("/%s/%s/%s", genTplRoot, tplRoot, tpl), context, out, config);
 				}
 			}
 		} catch (Exception e) {

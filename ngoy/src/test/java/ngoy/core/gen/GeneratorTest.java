@@ -86,7 +86,7 @@ public class GeneratorTest {
 				.toFile())) {
 			String cmp = Util.copyToString(in);
 			assertThat(cmp).contains("public class WesternCityPipe");
-			assertThat(cmp).contains("@Pipe(name = \"western-city\")");
+			assertThat(cmp).contains("@Pipe(\"western-city\")");
 			assertThat(cmp).contains("implements PipeTransform");
 		}
 	}
