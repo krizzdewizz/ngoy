@@ -10,6 +10,7 @@ import ngoy.Ngoy;
 import ngoy.core.Inject;
 import ngoy.core.NgoyException;
 import ngoy.core.Optional;
+import ngoy.core.internal.StyleUrlsDirective;
 import ngoy.router.Location;
 import ngoy.router.Route;
 import ngoy.router.Router;
@@ -20,21 +21,42 @@ public class SiteRenderer {
 	@Optional
 	public Router router;
 
+	@Inject
+	public StyleUrlsDirective styleUrlsDirective;
+
 	public void render(Ngoy<?> ngoy, Path folder) {
 		if (router != null) {
 			renderRoutes(ngoy, folder);
+			writeCss(folder);
 		} else {
 			render(ngoy, folder, "index.html");
 		}
 	}
 
+	private void writeCss(Path folder) {
+		try {
+			String styles = styleUrlsDirective.getStyles();
+			if (styles.isEmpty()) {
+				return;
+			}
+			Path stylesFolder = folder.resolve("styles");
+			Files.createDirectories(stylesFolder);
+			Files.write(stylesFolder.resolve("main.css"), styles.getBytes("UTF-8"));
+		} catch (Exception e) {
+			throw NgoyException.wrap(e);
+		}
+	}
+
 	private void renderRoutes(Ngoy<?> ngoy, Path folder) {
 		Location oldLocation = router.location;
+		styleUrlsDirective.href = "styles/main.css";
 		try {
 			for (Route route : router.getRoutes()) {
 				String path = route.getPath();
 
-				String location = format("%s/%s", router.config.getBaseHref(), path);
+				String baseHref = router.config.getBaseHref();
+				String slash = "/".equals(baseHref) ? "" : "/";
+				String location = format("%s%s%s", baseHref, slash, path);
 				router.location = () -> location;
 
 				String file = format("%s.html", path);
@@ -42,6 +64,7 @@ public class SiteRenderer {
 			}
 		} finally {
 			router.location = oldLocation;
+			styleUrlsDirective.href = null;
 		}
 	}
 

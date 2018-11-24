@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>ngoy</title>
+
+<!-- Bootstrap core CSS -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="stylesheet" type="text/css" href="styles/main.css"></head>
+
+<body>
+
+	<!-- Navigation -->
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+		<div class="container">
+			<a href="/" class="navbar-brand">ngoy</a>
+			<button type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div id="navbarResponsive" class="collapse navbar-collapse">
+				<ul class="navbar-nav ml-auto">
+
+					<li class="nav-item"><a class="nav-link" href="index">Home </a></li><li class="nav-item active"><a class="nav-link" href="get-started">Getting started </a></li><li class="nav-item"><a class="nav-link" href="tutorial">Tutorial </a></li><li class="nav-item"><a class="nav-link" href="tutorial-editor">tutorial-editor </a></li><li class="nav-item"><a class="nav-link" href="motivation">Motivation </a></li>
+
+					<li class="nav-item"><a href="https://github.com/krizzdewizz/ngoy" target="_blank" class="nav-link">GitHub</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Page Content -->
+	<div class="container app-container">
+		<div class="row">
+			<div class="col">
+
+				<router-outlet><get-started><ngoy-title><h1 class="mt-5 ngoy-title">Getting started</h1></ngoy-title>
+<p>Welcome to ngoy! Nice to have you here.
+</p><p>This guide shows you how to build and run a simple ngoy app.
+</p><p>
+</p><h3>Prerequisites</h3>
+
+<ul>
+	<li>JRE &gt;= 8</li>
+</ul>
+
+<ngoy-starter><p>ngoy is a standalone library with no dependencies to any web
+	server/framework. All it needs is an OutputStream to write the contents
+	to.
+</p><p>
+	For this guide you must have <a href="https://gradle.org">gradle</a>
+	installed.
+</p><p>Since we are going to produce HTML, it is best to spin off a web
+	server and view the HTML contents in the browser. We are going to use a
+	Gradle/Spring Boot application for that purpose.
+</p><p>
+	The <a href="https://github.com/krizzdewizz/ngoy-starter-web">ngoy-starter-web</a>
+	repository is a good place to start. Let's clone it:
+</p><pre>git clone https://github.com/krizzdewizz/ngoy-starter-web </pre>
+<pre>cd ngoy-starter-web</pre>
+
+
+<p>Run the web server:
+</p><pre>gradle run</pre>
+
+and open
+<a href="http://localhost:8080">http://localhost:8080</a>
+in the browser.
+<p></p></ngoy-starter>
+
+<p>
+	You should see the app's greeting:<br> <img src="images/ngoy-starter-web-a.png">
+</p><h3>Make some changes</h3>
+<p>
+	Open
+	<code>AppComponent.java</code>
+	and change the
+	<code>title</code>
+	field from
+	<code>&quot;my-app&quot;</code>
+	to
+	<code>&quot;My first ngoy app&quot;</code>
+	:
+</p><pre style="color: #000000">@Component(selector = &quot;&quot;, templateUrl = &quot;app.component.html&quot;, styleUrls = <span style="color: #800080">{</span> <span style="color: #0000e6">&quot;app.component.css&quot;</span> <span style="color: #800080">}</span>)
+<span style="color: #800000;font-weight: bold">public</span> <span style="color: #800000;font-weight: bold">class</span> AppComponent <span style="color: #800080">{</span>
+	<span style="color: #800000;font-weight: bold">public</span> <span style="color: #800000;font-weight: bold">final</span> <span style="color: #bb7977;font-weight: bold">String</span> title <span style="color: #808030">=</span> <span style="color: #0000e6">&quot;My first ngoy app&quot;</span><span style="color: #800080">;</span>
+<span style="color: #800080">}</span>
+</pre>
+
+
+<p>
+	You should see the changed title:<br> <img src="images/ngoy-starter-web-b.png">
+</p><p>
+	Open
+	<code>app.component.css</code>
+	and give it some style:
+</p><pre style="color: #000000"><span style="color: #800000;font-weight: bold">h1</span> <span style="color: #800080">{</span>
+	<span style="color: #bb7977;font-weight: bold">color</span><span style="color: #808030">:</span> <span style="color: #008c00">#</span><span style="color: #008000">369</span><span style="color: #800080">;</span>
+	<span style="color: #bb7977;font-weight: bold">font-family</span><span style="color: #808030">:</span> Arial<span style="color: #808030">,</span> Helvetica<span style="color: #808030">,</span> <span style="color: #074726">sans-serif</span><span style="color: #800080">;</span>
+	<span style="color: #bb7977;font-weight: bold">font-size</span><span style="color: #808030">:</span> <span style="color: #008c00">250</span><span style="color: #006600">%</span><span style="color: #800080">;</span>
+<span style="color: #800080">}</span>
+</pre>
+
+Looking nice:
+<br>
+<img src="images/ngoy-starter-web-c.png">
+
+<p>
+</p><h3>Next steps</h3>
+<p>
+	You may want to go through the <a routerLink="/tutorial" href="/tutorial">'Tour of
+		heroes' tutorial</a> or checkout the <a routerLink="/doc" href="/doc">documentation</a>.
+</p></get-started></router-outlet>
+
+			</div>
+		</div>
+	</div>
+
+	<!-- Bootstrap core JavaScript -->
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
