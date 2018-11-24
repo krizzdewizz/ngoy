@@ -1,12 +1,13 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
+import static jodd.lagarto.dom.Node.NodeType.ELEMENT;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
-import static ngoy.internal.parser.NgoyElement.getPosition;
-import static ngoy.internal.parser.visitor.XDom.attributes;
-import static ngoy.internal.parser.visitor.XDom.nodeName;
-import static ngoy.internal.parser.visitor.XDom.traverse;
+import static ngoy.core.dom.NgoyElement.getPosition;
+import static ngoy.core.dom.XDom.getAttributes;
+import static ngoy.core.dom.XDom.getNodeName;
+import static ngoy.core.dom.XDom.parseHtml;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -21,28 +22,20 @@ import jodd.lagarto.dom.Node;
 import jodd.lagarto.dom.Node.NodeType;
 import jodd.lagarto.dom.Text;
 import ngoy.core.Component;
+import ngoy.core.Injector;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnCompile;
+import ngoy.core.dom.NodeVisitor;
+import ngoy.core.dom.XDom;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.ContainerComponent;
 import ngoy.core.internal.Resolver;
 import ngoy.internal.parser.visitor.MicroSyntaxVisitor;
-import ngoy.internal.parser.visitor.NodeVisitor;
 import ngoy.internal.parser.visitor.SkipSubTreeVisitor;
 import ngoy.internal.parser.visitor.SwitchToElseIfVisitor;
 
 public class Parser {
-
-	public static Jerry parseHtml(String template, int baseLineNumber) {
-		try {
-			Jerry doc = Jerry.jerry(new NgoyDomBuilder(baseLineNumber))
-					.parse(template);
-			return doc;
-		} catch (Exception e) {
-			throw wrap(e);
-		}
-	}
 
 	public Jerry parse(String template) {
 		try {
@@ -64,22 +57,42 @@ public class Parser {
 		Jerry currentEl;
 
 		@Override
-		public void head(Jerry node, int depth) {
+		public void start(Jerry node) {
 
 			replaceCommentLikeNodes(node);
 
+			if (isScriptOrStyleElement(node)) {
+				insideScriptOrStyle++;
+			}
+
 			Node n = node.get(0);
-			if (n instanceof Text) {
+			switch (n.getNodeType()) {
+			case TEXT:
 				replaceExpr(((Text) n).getTextContent());
-			} else if (n instanceof Element) {
+				break;
+			case ELEMENT:
 				currentEl = node;
 				replaceElement(node);
+				break;
+			default:
+				// do nothing
 			}
 		}
 
+		private boolean isScriptOrStyleElement(Jerry node) {
+			Node n = node.get(0);
+			String nodeName = n.getNodeName();
+			return n.getNodeType() == ELEMENT && (nodeName.equals("script") || nodeName.equals("style"));
+		}
+
 		@Override
-		public void tail(Jerry node, int depth) {
-			if (node.get(0) instanceof Element) {
+		public void end(Jerry node) {
+			if (isScriptOrStyleElement(node)) {
+				insideScriptOrStyle--;
+			}
+
+			if (node.get(0)
+					.getNodeType() == ELEMENT) {
 				endElement(node);
 			}
 			currentEl = null;
@@ -98,6 +111,8 @@ public class Parser {
 	MyHandler handler;
 	Resolver resolver;
 	private final CmpRefParser cmpRefParser;
+	// if > 0, is inside a script or style element
+	private int insideScriptOrStyle;
 
 	NodeVisitor visitor;
 	SkipSubTreeVisitor skipSubTreeVisitor;
@@ -172,9 +187,8 @@ public class Parser {
 		this.handler.documentEnd();
 	}
 
-	private boolean replaceElement(Jerry el) {
-
-		if (nodeName(el).equals(NG_TEMPLATE)) {
+	private void replaceElement(Jerry el) {
+		if (getNodeName(el).equals(NG_TEMPLATE)) {
 			String ngIf = el.attr("[ngIf]");
 			if (ngIf != null) {
 				replaceNgIf(el, ngIf);
@@ -183,21 +197,18 @@ public class Parser {
 			} else {
 				skipSubTreeVisitor.skipSubTree(el);
 			}
-
-			return false;
+			return;
 		}
 
 		List<CmpRef> cmpRefs = resolver.resolveCmps(el);
 		compileCmps(cmpRefs, el);
 
-		boolean hasCmps = cmpRefParser.acceptCmpRefs(el, cmpRefs);
+		cmpRefParser.acceptCmpRefs(el, cmpRefs);
 
 		if (isSet(handler.textOverrideExpr)) {
 			skipSubTreeVisitor.skipSubTree(el);
 			handler.textOverrideExpr = null;
 		}
-
-		return hasCmps;
 	}
 
 	private void replaceNgIf(Jerry el, String ngIf) {
@@ -208,7 +219,7 @@ public class Parser {
 		String firstCaseTpl = "";
 		String switchExpr = "";
 		if (isSwitch) {
-			for (Attribute attr : attributes(el)) {
+			for (Attribute attr : getAttributes(el)) {
 				if (attr.getName()
 						.startsWith("ngElseIfFirst-")) {
 					firstCaseTpl = attr.getName()
@@ -233,7 +244,7 @@ public class Parser {
 	}
 
 	public void accept(Jerry nodes) {
-		traverse(nodes, visitor);
+		XDom.accept(nodes, visitor);
 	}
 
 	private void acceptTemplate(String ref, Jerry document) {
@@ -252,7 +263,8 @@ public class Parser {
 			return;
 		}
 
-		ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, true));
+		boolean escapeText = insideScriptOrStyle == 0;
+		ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText));
 	}
 
 	private void elementConditionalElse(Jerry el) {
@@ -265,7 +277,7 @@ public class Parser {
 	}
 
 	private void elementConditionalElseIf(Jerry el) {
-		for (Attribute attr : attributes(el)) {
+		for (Attribute attr : getAttributes(el)) {
 			String name = attr.getName();
 			if (!name.startsWith("ngElseIf-")) {
 				continue;
@@ -280,12 +292,14 @@ public class Parser {
 	}
 
 	private void compileCmps(List<CmpRef> cmpRefs, Jerry el) {
+		String topClass = topCmpClass().getName();
+		Injector injector = resolver.getInjector();
+
 		for (CmpRef cmpRef : cmpRefs) {
-			Object cmp = resolver.getInjector()
-					.get(cmpRef.clazz);
+			Object cmp = injector.get(cmpRef.clazz);
 
 			if (cmp instanceof OnCompile) {
-				((OnCompile) cmp).ngOnCompile(el, topCmpClass().getName());
+				((OnCompile) cmp).ngOnCompile(el, topClass);
 			}
 		}
 	}

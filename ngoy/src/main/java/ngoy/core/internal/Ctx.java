@@ -478,4 +478,8 @@ public class Ctx {
 				.findFirst()
 				.orElseThrow(() -> new NgoyException("Setter method %s%s could not be found or has not exactly 1 parameter", clazz.getName(), name));
 	}
+
+	public Set<String> getVariables() {
+		return variables;
+	}
 }

@@ -1,7 +1,7 @@
 package ngoy.core;
 
-import ngoy.core.internal.Ctx;
-import ngoy.core.internal.MinimalEnv;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The context or 'model' associated with a simple template.
@@ -18,7 +18,7 @@ public final class Context {
 	 * @return Context
 	 */
 	public static Context of() {
-		return new Context(Ctx.of(null, MinimalEnv.INJECTOR));
+		return new Context(null, new HashMap<>());
 	}
 
 	/**
@@ -28,7 +28,7 @@ public final class Context {
 	 * @return Context
 	 */
 	public static Context of(Object model) {
-		return new Context(Ctx.of(model, MinimalEnv.INJECTOR));
+		return new Context(model, new HashMap<>());
 	}
 
 	/**
@@ -42,10 +42,12 @@ public final class Context {
 		return of().variable(variableName, variableValue);
 	}
 
-	private final Ctx ctx;
+	private final Object model;
+	private final Map<String, Object> variables;
 
-	private Context(Ctx ctx) {
-		this.ctx = ctx;
+	private Context(Object model, Map<String, Object> variables) {
+		this.model = model;
+		this.variables = variables;
 	}
 
 	/**
@@ -56,14 +58,15 @@ public final class Context {
 	 * @return this
 	 */
 	public Context variable(String variableName, Object variableValue) {
-		ctx.variable(variableName, variableValue);
+		variables.put(variableName, variableValue);
 		return this;
 	}
 
-	/**
-	 * non-api
-	 */
-	public Object internal() {
-		return ctx;
+	public Object getModel() {
+		return model;
+	}
+
+	public Map<String, Object> getVariables() {
+		return variables;
 	}
 }

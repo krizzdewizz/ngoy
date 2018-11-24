@@ -1,5 +1,6 @@
 package ngoy;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static ngoy.core.NgoyException.wrap;
@@ -10,7 +11,6 @@ import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.getTemplate;
 import static ngoy.core.Util.isSet;
 import static ngoy.core.Util.newPrintStream;
-import static ngoy.internal.parser.visitor.XDom.matchesAttributeBinding;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,10 +53,10 @@ import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.CoreInternalModule;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.DefaultInjector;
-import ngoy.core.internal.MinimalEnv;
 import ngoy.core.internal.Resolver;
 import ngoy.internal.parser.ByteCodeTemplate;
 import ngoy.internal.parser.Parser;
+import ngoy.internal.script.NgoyScript;
 import ngoy.internal.site.SiteRenderer;
 import ngoy.router.RouterModule;
 import ngoy.translate.TranslateModule;
@@ -253,10 +253,8 @@ public class Ngoy<T> {
 	 * @param config   Optional configuration
 	 */
 	public static void renderString(String template, Context context, OutputStream out, Config... config) {
-		if (context == null) {
-			context = Context.of();
-		}
-		new Ngoy<Void>(optionalConfig(config)).doRender(template, false, (Ctx) context.internal(), out);
+		Config cfg = config.length > 0 ? config[0] : new Config();
+		new Ngoy<Void>(cfg).render(template, cfg.templateIsExpression, context, out);
 	}
 
 	/**
@@ -274,34 +272,15 @@ public class Ngoy<T> {
 	 * @see #renderString(String, Context, OutputStream, Config...)
 	 */
 	public static void renderTemplate(String templatePath, Context context, OutputStream out, Config... config) {
-		if (context == null) {
-			context = Context.of();
+		InputStream in = Ngoy.class.getResourceAsStream(templatePath);
+		if (in == null) {
+			throw new NgoyException("Template could not be found: '%s'", templatePath);
 		}
-		new Ngoy<Void>(optionalConfig(config)).doRender(templatePath, true, (Ctx) context.internal(), out);
-	}
-
-	private void doRender(String templateOrPath, boolean templateIsPath, Ctx ctx, OutputStream out) {
-		String tpl;
-		if (templateIsPath) {
-			InputStream in = getClass().getResourceAsStream(templateOrPath);
-			if (in == null) {
-				throw new NgoyException("Template could not be found: '%s'", templateOrPath);
-			}
-			try (InputStream inn = in) {
-				tpl = copyToString(inn);
-			} catch (Exception e) {
-				throw wrap(e);
-			}
-		} else {
-			tpl = templateOrPath;
+		try (InputStream inn = in) {
+			renderString(copyToString(inn), context, out, config);
+		} catch (Exception e) {
+			throw wrap(e);
 		}
-
-		Class<?> clazz = createTemplate(cache.key(templateOrPath), createParser(MinimalEnv.RESOLVER, config), tpl, config.contentType);
-		invokeRender(clazz, ctx, newPrintStream(out));
-	}
-
-	private static Config optionalConfig(Config... config) {
-		return config.length > 0 ? config[0] : new Config();
 	}
 
 	/**
@@ -332,6 +311,11 @@ public class Ngoy<T> {
 		 * takes place.
 		 */
 		public String contentType;
+
+		/**
+		 * Whether to treat the template as an expression.
+		 */
+		public boolean templateIsExpression;
 	}
 
 	private final Config config;
@@ -356,7 +340,7 @@ public class Ngoy<T> {
 	private void init(Injector[] injectors, ModuleWithProviders<?>[] modules, Provider... rootProviders) {
 
 		List<Provider> cmpProviders = new ArrayList<>();
-		Map<String, Provider> cmpDecls = new LinkedHashMap<>(); // order of css
+		Map<String, List<Provider>> cmpDecls = new LinkedHashMap<>(); // order of css
 		Map<String, Provider> pipeDecls = new HashMap<>();
 
 		if (provides(LocaleProvider.class, rootProviders) == null) {
@@ -391,7 +375,10 @@ public class Ngoy<T> {
 		all.add(useValue(Events.class, events));
 		all.add(of(SiteRenderer.class));
 		all.addAll(cmpProviders);
-		all.addAll(cmpDecls.values());
+		cmpDecls.values()
+				.stream()
+				.flatMap(List::stream)
+				.forEach(all::add);
 		all.addAll(pipeDecls.values());
 		all.addAll(asList(rootProviders));
 
@@ -423,7 +410,7 @@ public class Ngoy<T> {
 				.collect(toList());
 	}
 
-	private Resolver createResolver(Map<String, Provider> cmpDecls, Map<String, Provider> pipeDecls) {
+	private Resolver createResolver(Map<String, List<Provider>> cmpDecls, Map<String, Provider> pipeDecls) {
 		return new Resolver() {
 			@Override
 			public List<CmpRef> resolveCmps(Jerry node) {
@@ -442,6 +429,7 @@ public class Ngoy<T> {
 							return false;
 						})
 						.map(Map.Entry::getValue)
+						.flatMap(List::stream)
 						.map(Provider::getProvide)
 						.map(clazz -> {
 							boolean directive = clazz.getAnnotation(Directive.class) != null;
@@ -472,6 +460,7 @@ public class Ngoy<T> {
 				all.add(appRoot);
 				cmpDecls.values()
 						.stream()
+						.flatMap(List::stream)
 						.map(Provider::getProvide)
 						.forEach(all::add);
 				return all;
@@ -500,33 +489,52 @@ public class Ngoy<T> {
 				.render(this, folder);
 	}
 
-	/**
-	 * Renders the app to the given ouput stream.
-	 *
-	 * @param out To where to write the app to
-	 */
-	public void render(OutputStream out) {
+	private void render(String template, boolean templateIsExpr, Context context, OutputStream out) {
 		try {
-			if (appInstance instanceof OnInit) {
-				((OnInit) appInstance).ngOnInit();
+
+			Object app = context == null ? appInstance : context.getModel();
+
+			if (app instanceof OnInit) {
+				((OnInit) app).ngOnInit();
 			}
 
-			Ctx ctx = Ctx.of(appInstance, injector);
+			Ctx ctx = Ctx.of(app, injector);
+			if (context != null) {
+				for (Map.Entry<String, Object> v : context.getVariables()
+						.entrySet()) {
+					ctx.variable(v.getKey(), v.getValue());
+				}
+			}
 
 			events.tick();
 
-			parseAndRender(appRoot, createParser(resolver, config), ctx, newPrintStream(out));
+			if (templateIsExpr) {
+				NgoyScript script = new NgoyScript(resolver);
+				Object result = script.run(template, ctx);
+				newPrintStream(out).print(result);
+			} else {
+				parseAndRender(appRoot, template, createParser(resolver, config), ctx, newPrintStream(out));
+			}
 
-			if (appInstance instanceof OnDestroy) {
-				((OnDestroy) appInstance).ngOnDestroy();
+			if (app instanceof OnDestroy) {
+				((OnDestroy) app).ngOnDestroy();
 			}
 		} catch (Exception e) {
 			throw wrap(e);
 		}
 	}
 
+	/**
+	 * Renders the app to the given ouput stream.
+	 *
+	 * @param out To where to write the app to
+	 */
+	public void render(OutputStream out) {
+		render(null, false, null, out);
+	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void addModuleDecls(Class<?> clazz, Map<String, Provider> targetCmps, Map<String, Provider> targetPipes, List<Provider> providers) {
+	private void addModuleDecls(Class<?> clazz, Map<String, List<Provider>> targetCmps, Map<String, Provider> targetPipes, List<Provider> providers) {
 		Component cmp = clazz.getAnnotation(Component.class);
 		if (cmp != null) {
 
@@ -560,7 +568,7 @@ public class Ngoy<T> {
 		}
 	}
 
-	private void addDecls(List<Provider> providers, Map<String, Provider> targetCmps, Map<String, Provider> targetPipes) {
+	private void addDecls(List<Provider> providers, Map<String, List<Provider>> targetCmps, Map<String, Provider> targetPipes) {
 		for (Provider p : providers) {
 			Pipe pipe = p.getProvide()
 					.getAnnotation(Pipe.class);
@@ -571,27 +579,37 @@ public class Ngoy<T> {
 			Component cmp = p.getProvide()
 					.getAnnotation(Component.class);
 			if (cmp != null) {
-				Provider existing = targetCmps.put(cmp.selector(), p);
-				if (existing != null) {
-					throw new NgoyException(
-							"More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
-							cmp.selector(), existing.getProvide()
-									.getName(),
-							p.getProvide()
-									.getName());
-				}
+				putCmp(cmp.selector(), p, targetCmps, false);
 			}
 
 			Directive dir = p.getProvide()
 					.getAnnotation(Directive.class);
 			if (dir != null) {
-				targetCmps.put(dir.selector(), p);
+				putCmp(dir.selector(), p, targetCmps, true);
 			}
 		}
 	}
 
-	protected void parseAndRender(Class<T> appRoot, Parser parser, Ctx ctx, PrintStream out) {
-		invokeRender(cache.get(appRoot.getName(), className -> createTemplate(className, parser, getTemplate(appRoot), getContentType(config))), ctx, out);
+	private void putCmp(String selector, Provider p, Map<String, List<Provider>> targetCmps, boolean allowMulti) {
+		List<Provider> list = targetCmps.get(selector);
+		if (list != null && !allowMulti) {
+			Provider existing = list.get(0);
+			throw new NgoyException("More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
+					selector, existing.getProvide()
+							.getName(),
+					p.getProvide()
+							.getName());
+		}
+
+		if (list == null) {
+			list = new ArrayList<>();
+			targetCmps.put(selector, list);
+		}
+		list.add(p);
+	}
+
+	protected void parseAndRender(Class<T> appRoot, String template, Parser parser, Ctx ctx, PrintStream out) {
+		invokeRender(cache.get(appRoot.getName(), className -> createTemplate(className, parser, template != null ? template : getTemplate(appRoot), getContentType(config))), ctx, out);
 	}
 
 	private void invokeRender(Class<?> templateClass, Ctx ctx, PrintStream out) {
@@ -671,5 +689,11 @@ public class Ngoy<T> {
 	 */
 	public static void main(String[] args) {
 		new Cli().run(args, System.out);
+	}
+
+	private static boolean matchesAttributeBinding(Jerry node, String attrName) {
+		// directive name same as @Input
+		String raw = attrName.substring(1, attrName.length() - 1);
+		return node.is(format("[\\[%s\\]]", raw));
 	}
 }

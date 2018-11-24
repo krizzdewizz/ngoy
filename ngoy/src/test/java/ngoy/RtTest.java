@@ -26,7 +26,7 @@ public class RtTest {
 	public void run() {
 		Ngoy<TestApp> rt = new Ngoy<TestApp>(TestApp.class, new Config(), new Injector[0], new ModuleWithProviders[0], Provider.of(PersonService.class)) {
 			@Override
-			protected void parseAndRender(Class<TestApp> appRoot, Parser parser, Ctx ctx, PrintStream out) {
+			protected void parseAndRender(Class<TestApp> appRoot, String template, Parser parser, Ctx ctx, PrintStream out) {
 				try {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					parser.parse(Util.getTemplate(appRoot), new JavaTemplate(newPrintStream(out)));

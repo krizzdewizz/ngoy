@@ -1,7 +1,10 @@
 package ngoy.internal.parser.visitor;
 
+import static ngoy.core.dom.XDom.isEqualNode;
+
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Document;
+import ngoy.core.dom.NodeVisitor;
 
 public class SkipSubTreeVisitor implements NodeVisitor {
 
@@ -22,13 +25,11 @@ public class SkipSubTreeVisitor implements NodeVisitor {
 	}
 
 	public boolean shallSkip(Jerry node) {
-		return skipNode != null && skipNode.get(0)
-				.equals(node.parent()
-						.get(0));
+		return skipNode != null && isEqualNode(skipNode, node.parent());
 	}
 
 	@Override
-	public void head(Jerry node, int depth) {
+	public void start(Jerry node) {
 		if (skip(node)) {
 			return;
 		}
@@ -38,11 +39,11 @@ public class SkipSubTreeVisitor implements NodeVisitor {
 			return;
 		}
 
-		target.head(node, depth);
+		target.start(node);
 	}
 
 	@Override
-	public void tail(Jerry node, int depth) {
+	public void end(Jerry node) {
 		if (shallSkip(node)) {
 			skip = false;
 			return;
@@ -52,6 +53,6 @@ public class SkipSubTreeVisitor implements NodeVisitor {
 			return;
 		}
 
-		target.tail(node, depth);
+		target.end(node);
 	}
 }

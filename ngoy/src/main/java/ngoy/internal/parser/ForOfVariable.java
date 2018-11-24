@@ -1,6 +1,6 @@
 package ngoy.internal.parser;
 
-import static ngoy.internal.parser.visitor.XDom.attributes;
+import static ngoy.core.dom.XDom.getAttributes;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -32,7 +32,7 @@ public enum ForOfVariable {
 
 		Map<ForOfVariable, String> map = new EnumMap<>(ForOfVariable.class);
 		String itemName = null;
-		for (Attribute attr : attributes(el)) {
+		for (Attribute attr : getAttributes(el)) {
 			String name = attr.getName();
 			if (!name.startsWith("let-")) {
 				continue;

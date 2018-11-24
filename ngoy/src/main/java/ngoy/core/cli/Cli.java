@@ -1,6 +1,6 @@
 package ngoy.core.cli;
 
-import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static ngoy.Ngoy.renderString;
 import static ngoy.core.NgoyException.wrap;
 
@@ -21,6 +21,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import ngoy.Ngoy.Config;
 import ngoy.Version;
 import ngoy.core.Context;
 
@@ -44,6 +45,12 @@ public class Cli {
 	}
 
 	public void run(String[] args, OutputStream out) {
+
+		if (isGen(args)) {
+			List<String> rest = asList(args).subList(1, args.length);
+			createGenCli().run(rest.toArray(new String[rest.size()]), out);
+			return;
+		}
 
 		CommandLine cmd;
 		try {
@@ -76,20 +83,28 @@ public class Cli {
 
 		boolean expr = cmd.hasOption('e');
 		String template = readTemplate(argList.get(0), cmd.hasOption('f'));
-		String tpl = expr ? format("{{%s}}", template) : template;
-
+		Config config = new Config();
+		config.templateIsExpression = expr;
 		if (cmd.hasOption("in")) {
 			eachLine(System.in, line -> {
 				context.variable("$", line);
-				renderString(tpl, context, out);
+				renderString(template, context, out, config);
 			});
 		} else {
-			renderString(tpl, context, out);
+			renderString(template, context, out, config);
 		}
 	}
 
+	private boolean isGen(String[] args) {
+		return args.length > 0 && (args[0].equals("g") || args[0].equals("gen") || args[0].equals("generate"));
+	}
+
+	protected ngoy.core.gen.Cli createGenCli() {
+		return new ngoy.core.gen.Cli();
+	}
+
 	private void printHelp() {
-		new HelpFormatter().printHelp("ngoy [options] template", "\nOptions", options, "");
+		new HelpFormatter().printHelp("ngoy [g|gen|generate] [options] template", "\nIf generate is given, the rest of the arguments are passed over to ngoy-gen.\n\nOptions:", options, "");
 	}
 
 	private void printVersion() {

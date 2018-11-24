@@ -28,20 +28,32 @@ public class ExprParser {
 
 	private static final Pattern PIPE_PATTERN = Pattern.compile("([^\\|]+)");
 
-	static String convertPipesToTransformCalls(String expressionString, Resolver resolver) {
-		Matcher matcher = PIPE_PATTERN.matcher(expressionString);
+	// cheap hack to prevent || from matching the pattern
+	private static final String OR_ESCAPE = "☼♫";
+
+	private static String escapeOr(String s) {
+		return s.replace("||", OR_ESCAPE);
+	}
+
+	private static String unescapeOr(String s) {
+		return s.replace(OR_ESCAPE, "||");
+	}
+
+	public static String convertPipesToTransformCalls(String expressionString, Resolver resolver) {
+
+		Matcher matcher = PIPE_PATTERN.matcher(escapeOr(expressionString));
 		matcher.find();
 		String exprHead = matcher.group(1)
 				.trim();
-		String e = exprHead;
+		String e = unescapeOr(exprHead);
 		while (matcher.find()) {
 			String pipe = matcher.group(1)
 					.trim();
 
 			List<String> pipeParams = new ArrayList<>();
 			pipe = parsePipe(pipe, pipeParams);
-			String params = pipeParams.stream()
-					.collect(joining(","));
+			String params = unescapeOr(pipeParams.stream()
+					.collect(joining(",")));
 
 			Class<?> resolvedPipe = resolver.resolvePipe(pipe);
 			if (resolvedPipe == null) {
@@ -68,7 +80,6 @@ public class ExprParser {
 			String e = convertPipesToTransformCalls(expressionString, resolver);
 			return new SpelExpression(e, null, null);
 		}
-
 	}
 
 	interface TextHandler {

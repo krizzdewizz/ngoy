@@ -30,4 +30,15 @@ public class EscapeTest extends ANgoyTest {
 	public void test2() {
 		assertThat(render(Cmp2.class)).isEqualTo("<div title=\"x\" q=\"&lt;&gt;&quot;&amp;\"> &lt;&gt; &quot; &amp;</div>");
 	}
+
+	//
+
+	@Component(selector = "test", template = "<a> > </a> <script> var x = 0 > 1, y = 0 &gt; 1; </script><body><style> a > .active { color: red }</style></body>")
+	public static class ScriptCmp {
+	}
+
+	@Test
+	public void testScriptOrStyle() {
+		assertThat(render(ScriptCmp.class)).isEqualTo("<a> &gt; </a> <script> var x = 0 > 1, y = 0 &gt; 1; </script><body><style> a > .active { color: red }</style></body>");
+	}
 }

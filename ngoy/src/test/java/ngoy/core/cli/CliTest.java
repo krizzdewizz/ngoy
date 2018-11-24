@@ -1,12 +1,14 @@
 package ngoy.core.cli;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 
@@ -16,7 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import ngoy.core.cli.Cli;
+import ngoy.core.Util;
 
 public class CliTest {
 
@@ -24,6 +26,7 @@ public class CliTest {
 	private PrintStream prevOut;
 	private PrintStream prevErr;
 	private InputStream prevIn;
+	private ngoy.core.gen.Cli genCli;
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
@@ -40,6 +43,7 @@ public class CliTest {
 		System.setOut(prevOut);
 		System.setErr(prevErr);
 		System.setIn(prevIn);
+		genCli = null;
 	}
 
 	private void resetOut() {
@@ -54,7 +58,11 @@ public class CliTest {
 
 	private String run(boolean rawOutput, String... args) {
 		resetOut();
-		new Cli().run(args, out);
+		new Cli() {
+			protected ngoy.core.gen.Cli createGenCli() {
+				return genCli != null ? genCli : super.createGenCli();
+			}
+		}.run(args, out);
 		String result = new String(out.toByteArray());
 		if (!rawOutput) {
 			result = result.replaceAll("\\r|\\n", "");
@@ -102,7 +110,13 @@ public class CliTest {
 
 	@Test
 	public void testNewLine() {
-		assertThat(run(true, "-e", "'\n'")).isEqualTo("\n");
+		assertThat(run(true, "{{'\n'}}")).isEqualTo("\n");
+	}
+
+	@Test
+	public void testNewLine_spel_wrong_question_mark() {
+		// shouldn't it be .isEqualTo("a\na");
+		assertThat(run(true, "-e", "'\\n'")).isEqualTo("\\n");
 	}
 
 	@Test
@@ -110,6 +124,23 @@ public class CliTest {
 		System.setIn(new ByteArrayInputStream("line1\nline2\n".getBytes()));
 		String sep = System.lineSeparator();
 		assertThat(run(true, "-e", "-in", "$ + 'a' + nl")).isEqualTo(format("line1a%sline2a%s", sep, sep));
+	}
+
+	@Test
+	public void testPipe() {
+		assertThat(run("-e", "'hello' | uppercase")).isEqualTo("HELLO");
+	}
+
+	@Test
+	public void testGen() {
+		genCli = new ngoy.core.gen.Cli() {
+			@Override
+			public void run(String[] args, OutputStream out) {
+				Util.newPrintStream(out)
+						.print(asList(args));
+			}
+		};
+		assertThat(run("g", "c", "person", "-p", "abc")).isEqualTo("[c, person, -p, abc]");
 	}
 
 	@Test

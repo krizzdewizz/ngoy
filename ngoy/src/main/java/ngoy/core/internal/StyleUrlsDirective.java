@@ -4,6 +4,8 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.copyToString;
+import static ngoy.core.dom.XDom.appendChild;
+import static ngoy.core.dom.XDom.createElement;
 
 import java.io.InputStream;
 import java.util.Optional;
@@ -16,7 +18,6 @@ import ngoy.core.Directive;
 import ngoy.core.Inject;
 import ngoy.core.NgoyException;
 import ngoy.core.OnCompile;
-import ngoy.internal.parser.visitor.XDom;
 
 @Directive(selector = "html")
 public class StyleUrlsDirective implements OnCompile {
@@ -39,10 +40,9 @@ public class StyleUrlsDirective implements OnCompile {
 
 			Jerry styleEl = el.$("style");
 			if (styleEl.length() == 0) {
-				Jerry ell = XDom.createElement("style", el);
+				Jerry ell = appendChild(findParent(el), createElement("style", el));
 				ell.attr("type", "text/css");
 				ell.text(styles);
-				XDom.appendChild(findParent(el), ell);
 			} else {
 				StringBuilder existingStyles = new StringBuilder();
 				styleEl.contents()

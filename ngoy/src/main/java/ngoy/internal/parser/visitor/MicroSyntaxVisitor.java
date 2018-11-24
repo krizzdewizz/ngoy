@@ -2,11 +2,12 @@ package ngoy.internal.parser.visitor;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static ngoy.internal.parser.NgoyElement.setNodeName;
+import static jodd.lagarto.dom.Node.NodeType.ELEMENT;
+import static ngoy.core.dom.NgoyElement.setNodeName;
+import static ngoy.core.dom.XDom.appendChild;
+import static ngoy.core.dom.XDom.cloneNode;
+import static ngoy.core.dom.XDom.removeContents;
 import static ngoy.internal.parser.Parser.NG_TEMPLATE;
-import static ngoy.internal.parser.visitor.XDom.appendChild;
-import static ngoy.internal.parser.visitor.XDom.cloneNode;
-import static ngoy.internal.parser.visitor.XDom.removeContents;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -16,8 +17,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
-import jodd.lagarto.dom.Element;
 import ngoy.core.NgoyException;
+import ngoy.core.dom.NodeVisitor;
 import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.ParseException;
 
@@ -33,15 +34,16 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 	}
 
 	@Override
-	public void head(Jerry el, int depth) {
-		if (el.get(0) instanceof Element) {
+	public void start(Jerry el) {
+		if (el.get(0)
+				.getNodeType() == ELEMENT) {
 			replaceNgIf(el);
 			replaceNgFor(el);
 			replaceSwitchCase(el);
 			replaceSwitchDefault(el);
 		}
 
-		src.head(el, depth);
+		src.start(el);
 	}
 
 	private void replaceSwitchCase(Jerry el) {
@@ -113,8 +115,8 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 	}
 
 	@Override
-	public void tail(Jerry node, int depth) {
-		src.tail(node, depth);
+	public void end(Jerry node) {
+		src.end(node);
 	}
 
 	static String[] parseNgFor(String expr) {

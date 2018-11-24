@@ -1,0 +1,3 @@
+
+# make executable
+git update-index --chmod=+x <file>

@@ -1,8 +1,7 @@
 package ngoy.router.internal;
 
-import static java.lang.String.format;
-import static ngoy.internal.parser.visitor.XDom.appendChild;
-import static ngoy.internal.parser.visitor.XDom.createElement;
+import static ngoy.core.dom.XDom.appendChild;
+import static ngoy.core.dom.XDom.createElement;
 
 import jodd.jerry.Jerry;
 import ngoy.core.Component;
@@ -26,11 +25,13 @@ public class OutletComponent implements OnCompile, OnInit {
 
 	@Override
 	public void ngOnCompile(Jerry el, String componentClass) {
+		Jerry container = appendChild(el, createElement("ng-container", el));
 		int i = 0;
+		container.attr("[ngSwitch]", "activeRoute");
 		for (Route route : router.getRoutes()) {
-			Jerry routeEl = createElement(getSelector(route.getComponent()), el);
-			routeEl.attr("*ngIf", format("activeRoute == %s", i));
-			appendChild(el, routeEl);
+			Jerry tpl = appendChild(container, createElement("ng-template", container));
+			tpl.attr("[ngSwitchCase]", String.valueOf(i));
+			appendChild(tpl, createElement(getSelector(route.getComponent()), tpl));
 			i++;
 		}
 	}
