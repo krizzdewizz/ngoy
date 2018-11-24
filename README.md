@@ -37,4 +37,11 @@ public static void main(String[] args) {
 
 Clone [ngoy-starter-web](https://github.com/krizzdewizz/ngoy-starter-web) to get started.
 
+Visit the ngoy [website](https://krizzdewizz.github.io/ngoy).
+
 More docs about to come...
+
+## Development
+
+[Travis CI](https://travis-ci.com/krizzdewizz/ngoy)
+
