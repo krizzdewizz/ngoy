@@ -48,4 +48,21 @@ public class NgContentTest extends ANgoyTest {
 	public void test() {
 		assertThat(render(Cmp.class, useValue(TestService.class, personService))).isEqualTo("<person>hello: mary<hr class=\"abc\">x</person>");
 	}
+
+	//
+
+	@Component(selector = "ngoy-title", template = "<h1><ng-content></ng-content></h1>")
+	public static class TitleCmp {
+	}
+
+	@Component(selector = "test", template = "<ngoy-title>hello</ngoy-title>")
+	@NgModule(declarations = { TitleCmp.class })
+	public static class QCmp {
+	}
+
+	@Test
+	public void testQ() {
+		assertThat(render(QCmp.class)).isEqualTo("<ngoy-title><h1>hello</h1></ngoy-title>");
+	}
+
 }

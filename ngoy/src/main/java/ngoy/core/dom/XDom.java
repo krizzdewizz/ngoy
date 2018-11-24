@@ -194,4 +194,16 @@ public class XDom {
 		}
 		return all;
 	}
+
+	/**
+	 * Checks whether both nodes are equal
+	 * 
+	 * @param first
+	 * @param second
+	 * @return true if equals, else false
+	 */
+	public static boolean isEqualNode(Jerry first, Jerry second) {
+		return first.get(0)
+				.equals(second.get(0));
+	}
 }

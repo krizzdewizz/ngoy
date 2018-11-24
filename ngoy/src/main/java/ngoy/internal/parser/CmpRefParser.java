@@ -7,6 +7,7 @@ import static ngoy.core.dom.XDom.accept;
 import static ngoy.core.dom.XDom.getClassList;
 import static ngoy.core.dom.XDom.getNodeName;
 import static ngoy.core.dom.XDom.getStyleList;
+import static ngoy.core.dom.XDom.isEqualNode;
 import static ngoy.internal.parser.Inputs.cmpInputs;
 
 import java.util.ArrayList;
@@ -15,8 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import jodd.jerry.Jerry;
-import jodd.lagarto.dom.Node;
-import ngoy.core.Nullable;
+import ngoy.core.dom.NodeVisitor;
 import ngoy.core.internal.CmpRef;
 
 public class CmpRefParser {
@@ -127,61 +127,45 @@ public class CmpRefParser {
 	}
 
 	private void acceptCmpRef(Jerry el, CmpRef ref) {
-		Jerry cmpNodes = parser.parse(ref.template);
+		Jerry cmpTpl = parser.parse(ref.template);
 
-		Jerry ngContentEl = findNgContent(cmpNodes);
+		Jerry ngContentEl = cmpTpl.$("ng-content");
 
 		if (ngContentEl.length() == 0) {
-			parser.accept(cmpNodes);
+			parser.accept(cmpTpl);
 			return;
 		}
 
-		Node ngContentEll = ngContentEl.get(0);
-		boolean invokeHandler = !ngContentEll.hasAttribute("scope");
+		boolean invokeHandler = !ngContentEl.get(0)
+				.hasAttribute("scope");
 		String select = ngContentEl.attr("select");
 		String selector = select == null ? ngContentEl.attr("selector") : select;
+		Jerry elContents = selector == null ? el.contents() : el.$(selector);
 
-		Jerry parent = ngContentEl.parent();
+		accept(cmpTpl, new NodeVisitor() {
+			@Override
+			public void start(Jerry node) {
+				if (isEqualNode(node, ngContentEl)) {
+					if (invokeHandler) {
+						parser.handler.ngContentStart();
+					}
 
-		Jerry childNodes = parent.contents();
-		int ngContentIndex = childNodes.index(ngContentEll);
+					parser.accept(elContents);
 
-		List<Jerry> nodesBefore = new ArrayList<>();
-		List<Jerry> nodesAfter = new ArrayList<>();
-
-		childNodes.each((n, i) -> {
-			if (i < ngContentIndex) {
-				nodesBefore.add(n);
-			} else if (i > ngContentIndex) {
-				nodesAfter.add(n);
+					if (invokeHandler) {
+						parser.handler.ngContentEnd();
+					}
+				} else {
+					parser.visitor.start(node);
+				}
 			}
-			return true;
+
+			@Override
+			public void end(Jerry node) {
+				if (!isEqualNode(node, ngContentEl)) {
+					parser.visitor.end(node);
+				}
+			}
 		});
-
-		parent.get(0)
-				.removeChild(ngContentEll);
-
-		parser.accept(nodesBefore);
-
-		if (invokeHandler) {
-			parser.handler.ngContentStart();
-		}
-
-		if (selector == null) {
-			parser.accept(el.contents());
-		} else {
-			accept(el.$(selector), parser.visitor);
-		}
-
-		if (invokeHandler) {
-			parser.handler.ngContentEnd();
-		}
-
-		parser.accept(nodesAfter);
-	}
-
-	@Nullable
-	private Jerry findNgContent(Jerry cmpNodes) {
-		return cmpNodes.$("ng-content");
 	}
 }
