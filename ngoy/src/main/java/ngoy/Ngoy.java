@@ -549,6 +549,20 @@ public class Ngoy<T> {
 			}
 		}
 
+		Directive dir = clazz.getAnnotation(Directive.class);
+		if (dir != null) {
+
+			for (Class<?> prov : dir.providers()) {
+				providers.add(of(prov));
+			}
+
+			for (Provide prov : dir.provide()) {
+				Class p = prov.provide();
+				Class c = prov.useClass();
+				providers.add(useClass(p, (Class<?>) c));
+			}
+		}
+
 		NgModule mod = clazz.getAnnotation(NgModule.class);
 		if (mod != null) {
 			addDecls(toProviders(asList(mod.declarations())), targetCmps, targetPipes);

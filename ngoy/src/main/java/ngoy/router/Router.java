@@ -1,6 +1,7 @@
 package ngoy.router;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import ngoy.core.Inject;
 
@@ -18,11 +19,29 @@ public class Router {
 	@Inject
 	public RouterConfig config;
 
+	private Integer activeRouteOverride;
+
 	public boolean isActive(Route route) {
 		return getRoutes().indexOf(route) == getActiveRoute();
 	}
 
+	public void withActivatedRoutesDo(Consumer<Route> runnable) {
+		try {
+			activeRouteOverride = 0;
+			for (Route route : config.getRoutes()) {
+				runnable.accept(route);
+				activeRouteOverride++;
+			}
+		} finally {
+			activeRouteOverride = null;
+		}
+	}
+
 	public int getActiveRoute() {
+		if (activeRouteOverride != null) {
+			return activeRouteOverride;
+		}
+
 		String base = config.getBaseHref();
 		String path = location.getPath();
 
