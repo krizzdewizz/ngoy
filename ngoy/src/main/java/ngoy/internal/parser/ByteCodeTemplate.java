@@ -31,7 +31,7 @@ public class ByteCodeTemplate implements ParserHandler {
 		@Override
 		protected void doPrint(String text, boolean isExpr) {
 			if (isExpr) {
-				throw new NgoyException("Must not be called for expressions. Please contact developer.");
+				throw new NgoyException("Must not be called for expressions.");
 			}
 
 			printOut(text);
