@@ -27,10 +27,10 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 	private static final Pattern FOR_OF_PATTERN = Pattern.compile("let\\s*(.*)\\s*of\\s*(.*)");
 	private static final Pattern VAR_DECL_PATTERN = Pattern.compile("(.*)\\s*as\\s*(.*)");
 
-	private final NodeVisitor src;
+	private final NodeVisitor target;
 
-	public MicroSyntaxVisitor(NodeVisitor src) {
-		this.src = src;
+	public MicroSyntaxVisitor(NodeVisitor target) {
+		this.target = target;
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 			replaceSwitchDefault(el);
 		}
 
-		src.start(el);
+		target.start(el);
 	}
 
 	private void replaceSwitchCase(Jerry el) {
@@ -116,7 +116,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 
 	@Override
 	public void end(Jerry node) {
-		src.end(node);
+		target.end(node);
 	}
 
 	static String[] parseNgFor(String expr) {

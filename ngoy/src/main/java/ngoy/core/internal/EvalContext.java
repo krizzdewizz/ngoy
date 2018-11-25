@@ -21,7 +21,7 @@ import org.springframework.expression.spel.support.StandardTypeLocator;
 
 public class EvalContext implements EvaluationContext {
 
-	private final List<ConstructorResolver> ctorResolvers;
+	private final List<ConstructorResolver> constructorResolvers;
 	private final EvaluationContext target;
 	private final TypeLocator typeLocator;
 	private final List<MethodResolver> methodResolvers;
@@ -30,7 +30,7 @@ public class EvalContext implements EvaluationContext {
 	public EvalContext(EvaluationContext target, Map<String, Object> variables) {
 		this.target = target;
 		this.variables = variables;
-		ctorResolvers = asList(new ReflectiveConstructorResolver());
+		constructorResolvers = asList(new ReflectiveConstructorResolver());
 		methodResolvers = asList(new ReflectiveMethodResolver());
 
 		StandardTypeLocator locator = new StandardTypeLocator();
@@ -41,7 +41,7 @@ public class EvalContext implements EvaluationContext {
 	}
 
 	public List<ConstructorResolver> getConstructorResolvers() {
-		return ctorResolvers;
+		return constructorResolvers;
 	}
 
 	public List<MethodResolver> getMethodResolvers() {
@@ -50,6 +50,11 @@ public class EvalContext implements EvaluationContext {
 
 	public TypeLocator getTypeLocator() {
 		return typeLocator;
+	}
+
+	public Object lookupVariable(String name) {
+		Object val = variables.get(name);
+		return val != null ? val : target.lookupVariable(name);
 	}
 
 	///////////
@@ -81,10 +86,4 @@ public class EvalContext implements EvaluationContext {
 	public void setVariable(String name, Object value) {
 		target.setVariable(name, value);
 	}
-
-	public Object lookupVariable(String name) {
-		Object val = variables.get(name);
-		return val != null ? val : target.lookupVariable(name);
-	}
-
 }

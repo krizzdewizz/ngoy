@@ -10,7 +10,7 @@ import ngoy.core.dom.NgoyElement;
 
 public class NgoyDomBuilder extends LagartoDOMBuilder {
 
-	private final LagartoDOMBuilderTagVisitor builder;
+	private final LagartoDOMBuilderTagVisitor visitor;
 
 	public NgoyDomBuilder(int baseLineNumber) {
 		config //
@@ -18,7 +18,7 @@ public class NgoyDomBuilder extends LagartoDOMBuilder {
 				.setCaseSensitive(true)
 				.setParseXmlTags(true);
 
-		builder = new LagartoDOMBuilderTagVisitor(this) {
+		visitor = new LagartoDOMBuilderTagVisitor(this) {
 			@Override
 			protected Element createElementNode(Tag tag) {
 
@@ -47,7 +47,7 @@ public class NgoyDomBuilder extends LagartoDOMBuilder {
 	@Override
 	protected Document doParse(LagartoParser parser) {
 		parser.setConfig(config);
-		parser.parse(builder);
-		return builder.getDocument();
+		parser.parse(visitor);
+		return visitor.getDocument();
 	}
 }

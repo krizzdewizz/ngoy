@@ -16,7 +16,7 @@ public class IterableWithVariables implements Iterable {
 
 	private class Iter implements Iterator {
 
-		private final Iterator srcIter;
+		private final Iterator targetIter;
 
 		private int index;
 		private boolean first;
@@ -24,8 +24,8 @@ public class IterableWithVariables implements Iterable {
 		private boolean even;
 		private boolean odd;
 
-		public Iter(Iterator srcIter) {
-			this.srcIter = srcIter;
+		public Iter(Iterator targetIter) {
+			this.targetIter = targetIter;
 			index = -1;
 		}
 
@@ -46,12 +46,12 @@ public class IterableWithVariables implements Iterable {
 
 		@Override
 		public boolean hasNext() {
-			return srcIter.hasNext();
+			return targetIter.hasNext();
 		}
 
 		@Override
 		public Object next() {
-			Object obj = srcIter.next();
+			Object obj = targetIter.next();
 
 			index++;
 
@@ -67,18 +67,18 @@ public class IterableWithVariables implements Iterable {
 
 	}
 
-	private final Iterable src;
+	private final Iterable target;
 	private final Map<ForOfVariable, String> variables;
 	private final IterVariable iterVariable;
 
-	public IterableWithVariables(Iterable src, Map<ForOfVariable, String> variables, IterVariable iterVariable) {
-		this.src = src;
+	public IterableWithVariables(Iterable target, Map<ForOfVariable, String> variables, IterVariable iterVariable) {
+		this.target = target;
 		this.variables = variables;
 		this.iterVariable = iterVariable;
 	}
 
 	@Override
 	public Iterator iterator() {
-		return new Iter(src.iterator());
+		return new Iter(target.iterator());
 	}
 }

@@ -77,21 +77,24 @@ public class Inputs {
 		return result;
 	}
 
-	private static void addInput(char inputType, char valueType, List<String> result, Jerry el, String input, String fieldName, Class<?> fieldType, Class<?> clazz, Set<String> excludeBindings, Resolver resolver) {
+	private static void addInput(char inputType, char valueType, List<String> result, Jerry el, String input, String fieldName, Class<?> fieldType, Class<?> clazz, Set<String> excludeBindings,
+			Resolver resolver) {
 		boolean isExpr = valueType == VALUE_EXPR;
 		String attr = isExpr ? format("[%s]", input) : input;
 		String inp = el.attr(attr);
-		if (inp != null) {
-
-			if (valueType == VALUE_TEXT && !fieldType.equals(String.class)) {
-				throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(), fieldType.getName(), format("[%s]", input));
-			}
-
-			result.add(format("%s%s%s", inputType, valueType, fieldName));
-			result.add(isExpr ? ExprParser.convertPipesToTransformCalls(inp, resolver) : inp);
-			excludeBindings.add(input.toLowerCase());
-			excludeBindings.add(fieldName.toLowerCase());
+		if (inp == null) {
+			return;
 		}
+
+		if (valueType == VALUE_TEXT && !fieldType.equals(String.class)) {
+			throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(),
+					fieldType.getName(), format("[%s]", input));
+		}
+
+		result.add(format("%s%s%s", inputType, valueType, fieldName));
+		result.add(isExpr ? ExprParser.convertPipesToTransformCalls(inp, resolver) : inp);
+		excludeBindings.add(input.toLowerCase());
+		excludeBindings.add(fieldName.toLowerCase());
 	}
 
 }

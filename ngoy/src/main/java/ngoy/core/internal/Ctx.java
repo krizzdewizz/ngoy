@@ -73,12 +73,12 @@ public class Ctx {
 
 	private final LinkedList<EvaluationContext> spelCtxs = new LinkedList<>();
 	private final Set<String> variables = new HashSet<>();
-	private final Object model;
-	private final ExpressionParser exprParser;
-	private final Injector injector;
+	private final ExpressionParser exprParser = new SpelExpressionParser();
 	private final LinkedList<Map<String, Object>> iterationVars = new LinkedList<>();
 	private final ExprCache exprCache = new ExprCache();
 	private final ContextApi api = new ContextApi();
+	private final Object model;
+	private final Injector injector;
 	private PrintStream out;
 	private String contentType;
 
@@ -90,7 +90,6 @@ public class Ctx {
 		this.model = model;
 		this.injector = injector;
 		spelCtxs.push(createContext(model, emptyMap()));
-		exprParser = new SpelExpressionParser();
 	}
 
 	private EvalContext createContext(Object model, Map<String, Object> variables) {

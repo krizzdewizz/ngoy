@@ -13,11 +13,11 @@ import ngoy.core.dom.XDom;
 
 public class SwitchToElseIfVisitor implements NodeVisitor {
 
-	private final NodeVisitor src;
+	private final NodeVisitor target;
 	private int nextRefIndex;
 
-	public SwitchToElseIfVisitor(NodeVisitor src) {
-		this.src = src;
+	public SwitchToElseIfVisitor(NodeVisitor target) {
+		this.target = target;
 	}
 
 	@Override
@@ -27,7 +27,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 
 			String ngSwitch = el.attr("[ngSwitch]");
 			if (ngSwitch == null) {
-				src.start(el);
+				target.start(el);
 				return;
 			}
 
@@ -65,7 +65,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 					.insertChild(elClone.get(0), 0);
 		}
 
-		src.start(el);
+		target.start(el);
 	}
 
 	private String nextRef() {
@@ -74,7 +74,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 
 	@Override
 	public void end(Jerry node) {
-		src.end(node);
+		target.end(node);
 	}
 
 }

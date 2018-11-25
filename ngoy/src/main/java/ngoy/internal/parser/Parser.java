@@ -361,7 +361,10 @@ public class Parser {
 	private void replaceCommentLikeNodes(Jerry node) {
 		Node n = node.get(0);
 		NodeType nodeType = n.getNodeType();
-		if (nodeType == NodeType.DOCUMENT_TYPE || nodeType == NodeType.COMMENT || nodeType == NodeType.CDATA || nodeType == NodeType.XML_DECLARATION) {
+		if (nodeType == NodeType.DOCUMENT_TYPE //
+				|| nodeType == NodeType.COMMENT //
+				|| nodeType == NodeType.CDATA //
+				|| nodeType == NodeType.XML_DECLARATION) {
 			handler.text(n.getHtml(), false, false);
 		}
 	}

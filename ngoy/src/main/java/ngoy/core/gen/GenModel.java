@@ -1,17 +1,13 @@
 package ngoy.core.gen;
 
-import ngoy.common.CapitalizePipe;
-
 public class GenModel {
 
 	private static String camelCaseToJavaClass(String className) {
-		String camelCase = new CapitalizePipe().transform(className)
-				.toString();
 		StringBuilder sb = new StringBuilder();
 
 		boolean nextUpper = false;
-		for (int i = 0, n = camelCase.length(); i < n; i++) {
-			char c = camelCase.charAt(i);
+		for (int i = 0, n = className.length(); i < n; i++) {
+			char c = className.charAt(i);
 			if (c == '-') {
 				nextUpper = true;
 				continue;
