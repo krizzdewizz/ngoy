@@ -23,6 +23,7 @@ public class CliTest {
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
 	private Path cwd;
+	private Cli cli;
 
 	@Before
 	public void beforeEach() throws Exception {
@@ -32,6 +33,16 @@ public class CliTest {
 //		cwd = Paths.get("d:\\temp\\aaa");
 		cwd = folder.newFolder()
 				.toPath();
+		cli = new Cli() {
+			protected Path getCwd() {
+				return cwd;
+			}
+
+			@Override
+			protected Path getPropertiesPath() {
+				return cwd.resolve("ngoy.properties");
+			}
+		};
 	}
 
 	@After
@@ -49,11 +60,6 @@ public class CliTest {
 
 	private String run(String... args) throws Exception {
 		resetOut();
-		Cli cli = new Cli() {
-			protected Path getCwd() {
-				return cwd;
-			}
-		};
 		cli.run(args, System.out);
 		return new String(out.toByteArray());
 	}
@@ -81,6 +87,21 @@ public class CliTest {
 		Path packFolder = cwd.resolve("org/qbert/person");
 		assertThat(packFolder.toFile()
 				.listFiles()).hasSize(3);
+	}
+
+	@Test
+	public void testComponentAppPrefix() throws Exception {
+
+		Files.write(cli.getPropertiesPath(), "app.prefix=myapp\napp.package=mypack".getBytes());
+
+		run("c", "person");
+
+		Path packFolder = cwd.resolve("mypack/person");
+		assertThat(packFolder.toFile()
+				.listFiles()).hasSize(3);
+
+		String cmp = new String(Files.readAllBytes(packFolder.resolve("PersonComponent.java")));
+		assertThat(cmp).contains("selector = \"myapp-person\"");
 	}
 
 	@Test

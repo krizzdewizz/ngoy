@@ -25,8 +25,10 @@ public class GenModel {
 	private final String pack;
 	private final String name;
 	private final String className;
+	private final String appPrefix;
 
-	public GenModel(String pack, String name) {
+	public GenModel(String appPrefix, String pack, String name) {
+		this.appPrefix = appPrefix;
 		this.pack = pack;
 		this.name = name;
 		className = camelCaseToJavaClass(name);
@@ -42,5 +44,9 @@ public class GenModel {
 
 	public String getClassName() {
 		return className;
+	}
+
+	public String getAppPrefix() {
+		return appPrefix;
 	}
 }

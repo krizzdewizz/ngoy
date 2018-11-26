@@ -28,7 +28,7 @@ public class GeneratorTest {
 
 	@Test
 	public void testComponent() throws Exception {
-		GenModel genModel = new GenModel("org.qbert.heroes_detail", "heroes-detail");
+		GenModel genModel = new GenModel("app", "org.qbert.heroes_detail", "heroes-detail");
 		File fldr = folder.newFolder();
 
 		generator.component(genModel, fldr.toPath());
@@ -43,6 +43,7 @@ public class GeneratorTest {
 			assertThat(cmp).contains("public class HeroesDetailComponent");
 			assertThat(cmp).contains("heroes-detail.component.html");
 			assertThat(cmp).contains("heroes-detail.component.css");
+			assertThat(cmp).contains("selector = \"app-heroes-detail\"");
 		}
 
 		try (InputStream in = new FileInputStream(packFolder.resolve("heroes-detail.component.html")
@@ -54,7 +55,7 @@ public class GeneratorTest {
 
 	@Test
 	public void testDirective() throws Exception {
-		GenModel genModel = new GenModel("org.qbert", "upper-case");
+		GenModel genModel = new GenModel("app", "org.qbert", "upper-case");
 		File fldr = folder.newFolder();
 
 		generator.directive(genModel, fldr.toPath());
@@ -73,7 +74,7 @@ public class GeneratorTest {
 
 	@Test
 	public void testPipe() throws Exception {
-		GenModel genModel = new GenModel("org.qbert", "western-city");
+		GenModel genModel = new GenModel("app", "org.qbert", "western-city");
 		File fldr = folder.newFolder();
 
 		generator.pipe(genModel, fldr.toPath());
@@ -93,7 +94,7 @@ public class GeneratorTest {
 
 	@Test
 	public void testMod() throws Exception {
-		GenModel genModel = new GenModel("org.qbert", "clock-wise");
+		GenModel genModel = new GenModel("app", "org.qbert", "clock-wise");
 		File fldr = folder.newFolder();
 
 		generator.mod(genModel, fldr.toPath());
