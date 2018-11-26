@@ -69,7 +69,7 @@ public class CliTest {
 	public void testComponentNoPackage() throws Exception {
 		run("c", "person");
 
-		Path packFolder = cwd.resolve("ngoygen");
+		Path packFolder = cwd.resolve("ngoygen/person");
 		assertThat(packFolder.toFile()
 				.listFiles()).hasSize(3);
 	}
@@ -78,7 +78,7 @@ public class CliTest {
 	public void testComponentPackage() throws Exception {
 		run("c", "-p", "org.qbert", "person");
 
-		Path packFolder = cwd.resolve("org/qbert");
+		Path packFolder = cwd.resolve("org/qbert/person");
 		assertThat(packFolder.toFile()
 				.listFiles()).hasSize(3);
 	}

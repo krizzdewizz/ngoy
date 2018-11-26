@@ -28,27 +28,27 @@ public class GeneratorTest {
 
 	@Test
 	public void testComponent() throws Exception {
-		GenModel genModel = new GenModel("org.qbert", "heroes");
+		GenModel genModel = new GenModel("org.qbert.heroes_detail", "heroes-detail");
 		File fldr = folder.newFolder();
 
 		generator.component(genModel, fldr.toPath());
 
 		Path packFolder = fldr.toPath()
-				.resolve("org/qbert");
+				.resolve("org/qbert/heroes_detail");
 		assertThat(packFolder.toFile()
 				.listFiles()).hasSize(3);
-		try (InputStream in = new FileInputStream(packFolder.resolve("HeroesComponent.java")
+		try (InputStream in = new FileInputStream(packFolder.resolve("HeroesDetailComponent.java")
 				.toFile())) {
 			String cmp = Util.copyToString(in);
-			assertThat(cmp).contains("public class HeroesComponent");
-			assertThat(cmp).contains("heroes.component.html");
-			assertThat(cmp).contains("heroes.component.css");
+			assertThat(cmp).contains("public class HeroesDetailComponent");
+			assertThat(cmp).contains("heroes-detail.component.html");
+			assertThat(cmp).contains("heroes-detail.component.css");
 		}
 
-		try (InputStream in = new FileInputStream(packFolder.resolve("heroes.component.html")
+		try (InputStream in = new FileInputStream(packFolder.resolve("heroes-detail.component.html")
 				.toFile())) {
 			String html = Util.copyToString(in);
-			assertThat(html).contains("heroes works!");
+			assertThat(html).contains("heroes-detail works!");
 		}
 	}
 
@@ -92,21 +92,21 @@ public class GeneratorTest {
 	}
 
 	@Test
-		public void testMod() throws Exception {
-			GenModel genModel = new GenModel("org.qbert", "clock-wise");
-			File fldr = folder.newFolder();
-	
-			generator.mod(genModel, fldr.toPath());
-	
-			Path packFolder = fldr.toPath()
-					.resolve("org/qbert");
-			assertThat(packFolder.toFile()
-					.listFiles()).hasSize(1);
-			try (InputStream in = new FileInputStream(packFolder.resolve("ClockWiseModule.java")
-					.toFile())) {
-				String cmp = Util.copyToString(in);
-				assertThat(cmp).contains("public class ClockWiseModule");
-				assertThat(cmp).contains("@NgModule(");
-			}
+	public void testMod() throws Exception {
+		GenModel genModel = new GenModel("org.qbert", "clock-wise");
+		File fldr = folder.newFolder();
+
+		generator.mod(genModel, fldr.toPath());
+
+		Path packFolder = fldr.toPath()
+				.resolve("org/qbert");
+		assertThat(packFolder.toFile()
+				.listFiles()).hasSize(1);
+		try (InputStream in = new FileInputStream(packFolder.resolve("ClockWiseModule.java")
+				.toFile())) {
+			String cmp = Util.copyToString(in);
+			assertThat(cmp).contains("public class ClockWiseModule");
+			assertThat(cmp).contains("@NgModule(");
 		}
+	}
 }

@@ -1,5 +1,7 @@
 package ngoy.core.gen;
 
+import static java.lang.String.format;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -69,12 +71,17 @@ public class Cli {
 			pack = "ngoygen";
 		}
 
-		String kind = argList.get(0);
+		char kind = argList.get(0)
+				.charAt(0);
 		String name = argList.get(1);
+
+		if (kind == 'c') {
+			pack = format("%s.%s", pack, name.replace('-', '_'));
+		}
 
 		GenModel model = new GenModel(pack, name);
 
-		switch (kind.charAt(0)) {
+		switch (kind) {
 		case 'c':
 			generator.component(model, target);
 			return true;
