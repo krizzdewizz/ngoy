@@ -1,10 +1,12 @@
 package ngoy.core.gen;
 
+import static java.lang.String.format;
+import static ngoy.core.Util.isSet;
+
 public class GenModel {
 
-	private static String camelCaseToJavaClass(String className) {
+	private static String kebapToCamel(String className) {
 		StringBuilder sb = new StringBuilder();
-
 		boolean nextUpper = false;
 		for (int i = 0, n = className.length(); i < n; i++) {
 			char c = className.charAt(i);
@@ -31,7 +33,7 @@ public class GenModel {
 		this.appPrefix = appPrefix;
 		this.pack = pack;
 		this.name = name;
-		className = camelCaseToJavaClass(name);
+		className = kebapToCamel(name);
 	}
 
 	public String getPack() {
@@ -48,5 +50,9 @@ public class GenModel {
 
 	public String getAppPrefix() {
 		return appPrefix;
+	}
+
+	public String getPrefixedName() {
+		return isSet(appPrefix) ? format("%s-%s", appPrefix, name) : name;
 	}
 }

@@ -41,6 +41,10 @@ public class Generator {
 		generateArtifacts(genModel, targetFolder, "component", "$nameComponent.java.tpl", "$name.component.html.tpl", "$name.component.css.tpl");
 	}
 
+	public void service(GenModel genModel, Path targetFolder) {
+		generateArtifacts(genModel, targetFolder, "service", "$nameService.java.tpl");
+	}
+
 	private void generateArtifacts(GenModel genModel, Path targetFolder, String tplRoot, String... tpls) {
 		try {
 			Context context = Context.of(genModel);

@@ -110,6 +110,7 @@ public class Cli {
 		String name = argList.get(1);
 
 		if (kind == 'c') {
+			// components are in sub package
 			pack = format("%s.%s", pack, name.replace('-', '_'));
 		}
 
@@ -127,6 +128,9 @@ public class Cli {
 			return true;
 		case 'm':
 			generator.mod(model, target);
+			return true;
+		case 's':
+			generator.service(model, target);
 			return true;
 		default:
 			throw new NgoyException("Unknown artifact type '%s'", kind);
@@ -148,7 +152,7 @@ public class Cli {
 	}
 
 	private void printHelp() {
-		new HelpFormatter().printHelp("ngoy-gen [options] component|directive|pipe|module name",
+		new HelpFormatter().printHelp("ngoy-gen [options] component|directive|pipe|module|service name",
 				"\nname should be lower-case-separated-with-dashes.\n\nExamples:\n  ngoy-gen component person-list\n  ngoy-gen -p com.example pipe quantity-format\n\nShortcuts works as well:\n  ngoy-gen p my-pipe\n\nOptions:",
 				options, "");
 	}
@@ -163,7 +167,7 @@ public class Cli {
 
 	private void ifPropSet(Properties props, String name, Consumer<String> value) {
 		String prop = props.getProperty(name);
-		if (prop != null && !prop.isEmpty()) {
+		if (prop != null) {
 			value.accept(prop);
 		}
 	}

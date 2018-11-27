@@ -1,7 +1,7 @@
 package {{pack}};
 import ngoy.core.Directive;
 
-@Directive(selector = "[app{{className}}]")
+@Directive(selector = "[{{appPrefix}}{{className}}]")
 public class {{className}}Directive {
 
 }
