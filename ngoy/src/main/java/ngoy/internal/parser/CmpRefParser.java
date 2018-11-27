@@ -50,7 +50,7 @@ public class CmpRefParser {
 		List<String[]> attrNames = new ArrayList<>();
 
 		if (cmpRefs.isEmpty()) {
-			if (parser.inlineComponent(el)) {
+			if (parser.inlineAll) {
 				parser.cmpElements.add(el);
 			} else {
 				parser.handler.elementHead(getNodeName(el));

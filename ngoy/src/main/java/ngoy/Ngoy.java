@@ -153,7 +153,8 @@ public class Ngoy<T> {
 		 * <p>
 		 * This will load all classes that are part of the given packages.
 		 * 
-		 * @param packages Packages to load declarations/injectables from
+		 * @param packages Packages to load declarations/injectables from, such as
+		 *                 <code>org.myapp</code>
 		 * @return this
 		 */
 		public Builder<T> modules(String... packages) {
@@ -163,7 +164,10 @@ public class Ngoy<T> {
 
 		/**
 		 * Whether to inline components.
-		 *
+		 * <p>
+		 * In this mode, a component's (host) element is not written but only it's
+		 * contents.
+		 * 
 		 * @param inlineComponents whether to inline components
 		 * @return this
 		 */
@@ -697,7 +701,8 @@ public class Ngoy<T> {
 	private Parser createParser(@Nullable Resolver r, Config config) {
 		Parser parser = new Parser(r);
 		parser.contentType = getContentType(config);
-		parser.inlineComponents = config.inlineComponents || "text/plain".equals(parser.contentType);
+		parser.inlineComponents = config.inlineComponents;
+		parser.inlineAll = "text/plain".equals(parser.contentType);
 		return parser;
 	}
 

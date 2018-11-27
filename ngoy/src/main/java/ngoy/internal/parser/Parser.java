@@ -105,6 +105,7 @@ public class Parser {
 	private final LinkedList<Jerry> elementConditionals = new LinkedList<>();
 	private final LinkedList<Jerry> elementRepeated = new LinkedList<>();
 	public boolean inlineComponents;
+	public boolean inlineAll;
 	public String contentType;
 
 	final Set<Jerry> cmpElements = new HashSet<>();
@@ -305,7 +306,7 @@ public class Parser {
 	}
 
 	boolean inlineComponent(Jerry el) {
-		return inlineComponents || el.is(ContainerComponent.SELECTOR);
+		return inlineComponents || inlineAll || el.is(ContainerComponent.SELECTOR);
 	}
 
 	private void endElement(Jerry el) {
