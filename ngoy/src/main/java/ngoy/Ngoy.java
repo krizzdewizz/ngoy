@@ -31,8 +31,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
-import ngoy.common.DatePipe;
 import ngoy.common.CommonModule;
+import ngoy.common.DatePipe;
 import ngoy.core.Component;
 import ngoy.core.Context;
 import ngoy.core.Directive;
@@ -696,9 +696,8 @@ public class Ngoy<T> {
 
 	private Parser createParser(@Nullable Resolver r, Config config) {
 		Parser parser = new Parser(r);
-		parser.inlineComponents = config.inlineComponents;
-
 		parser.contentType = getContentType(config);
+		parser.inlineComponents = config.inlineComponents || "text/plain".equals(parser.contentType);
 		return parser;
 	}
 
