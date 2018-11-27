@@ -128,8 +128,8 @@ public class Parser {
 		}
 
 		@Override
-		public void componentStart(CmpRef cmpRef, List<String> params) {
-			super.componentStart(cmpRef, params);
+		public void componentStart(CmpRef cmpRef) {
+			super.componentStart(cmpRef);
 			cmpClassesStack.push(cmpRef);
 		}
 
@@ -293,7 +293,8 @@ public class Parser {
 	}
 
 	private void compileCmps(List<CmpRef> cmpRefs, Jerry el) {
-		String topClass = topCmpClass().getName();
+		Class<?> topCmpClass = topCmpClass();
+		String topClass = topCmpClass != null ? topCmpClass.getName() : "<none>";
 		Injector injector = resolver.getInjector();
 
 		for (CmpRef cmpRef : cmpRefs) {

@@ -77,7 +77,6 @@ public class Ctx {
 	private final LinkedList<Map<String, Object>> iterationVars = new LinkedList<>();
 	private final ExprCache exprCache = new ExprCache();
 	private final ContextApi api = new ContextApi();
-	private final Object model;
 	private final Injector injector;
 	private PrintStream out;
 	private String contentType;
@@ -87,7 +86,6 @@ public class Ctx {
 	}
 
 	private Ctx(@Nullable Object model, @Nullable Injector injector) {
-		this.model = model;
 		this.injector = injector;
 		spelCtxs.push(createContext(model, emptyMap()));
 	}
@@ -259,12 +257,19 @@ public class Ctx {
 		spelCtxs.pop();
 	}
 
-	public void pushCmpContext(String className, String... paramPairs) {
+	public void pushCmpContextInput(String className, String... paramPairs) {
+		try {
+			Class<?> clazz = loadClass(className);
+			setInputs(clazz, injector.get(clazz), paramPairs);
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
+	public void pushCmpContext(String className) {
 		try {
 			Class<?> clazz = loadClass(className);
 			Object cmp = injector.get(clazz);
-
-			setInputs(clazz, cmp, paramPairs);
 
 			// *ngFor on a component
 			Map<String, Object> vars = iterationVars.isEmpty() ? emptyMap() : iterationVars.peek();
@@ -325,8 +330,9 @@ public class Ctx {
 	}
 
 	public void pushForOfContext(String itemName, Object item) {
-		EvaluationContext iterCtx = createContext(model, emptyMap());
 		EvaluationContext parentCtx = spelCtxs.peek();
+		EvaluationContext iterCtx = createContext(parentCtx.getRootObject()
+				.getValue(), emptyMap());
 		if (parentCtx != null) {
 			variables.forEach(name -> {
 				iterCtx.setVariable(name, parentCtx.lookupVariable(name));

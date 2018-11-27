@@ -40,13 +40,17 @@ public interface ParserHandler {
 
 	void elementRepeatedEnd();
 
-	void componentStart(CmpRef cmpRef, List<String> params);
+	void componentStart(CmpRef cmpRef);
 
 	void componentEnd();
 
 	void ngContentStart();
 
 	void ngContentEnd();
+
+	void textOverride(String expr);
+
+	void componentStartInput(CmpRef cmpRef, List<String> params);
 
 	class Default implements ParserHandler {
 
@@ -115,7 +119,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void componentStart(CmpRef cmpRef, List<String> params) {
+		public void componentStart(CmpRef cmpRef) {
 		}
 
 		@Override
@@ -136,6 +140,10 @@ public interface ParserHandler {
 
 		@Override
 		public void attributeStyles(List<String[]> styleExprPairs) {
+		}
+
+		@Override
+		public void componentStartInput(CmpRef cmpRef, List<String> params) {
 		}
 	}
 
@@ -211,8 +219,12 @@ public interface ParserHandler {
 			target.elementRepeatedEnd();
 		}
 
-		public void componentStart(CmpRef cmpRef, List<String> params) {
-			target.componentStart(cmpRef, params);
+		public void componentStart(CmpRef cmpRef) {
+			target.componentStart(cmpRef);
+		}
+
+		public void componentStartInput(CmpRef cmpRef, List<String> params) {
+			target.componentStartInput(cmpRef, params);
 		}
 
 		public void componentEnd() {
@@ -237,6 +249,4 @@ public interface ParserHandler {
 			target.attributeStyles(styleExprPairs);
 		}
 	}
-
-	void textOverride(String expr);
 }

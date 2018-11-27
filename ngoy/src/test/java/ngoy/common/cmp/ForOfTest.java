@@ -43,8 +43,8 @@ public class ForOfTest extends ANgoyTest {
 
 	@Test
 	public void testForOf() {
-		assertThat(render(CmpForOf.class, useValue(TestService.class, personService)))
-				.isEqualTo("<person pi=\"0\" pf=\"true\" pl=\"false\" pe=\"true\" po=\"false\">hello: peter</person><person pi=\"1\" pf=\"false\" pl=\"false\" pe=\"false\" po=\"true\">hello: paul</person><person pi=\"2\" pf=\"false\" pl=\"true\" pe=\"true\" po=\"false\">hello: mary</person>");
+		assertThat(render(CmpForOf.class, useValue(TestService.class, personService))).isEqualTo(
+				"<person pi=\"0\" pf=\"true\" pl=\"false\" pe=\"true\" po=\"false\">hello: peter</person><person pi=\"1\" pf=\"false\" pl=\"false\" pe=\"false\" po=\"true\">hello: paul</person><person pi=\"2\" pf=\"false\" pl=\"true\" pe=\"true\" po=\"false\">hello: mary</person>");
 	}
 
 	//
@@ -83,5 +83,4 @@ public class ForOfTest extends ANgoyTest {
 		expectedEx.expectMessage(containsString("Cannot repeat with an iterable of type java.lang.String"));
 		render(CmpForOfNotIterable.class);
 	}
-
 }
