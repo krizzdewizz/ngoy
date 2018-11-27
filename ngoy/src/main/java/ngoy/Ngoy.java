@@ -650,6 +650,10 @@ public class Ngoy<T> {
 		List<Provider> list = targetCmps.get(selector);
 		if (list != null && !allowMulti) {
 			Provider existing = list.get(0);
+			if (existing.getProvide() == p.getProvide()) {
+				// double registration on same component
+				return;
+			}
 			throw new NgoyException("More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
 					selector, existing.getProvide()
 							.getName(),

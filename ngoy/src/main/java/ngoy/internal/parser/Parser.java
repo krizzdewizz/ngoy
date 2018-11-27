@@ -307,7 +307,7 @@ public class Parser {
 	}
 
 	boolean inlineComponent(Jerry el) {
-		return inlineComponents || inlineAll || el.is(ContainerComponent.SELECTOR);
+		return inlineComponents || inlineAll || el.is(ContainerComponent.SELECTOR) || el.is("router-outlet");
 	}
 
 	private void endElement(Jerry el) {

@@ -17,13 +17,7 @@ public class Generator {
 	private static final Consumer<String> NIRVANA = s -> {
 	};
 
-	private final Config config = new Config();
-
 	private Consumer<String> log = NIRVANA;
-
-	public Generator() {
-		config.contentType = "text/plain";
-	}
 
 	public void directive(GenModel genModel, Path targetFolder) {
 		generateArtifacts(genModel, targetFolder, "directive", "$nameDirective.java.tpl");
@@ -69,6 +63,11 @@ public class Generator {
 						.resolve(file);
 
 				Files.createDirectories(targetFile.getParent());
+
+				Config config = new Config();
+				if (!tpl.contains(".html")) {
+					config.contentType = "text/plain";
+				}
 
 				try (OutputStream out = Files.newOutputStream(targetFile)) {
 					log.accept(format("generating artifact '%s'...", targetFile));
