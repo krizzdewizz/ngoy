@@ -580,8 +580,28 @@ public class Ngoy<T> {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void addModuleDecls(Class<?> clazz, Map<String, List<Provider>> targetCmps, Map<String, Provider> targetPipes, List<Provider> providers) {
-		Component cmp = clazz.getAnnotation(Component.class);
+	private void addModuleDecls(Class<?> mod, Map<String, List<Provider>> targetCmps, Map<String, Provider> targetPipes, List<Provider> providers) {
+
+		NgModule ngMod = mod.getAnnotation(NgModule.class);
+		if (ngMod != null) {
+			addDecls(toProviders(asList(ngMod.declarations())), targetCmps, targetPipes);
+
+			for (Class<?> imp : ngMod.imports()) {
+				addModuleDecls(imp, targetCmps, targetPipes, providers);
+			}
+
+			for (Class<?> prov : ngMod.providers()) {
+				providers.add(of(prov));
+			}
+
+			for (Provide prov : ngMod.provide()) {
+				Class p = prov.provide();
+				Class c = prov.useClass();
+				providers.add(useClass(p, c));
+			}
+		}
+
+		Component cmp = mod.getAnnotation(Component.class);
 		if (cmp != null) {
 
 			for (Class<?> prov : cmp.providers()) {
@@ -592,38 +612,6 @@ public class Ngoy<T> {
 				Class p = prov.provide();
 				Class c = prov.useClass();
 				providers.add(useClass(p, (Class<?>) c));
-			}
-		}
-
-		Directive dir = clazz.getAnnotation(Directive.class);
-		if (dir != null) {
-
-			for (Class<?> prov : dir.providers()) {
-				providers.add(of(prov));
-			}
-
-			for (Provide prov : dir.provide()) {
-				Class p = prov.provide();
-				Class c = prov.useClass();
-				providers.add(useClass(p, (Class<?>) c));
-			}
-		}
-
-		NgModule mod = clazz.getAnnotation(NgModule.class);
-		if (mod != null) {
-			addDecls(toProviders(asList(mod.declarations())), targetCmps, targetPipes);
-
-			for (Class<?> imp : mod.imports()) {
-				addModuleDecls(imp, targetCmps, targetPipes, providers);
-			}
-
-			for (Class<?> prov : mod.providers()) {
-				providers.add(of(prov));
-			}
-			for (Provide prov : mod.provide()) {
-				Class p = prov.provide();
-				Class c = prov.useClass();
-				providers.add(useClass(p, c));
 			}
 		}
 	}
