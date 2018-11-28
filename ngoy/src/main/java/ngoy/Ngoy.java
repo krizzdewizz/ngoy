@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.PropertyResourceBundle;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -48,7 +49,6 @@ import ngoy.core.OnInit;
 import ngoy.core.Pipe;
 import ngoy.core.Provide;
 import ngoy.core.Provider;
-import ngoy.core.TemplateCache;
 import ngoy.core.cli.Cli;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.CoreInternalModule;
@@ -360,7 +360,6 @@ public class Ngoy<T> {
 	private T appInstance;
 	private Resolver resolver;
 	private DefaultInjector injector;
-	private final TemplateCache cache = new TemplateCache();
 	private final Events events = new Events();
 	private final Class<?> templateClass;
 	private final String template;
@@ -673,9 +672,14 @@ public class Ngoy<T> {
 		list.add(p);
 	}
 
+	private String templateClassName() {
+		return format("%s.Tpl%s", getClass().getPackage()
+				.getName(), Math.abs(Objects.hash(appRoot, this)));
+	}
+
 	private Class<?> compile(String template) {
 		Parser parser = createParser(resolver, config);
-		return cache.get(appRoot.getName(), className -> createTemplate(className, parser, template != null ? template : getTemplate(appRoot), getContentType(config)));
+		return createTemplate(templateClassName(), parser, template != null ? template : getTemplate(appRoot), getContentType(config));
 	}
 
 	private void invokeRender(Ctx ctx, PrintStream out) {
