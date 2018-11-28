@@ -363,6 +363,7 @@ public class Ngoy<T> {
 	private final Events events = new Events();
 	private final Class<?> templateClass;
 	private final String template;
+	private final Map<String, Provider> pipeDecls = new HashMap<>();
 
 	protected Ngoy(String template, Config config) {
 		this(Object.class, template, config, emptyList(), emptyList(), emptyList(), emptyList());
@@ -387,7 +388,6 @@ public class Ngoy<T> {
 
 		List<Provider> cmpProviders = new ArrayList<>();
 		Map<String, List<Provider>> cmpDecls = new LinkedHashMap<>(); // order of css
-		Map<String, Provider> pipeDecls = new HashMap<>();
 
 		if (provides(LocaleProvider.class, rootProviders) == null) {
 			cmpProviders.add(useValue(LocaleProvider.class, new LocaleProvider.Default(config.locale != null ? config.locale : Locale.getDefault())));
@@ -544,7 +544,7 @@ public class Ngoy<T> {
 				((OnInit) app).ngOnInit();
 			}
 
-			Ctx ctx = Ctx.of(app, injector);
+			Ctx ctx = Ctx.of(app, injector, pipeDecls);
 			if (context != null) {
 				for (Map.Entry<String, Object> v : context.getVariables()
 						.entrySet()) {

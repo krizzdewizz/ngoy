@@ -1,5 +1,6 @@
 package ngoy;
 
+import static java.util.Collections.emptyMap;
 import static ngoy.ANgoyTest.getTestResourcesPath;
 import static ngoy.core.Util.newPrintStream;
 
@@ -36,7 +37,8 @@ public class XTest {
 				Provider.of(PersonDetailComponent.class), //
 				Provider.of(DatePipe.class), //
 				Provider.of(UpperCasePipe.class), //
-				Provider.of(LowerCasePipe.class))//
+				Provider.of(LowerCasePipe.class)), //
+				emptyMap() //
 		)
 				.variable("person", new Person("krizz"))//
 				.variable("x", true);

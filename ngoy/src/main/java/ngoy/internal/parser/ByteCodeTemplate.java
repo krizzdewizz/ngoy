@@ -176,8 +176,8 @@ public class ByteCodeTemplate implements ParserHandler {
 		flushOut();
 
 		List<LocalVariable> ps = new ArrayList<>();
-		for (String[] pipe : classExprPairs) {
-			ps.add(toArray(asList(pipe)));
+		for (String[] pair : classExprPairs) {
+			ps.add(toArray(asList(pair)));
 		}
 		LocalVariable classesArray = toStringTable(ps);
 

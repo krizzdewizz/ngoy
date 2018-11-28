@@ -1,6 +1,7 @@
 package ngoy.core.internal;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.NgoyException.wrap;
@@ -21,9 +22,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.expression.AccessException;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.MethodExecutor;
+import org.springframework.expression.MethodResolver;
 import org.springframework.expression.PropertyAccessor;
 import org.springframework.expression.TypedValue;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -36,6 +40,8 @@ import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
+import ngoy.core.PipeTransform;
+import ngoy.core.Provider;
 import ngoy.core.internal.IterableWithVariables.IterVariable;
 import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.Inputs;
@@ -47,18 +53,18 @@ public class Ctx {
 	}
 
 	public static Ctx of(Object model) {
-		return new Ctx(model, null);
+		return new Ctx(model, null, emptyMap());
 	}
 
-	public static Ctx of(Object model, Injector injector) {
-		return new Ctx(model, injector);
+	public static Ctx of(Object model, Injector injector, Map<String, Provider> pipes) {
+		return new Ctx(model, injector, pipes);
 	}
 
 	public static boolean eq(Object a, Object b) {
 		return Objects.equals(a, b);
 	}
 
-	public class ContextApi {
+	public class ContextApi implements MethodResolver {
 		// see ExprParser
 		public Object pipe(String pipeClass) {
 			try {
@@ -66,6 +72,28 @@ public class Ctx {
 			} catch (Exception e) {
 				throw wrap(e);
 			}
+		}
+
+		@Override
+		public MethodExecutor resolve(EvaluationContext context, Object targetObject, String name, List<TypeDescriptor> argumentTypes) throws AccessException {
+			if (name.startsWith("$")) {
+
+				if (argumentTypes.isEmpty()) {
+					throw new NgoyException("Missing first argument to invocation of pipe '%s'", name);
+				}
+
+				String pipeName = name.substring(1);
+				Provider pipeProvider = pipeDecls.get(pipeName);
+				if (pipeProvider == null) {
+					throw new NgoyException("No provider for pipe '%s'", pipeName);
+				}
+				PipeTransform pipe = (PipeTransform) injector.get(pipeProvider.getProvide());
+				return (EvaluationContext ctx, Object target, Object... arguments) -> {
+					List<Object> rest = asList(arguments).subList(1, arguments.length);
+					return new TypedValue(pipe.transform(arguments[0], rest.toArray(new Object[rest.size()])));
+				};
+			}
+			return null;
 		}
 	}
 
@@ -77,16 +105,18 @@ public class Ctx {
 	private final LinkedList<Map<String, Object>> iterationVars = new LinkedList<>();
 	private final ExprCache exprCache = new ExprCache();
 	private final ContextApi api = new ContextApi();
+	private final Map<String, Provider> pipeDecls;
 	private final Injector injector;
 	private PrintStream out;
 	private String contentType;
 
 	private Ctx() {
-		this(null, null);
+		this(null, null, emptyMap());
 	}
 
-	private Ctx(@Nullable Object model, @Nullable Injector injector) {
+	private Ctx(@Nullable Object model, @Nullable Injector injector, Map<String, Provider> pipeDecls) {
 		this.injector = injector;
+		this.pipeDecls = pipeDecls;
 		spelCtxs.push(createContext(model, emptyMap()));
 	}
 
@@ -135,7 +165,7 @@ public class Ctx {
 				.build();
 		Map<String, Object> vars = new HashMap<String, Object>(variables);
 		vars.put(CTX_VARIABLE, api);
-		return new EvalContext(evalCtx, vars);
+		return new EvalContext(evalCtx, vars, api);
 	}
 
 	public Ctx variable(String variableName, @Nullable Object variableValue) {
