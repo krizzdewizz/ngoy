@@ -6,14 +6,38 @@ import org.junit.Test;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
+import ngoy.core.Inject;
+import ngoy.core.OnInit;
 
 public class CapitalizePipeTest extends ANgoyTest {
-	@Component(selector = "test", template = "{{ 'hello' | capitalize }}")
-	public static class Cmp {
+	@Test
+	public void test() {
+		assertThat(render("{{ 'hello' | capitalize }}")).isEqualTo("Hello");
 	}
 
 	@Test
-	public void test() {
-		assertThat(render(Cmp.class)).isEqualTo("Hello");
+	public void testEmpty() {
+		assertThat(render("{{ '' | capitalize }}")).isEqualTo("");
+	}
+
+	@Test
+	public void testNull() {
+		assertThat(render("{{ null | capitalize }}")).isEqualTo("");
+	}
+
+	@Component(selector = "test", template = "{{ 'hello' | capitalize }}")
+	public static class NoLocaleCmp implements OnInit {
+		@Inject
+		public CapitalizePipe pipe;
+
+		@Override
+		public void ngOnInit() {
+			pipe.localeProvider = null;
+		}
+	}
+
+	@Test
+	public void testNoLocale() {
+		assertThat(render(NoLocaleCmp.class)).isEqualTo("Hello");
 	}
 }

@@ -2,8 +2,9 @@ package ngoy;
 
 public class XDisassemble {
 
-//	@Test
+	// @org.junit.Test
 	public void disassemble() throws Exception {
-//		DisassemblyTool.main(new String[] { "-f", "builder", X.class.getName() });
+		// org.cojen.classfile.DisassemblyTool.main(new String[] { "-f",
+		// "builder", XCmp.class.getName() });
 	}
 }

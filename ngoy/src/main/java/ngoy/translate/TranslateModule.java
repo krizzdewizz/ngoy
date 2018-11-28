@@ -11,5 +11,7 @@ import ngoy.core.NgModule;
  * @author krizz
  */
 @NgModule(declarations = { TranslatePipe.class, TranslateDirective.class }, providers = { TranslateService.class })
-public class TranslateModule {
+public final class TranslateModule {
+	private TranslateModule() {
+	}
 }

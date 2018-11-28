@@ -5,49 +5,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import ngoy.ANgoyTest;
-import ngoy.core.Component;
 
 public class ClassAttrBindingTest extends ANgoyTest {
-	@Component(selector = "test", template = "<a class=\"a\" [class.x]=\"1==1\"></a>")
-	public static class ClassAttr {
-	}
-
 	@Test
 	public void testClassAttr() {
-		assertThat(render(ClassAttr.class)).isEqualTo("<a class=\"a x\"></a>");
-	}
-
-	//
-
-	@Component(selector = "test", template = "<a [class.x]=\"1==1\" class=\"a\"></a>")
-	public static class ClassAttrOrderIrrelevant {
+		assertThat(render("<a class=\"a\" [class.x]=\"1==1\"></a>")).isEqualTo("<a class=\"a x\"></a>");
 	}
 
 	@Test
 	public void testClassAttrOrderIrrelevant() {
-		assertThat(render(ClassAttrOrderIrrelevant.class)).isEqualTo("<a class=\"a x\"></a>");
-	}
-
-	//
-
-	@Component(selector = "test", template = "<a [ngClass]=\"{q:true, a: false, 'a-a': 'x'=='x'}\"></a>")
-	public static class ClassAttrObj {
+		assertThat(render("<a [class.x]=\"1==1\" class=\"a\"></a>")).isEqualTo("<a class=\"a x\"></a>");
 	}
 
 	@Test
 	public void testClassAttrObj() {
-		assertThat(render(ClassAttrObj.class)).isEqualTo("<a class=\"q a-a\"></a>");
-	}
-
-	//
-
-	@Component(selector = "test", template = "<a [class.x]=\"false\" [ngClass]=\"{z:false}\"></a>")
-	public static class ClassAttrNoClass {
+		assertThat(render("<a [ngClass]=\"{q:true, a: false, 'a-a': 'x'=='x'}\"></a>")).isEqualTo("<a class=\"q a-a\"></a>");
 	}
 
 	@Test
 	public void testClassAttrNull() {
-		assertThat(render(ClassAttrNoClass.class)).isEqualTo("<a></a>");
+		assertThat(render("<a [class.x]=\"false\" [ngClass]=\"{z:false}\"></a>")).isEqualTo("<a></a>");
 	}
 
 }
