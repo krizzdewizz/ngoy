@@ -43,6 +43,13 @@ dependencies {
     testImplementation 'org.apache.commons:commons-text:1.6'
 }
 
+test {
+    testLogging {
+        events "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
 jacocoTestReport {
     reports {
         xml.enabled = true // coveralls plugin depends on xml format report
