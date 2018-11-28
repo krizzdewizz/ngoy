@@ -1,6 +1,8 @@
 package ngoy;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static ngoy.ANgoyTest.getTestPath;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.newPrintStream;
@@ -11,8 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import ngoy.Ngoy.Config;
-import ngoy.core.Injector;
-import ngoy.core.ModuleWithProviders;
 import ngoy.core.Provider;
 import ngoy.core.Util;
 import ngoy.core.internal.Ctx;
@@ -24,7 +24,7 @@ public class RtTest {
 
 //	@org.junit.Test
 	public void run() {
-		Ngoy<TestApp> rt = new Ngoy<TestApp>(TestApp.class, new Config(), new Injector[0], new ModuleWithProviders[0], Provider.of(PersonService.class)) {
+		Ngoy<TestApp> rt = new Ngoy<TestApp>(TestApp.class, new Config(), emptyList(), emptyList(), emptyList(), asList(Provider.of(PersonService.class))) {
 			@Override
 			protected void parseAndRender(Class<TestApp> appRoot, String template, Parser parser, Ctx ctx, PrintStream out) {
 				try {

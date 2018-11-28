@@ -1,11 +1,18 @@
 package ngoy.core.gen;
 
+import static java.lang.String.format;
+import static ngoy.core.NgoyException.wrap;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Properties;
+import java.util.function.Consumer;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -29,8 +36,37 @@ public class Cli {
 	}
 
 	private final Generator generator = new Generator();
+	private String appPrefix;
+	private String appPackage;
+
+	private void loadProperties() {
+
+		appPrefix = "app";
+		appPackage = "ngoygen";
+
+		Path propsPath = getPropertiesPath();
+		if (!Files.exists(propsPath)) {
+			return;
+		}
+		Properties props = new Properties();
+		try (InputStream in = Files.newInputStream(propsPath)) {
+			props.load(in);
+
+			ifPropSet(props, "app.prefix", prop -> appPrefix = prop);
+			ifPropSet(props, "app.package", prop -> appPackage = prop);
+		} catch (IOException e) {
+			throw wrap(e);
+		}
+	}
+
+	protected Path getPropertiesPath() {
+		return Paths.get("ngoy.properties");
+	}
 
 	public void run(String[] args, OutputStream out) {
+
+		loadProperties();
+
 		CommandLine cmd;
 		try {
 			CommandLineParser parser = new DefaultParser();
@@ -66,15 +102,21 @@ public class Cli {
 		}
 
 		if (pack == null || pack.isEmpty()) {
-			pack = "ngoygen";
+			pack = appPackage;
 		}
 
-		String kind = argList.get(0);
+		char kind = argList.get(0)
+				.charAt(0);
 		String name = argList.get(1);
 
-		GenModel model = new GenModel(pack, name);
+		if (kind == 'c') {
+			// components are in sub package
+			pack = format("%s.%s", pack, name.replace('-', '_'));
+		}
 
-		switch (kind.charAt(0)) {
+		GenModel model = new GenModel(appPrefix, pack, name);
+
+		switch (kind) {
 		case 'c':
 			generator.component(model, target);
 			return true;
@@ -86,6 +128,9 @@ public class Cli {
 			return true;
 		case 'm':
 			generator.mod(model, target);
+			return true;
+		case 's':
+			generator.service(model, target);
 			return true;
 		default:
 			throw new NgoyException("Unknown artifact type '%s'", kind);
@@ -107,7 +152,7 @@ public class Cli {
 	}
 
 	private void printHelp() {
-		new HelpFormatter().printHelp("ngoy-gen [options] component|directive|pipe|module name",
+		new HelpFormatter().printHelp("ngoy-gen [options] component|directive|pipe|module|service name",
 				"\nname should be lower-case-separated-with-dashes.\n\nExamples:\n  ngoy-gen component person-list\n  ngoy-gen -p com.example pipe quantity-format\n\nShortcuts works as well:\n  ngoy-gen p my-pipe\n\nOptions:",
 				options, "");
 	}
@@ -118,5 +163,12 @@ public class Cli {
 
 	public static void main(String[] args) {
 		new Cli().run(args, System.out);
+	}
+
+	private void ifPropSet(Properties props, String name, Consumer<String> value) {
+		String prop = props.getProperty(name);
+		if (prop != null) {
+			value.accept(prop);
+		}
 	}
 }

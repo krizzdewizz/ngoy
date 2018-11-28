@@ -105,6 +105,7 @@ public class Parser {
 	private final LinkedList<Jerry> elementConditionals = new LinkedList<>();
 	private final LinkedList<Jerry> elementRepeated = new LinkedList<>();
 	public boolean inlineComponents;
+	public boolean inlineAll;
 	public String contentType;
 
 	final Set<Jerry> cmpElements = new HashSet<>();
@@ -127,8 +128,8 @@ public class Parser {
 		}
 
 		@Override
-		public void componentStart(CmpRef cmpRef, List<String> params) {
-			super.componentStart(cmpRef, params);
+		public void componentStart(CmpRef cmpRef) {
+			super.componentStart(cmpRef);
 			cmpClassesStack.push(cmpRef);
 		}
 
@@ -292,7 +293,8 @@ public class Parser {
 	}
 
 	private void compileCmps(List<CmpRef> cmpRefs, Jerry el) {
-		String topClass = topCmpClass().getName();
+		Class<?> topCmpClass = topCmpClass();
+		String topClass = topCmpClass != null ? topCmpClass.getName() : "<none>";
 		Injector injector = resolver.getInjector();
 
 		for (CmpRef cmpRef : cmpRefs) {
@@ -305,7 +307,7 @@ public class Parser {
 	}
 
 	boolean inlineComponent(Jerry el) {
-		return inlineComponents || el.is(ContainerComponent.SELECTOR);
+		return inlineComponents || inlineAll || el.is(ContainerComponent.SELECTOR) || el.is("router-outlet");
 	}
 
 	private void endElement(Jerry el) {
@@ -361,7 +363,10 @@ public class Parser {
 	private void replaceCommentLikeNodes(Jerry node) {
 		Node n = node.get(0);
 		NodeType nodeType = n.getNodeType();
-		if (nodeType == NodeType.DOCUMENT_TYPE || nodeType == NodeType.COMMENT || nodeType == NodeType.CDATA || nodeType == NodeType.XML_DECLARATION) {
+		if (nodeType == NodeType.DOCUMENT_TYPE //
+				|| nodeType == NodeType.COMMENT //
+				|| nodeType == NodeType.CDATA //
+				|| nodeType == NodeType.XML_DECLARATION) {
 			handler.text(n.getHtml(), false, false);
 		}
 	}

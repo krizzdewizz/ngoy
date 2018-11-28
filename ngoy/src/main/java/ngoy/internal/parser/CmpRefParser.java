@@ -50,7 +50,7 @@ public class CmpRefParser {
 		List<String[]> attrNames = new ArrayList<>();
 
 		if (cmpRefs.isEmpty()) {
-			if (parser.inlineComponent(el)) {
+			if (parser.inlineAll) {
 				parser.cmpElements.add(el);
 			} else {
 				parser.handler.elementHead(getNodeName(el));
@@ -81,7 +81,8 @@ public class CmpRefParser {
 
 			int i = 0;
 			for (CmpRef ref : allDirs) {
-				parser.handler.componentStart(ref, dirInputs.get(i));
+				parser.handler.componentStartInput(ref, dirInputs.get(i));
+				parser.handler.componentStart(ref);
 
 				List<String[]> cNames = new ArrayList<>();
 				List<String[]> aNames = new ArrayList<>();
@@ -99,9 +100,10 @@ public class CmpRefParser {
 
 		if (!allCmps.isEmpty()) {
 			CmpRef ref = allCmps.get(0);
-			parser.handler.componentStart(ref, cmpInputs);
+			parser.handler.componentStartInput(ref, cmpInputs);
 
 			if (parser.inlineComponent(el)) {
+				parser.handler.componentStart(ref);
 				parser.cmpElements.add(el);
 			} else {
 				if (!hadElementHead) {
@@ -109,6 +111,8 @@ public class CmpRefParser {
 					AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames);
 					AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
 				}
+
+				parser.handler.componentStart(ref);
 
 				List<String[]> cNames = new ArrayList<>();
 				List<String[]> aNames = new ArrayList<>();

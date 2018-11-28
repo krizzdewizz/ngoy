@@ -31,7 +31,7 @@ public class ByteCodeTemplate implements ParserHandler {
 		@Override
 		protected void doPrint(String text, boolean isExpr) {
 			if (isExpr) {
-				throw new NgoyException("Must not be called for expressions. Please contact developer.");
+				throw new NgoyException("Must not be called for expressions.");
 			}
 
 			printOut(text);
@@ -72,7 +72,8 @@ public class ByteCodeTemplate implements ParserHandler {
 	private static final TypeDesc iteratorType = TypeDesc.forClass(Iterator.class);
 	private static final TypeDesc stringArrayType = TypeDesc.STRING.toArrayType();
 	private static final TypeDesc stringTableType = stringArrayType.toArrayType();
-	private static final TypeDesc[] pushCmpContextParamTypes = new TypeDesc[] { TypeDesc.STRING, stringArrayType };
+	private static final TypeDesc[] pushCmpContextInputParamTypes = new TypeDesc[] { TypeDesc.STRING, stringArrayType };
+	private static final TypeDesc[] pushCmpContextParamTypes = new TypeDesc[] { TypeDesc.STRING };
 	private static final TypeDesc[] evalParamTypes = new TypeDesc[] { TypeDesc.STRING };
 	private static final TypeDesc[] forOfStartParamTypes = new TypeDesc[] { TypeDesc.STRING, stringArrayType };
 	private static final TypeDesc[] evalClassesParamTypes = new TypeDesc[] { stringTableType };
@@ -422,11 +423,17 @@ public class ByteCodeTemplate implements ParserHandler {
 	}
 
 	@Override
-	public void componentStart(CmpRef cmpRef, List<String> params) {
-		LocalVariable paramsArray = toArray(params);
+	public void componentStartInput(CmpRef cmpRef, List<String> params) {
 		run.loadLocal(ctxParam);
 		run.loadConstant(cmpRef.clazz.getName());
-		run.loadLocal(paramsArray);
+		run.loadLocal(toArray(params));
+		run.invokeVirtual(ctxType, "pushCmpContextInput", null, pushCmpContextInputParamTypes);
+	}
+
+	@Override
+	public void componentStart(CmpRef cmpRef) {
+		run.loadLocal(ctxParam);
+		run.loadConstant(cmpRef.clazz.getName());
 		run.invokeVirtual(ctxType, "pushCmpContext", null, pushCmpContextParamTypes);
 	}
 

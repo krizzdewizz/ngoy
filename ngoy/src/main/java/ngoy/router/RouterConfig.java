@@ -37,6 +37,9 @@ public class RouterConfig {
 		}
 
 		public RouterConfig build() {
+			if (locationProvider == null) {
+				throw new NgoyException("location provider is not set. Missing call to %s.location()", RouterConfig.class.getName());
+			}
 			return new RouterConfig(baseHref, locationProvider, routes);
 		}
 	}

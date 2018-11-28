@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import jodd.jerry.Jerry;
-import ngoy.core.dom.XDom;
 
 public class NgoyElementTest {
 
@@ -39,8 +38,8 @@ public class NgoyElementTest {
 		assertThat(getLine(ul.$("a"))).isEqualTo(10);
 
 		Jerry ulClone = XDom.cloneNode(ul);
-		assertThat(getLine(ulClone)).isEqualTo(8);
-		assertThat(getLine(ulClone.$("a"))).isEqualTo(10);
+		assertThat(getLine(ulClone)).isEqualTo(9);
+		assertThat(getLine(ulClone.$("a"))).isEqualTo(11);
 	}
 
 	private int getLine(Jerry el) {

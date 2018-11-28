@@ -2,6 +2,7 @@ package ngoy;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Provider.of;
@@ -30,8 +31,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
+import ngoy.common.CommonModule;
 import ngoy.common.DatePipe;
-import ngoy.common.PipesModule;
 import ngoy.core.Component;
 import ngoy.core.Context;
 import ngoy.core.Directive;
@@ -56,6 +57,7 @@ import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.Resolver;
 import ngoy.internal.parser.ByteCodeTemplate;
 import ngoy.internal.parser.Parser;
+import ngoy.internal.scan.ClassScanner;
 import ngoy.internal.script.NgoyScript;
 import ngoy.internal.site.SiteRenderer;
 import ngoy.router.RouterModule;
@@ -82,9 +84,10 @@ public class Ngoy<T> {
 	public static class Builder<T> {
 		private final Class<T> appRoot;
 		private final Config config = new Config();
-		private Provider[] providers;
-		private Injector[] injectors;
-		private ModuleWithProviders<?>[] modules;
+		private final List<Provider> providers = new ArrayList<>();
+		private final List<Injector> injectors = new ArrayList<>();
+		private final List<ModuleWithProviders<?>> modules = new ArrayList<>();
+		private final List<String> packagePrefixes = new ArrayList<>();
 
 		private Builder(Class<T> appRoot) {
 			this.appRoot = appRoot;
@@ -97,7 +100,7 @@ public class Ngoy<T> {
 		 * @return this
 		 */
 		public Builder<T> providers(Provider... providers) {
-			this.providers = providers;
+			this.providers.addAll(asList(providers));
 			return this;
 		}
 
@@ -110,7 +113,7 @@ public class Ngoy<T> {
 		 * @return this
 		 */
 		public Builder<T> injectors(Injector... injectors) {
-			this.injectors = injectors;
+			this.injectors.addAll(asList(injectors));
 			return this;
 		}
 
@@ -126,13 +129,45 @@ public class Ngoy<T> {
 		 * @return this
 		 */
 		public Builder<T> modules(ModuleWithProviders<?>... modules) {
-			this.modules = modules;
+			this.modules.addAll(asList(modules));
+			return this;
+		}
+
+		/**
+		 * Loads all declarations/injectables that are part of the given packages.
+		 * <p>
+		 * This will load all classes that are part of the given packages.
+		 * 
+		 * @param packages Packages to load declarations/injectables from
+		 * @return this
+		 */
+		public Builder<T> modules(Package... packages) {
+			return modules(Stream.of(packages)
+					.map(Package::getName)
+					.collect(toList())
+					.toArray(new String[0]));
+		}
+
+		/**
+		 * Loads all declarations/injectables that are part of the given packages.
+		 * <p>
+		 * This will load all classes that are part of the given packages.
+		 * 
+		 * @param packages Packages to load declarations/injectables from, such as
+		 *                 <code>org.myapp</code>
+		 * @return this
+		 */
+		public Builder<T> modules(String... packages) {
+			this.packagePrefixes.addAll(asList(packages));
 			return this;
 		}
 
 		/**
 		 * Whether to inline components.
-		 *
+		 * <p>
+		 * In this mode, a component's (host) element is not written but only it's
+		 * contents.
+		 * 
 		 * @param inlineComponents whether to inline components
 		 * @return this
 		 */
@@ -194,9 +229,10 @@ public class Ngoy<T> {
 		public Ngoy<T> build() {
 			return new Ngoy<T>(appRoot, //
 					config, //
-					injectors != null ? injectors : new Injector[0], //
-					modules != null ? modules : new ModuleWithProviders[0], //
-					providers != null ? providers : new Provider[0]);
+					injectors, //
+					modules, //
+					packagePrefixes, //
+					providers);
 		}
 	}
 
@@ -327,17 +363,23 @@ public class Ngoy<T> {
 	private final Events events = new Events();
 
 	protected Ngoy(Config config) {
-		this(Object.class, config, new Injector[0], new ModuleWithProviders[0]);
+		this(Object.class, config, emptyList(), emptyList(), emptyList(), emptyList());
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Ngoy(Class<?> appRoot, Config config, Injector[] injectors, ModuleWithProviders<?>[] modules, Provider... rootProviders) {
+	protected Ngoy(Class<?> appRoot, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
 		this.appRoot = (Class<T>) appRoot;
 		this.config = config;
-		this.init(injectors, modules, rootProviders);
+		this.init(injectors, modules, packagePrefixes, rootProviders);
 	}
 
-	private void init(Injector[] injectors, ModuleWithProviders<?>[] modules, Provider... rootProviders) {
+	private void init(List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
+
+		if (!packagePrefixes.isEmpty()) {
+			modules.add(new ClassScanner() //
+					.exclude(appRoot.getName())
+					.scan(packagePrefixes.toArray(new String[packagePrefixes.size()])));
+		}
 
 		List<Provider> cmpProviders = new ArrayList<>();
 		Map<String, List<Provider>> cmpDecls = new LinkedHashMap<>(); // order of css
@@ -348,13 +390,13 @@ public class Ngoy<T> {
 		}
 
 		String translateBundle = config.translateBundle;
-		boolean hasTranslate = isSet(translateBundle);
-		if (hasTranslate) {
+		boolean hasTranslateBundle = isSet(translateBundle);
+		if (hasTranslateBundle) {
 			addModuleDecls(TranslateModule.class, cmpDecls, pipeDecls, cmpProviders);
 		}
 
 		addModuleDecls(CoreInternalModule.class, cmpDecls, pipeDecls, cmpProviders);
-		addModuleDecls(PipesModule.class, cmpDecls, pipeDecls, cmpProviders);
+		addModuleDecls(CommonModule.class, cmpDecls, pipeDecls, cmpProviders);
 		addModuleDecls(appRoot, cmpDecls, pipeDecls, cmpProviders);
 
 		List<Provider> all = new ArrayList<>();
@@ -380,20 +422,20 @@ public class Ngoy<T> {
 				.flatMap(List::stream)
 				.forEach(all::add);
 		all.addAll(pipeDecls.values());
-		all.addAll(asList(rootProviders));
+		all.addAll(rootProviders);
 
-		injector = new DefaultInjector(injectors, all.toArray(new Provider[all.size()]));
+		injector = new DefaultInjector(injectors.toArray(new Injector[injectors.size()]), all.toArray(new Provider[all.size()]));
 
 		initAppInstance(rootProviders);
 
-		if (hasTranslate) {
+		if (hasTranslateBundle) {
 			injector.get(TranslateService.class)
 					.setBundle(translateBundle);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private void initAppInstance(Provider... rootProviders) {
+	private void initAppInstance(List<Provider> rootProviders) {
 		Provider appRootProvider = provides(appRoot, rootProviders);
 		if (appRootProvider != null && appRootProvider.getUseValue() != null) {
 			appInstance = (T) appRootProvider.getUseValue();
@@ -468,8 +510,8 @@ public class Ngoy<T> {
 		};
 	}
 
-	private Provider provides(Class<?> theClass, Provider... rootProviders) {
-		return Stream.of(rootProviders)
+	private Provider provides(Class<?> theClass, List<Provider> rootProviders) {
+		return rootProviders.stream()
 				.filter(p -> p.getProvide()
 						.equals(theClass))
 				.findFirst()
@@ -549,6 +591,20 @@ public class Ngoy<T> {
 			}
 		}
 
+		Directive dir = clazz.getAnnotation(Directive.class);
+		if (dir != null) {
+
+			for (Class<?> prov : dir.providers()) {
+				providers.add(of(prov));
+			}
+
+			for (Provide prov : dir.provide()) {
+				Class p = prov.provide();
+				Class c = prov.useClass();
+				providers.add(useClass(p, (Class<?>) c));
+			}
+		}
+
 		NgModule mod = clazz.getAnnotation(NgModule.class);
 		if (mod != null) {
 			addDecls(toProviders(asList(mod.declarations())), targetCmps, targetPipes);
@@ -594,6 +650,10 @@ public class Ngoy<T> {
 		List<Provider> list = targetCmps.get(selector);
 		if (list != null && !allowMulti) {
 			Provider existing = list.get(0);
+			if (existing.getProvide() == p.getProvide()) {
+				// double registration on same component
+				return;
+			}
 			throw new NgoyException("More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
 					selector, existing.getProvide()
 							.getName(),
@@ -644,9 +704,9 @@ public class Ngoy<T> {
 
 	private Parser createParser(@Nullable Resolver r, Config config) {
 		Parser parser = new Parser(r);
-		parser.inlineComponents = config.inlineComponents;
-
 		parser.contentType = getContentType(config);
+		parser.inlineComponents = config.inlineComponents;
+		parser.inlineAll = "text/plain".equals(parser.contentType);
 		return parser;
 	}
 

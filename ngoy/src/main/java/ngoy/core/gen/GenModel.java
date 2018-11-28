@@ -1,17 +1,15 @@
 package ngoy.core.gen;
 
-import ngoy.common.CapitalizePipe;
+import static java.lang.String.format;
+import static ngoy.core.Util.isSet;
 
 public class GenModel {
 
-	private static String camelCaseToJavaClass(String className) {
-		String camelCase = new CapitalizePipe().transform(className)
-				.toString();
+	private static String kebapToCamel(String className) {
 		StringBuilder sb = new StringBuilder();
-
 		boolean nextUpper = false;
-		for (int i = 0, n = camelCase.length(); i < n; i++) {
-			char c = camelCase.charAt(i);
+		for (int i = 0, n = className.length(); i < n; i++) {
+			char c = className.charAt(i);
 			if (c == '-') {
 				nextUpper = true;
 				continue;
@@ -29,11 +27,13 @@ public class GenModel {
 	private final String pack;
 	private final String name;
 	private final String className;
+	private final String appPrefix;
 
-	public GenModel(String pack, String name) {
+	public GenModel(String appPrefix, String pack, String name) {
+		this.appPrefix = appPrefix;
 		this.pack = pack;
 		this.name = name;
-		className = camelCaseToJavaClass(name);
+		className = kebapToCamel(name);
 	}
 
 	public String getPack() {
@@ -46,5 +46,13 @@ public class GenModel {
 
 	public String getClassName() {
 		return className;
+	}
+
+	public String getAppPrefix() {
+		return appPrefix;
+	}
+
+	public String getPrefixedName() {
+		return isSet(appPrefix) ? format("%s-%s", appPrefix, name) : name;
 	}
 }

@@ -28,4 +28,18 @@ public @interface Directive {
 	 * @return CSS selector
 	 */
 	String selector();
+
+	/**
+	 * Providers/services that this component depends on.
+	 * 
+	 * @return providers
+	 */
+	Class<?>[] providers() default {};
+
+	/**
+	 * Providers/services that this component depends on.
+	 * 
+	 * @return providers
+	 */
+	Provide[] provide() default {};
 }

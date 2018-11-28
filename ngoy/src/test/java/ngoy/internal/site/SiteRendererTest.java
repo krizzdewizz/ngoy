@@ -55,10 +55,10 @@ public class SiteRendererTest extends ANgoyTest {
 		ngoy.renderSite(f);
 
 		String index = readFile(f.resolve("index.html"));
-		assertThat(index).isEqualTo("site:<router-outlet><home>hello home</home></router-outlet>");
+		assertThat(index).isEqualTo("site:<home>hello home</home>");
 
 		String settings = readFile(f.resolve("abc/settings.html"));
-		assertThat(settings).isEqualTo("site:<router-outlet><settings>hello settings</settings></router-outlet>");
+		assertThat(settings).isEqualTo("site:<settings>hello settings</settings>");
 	}
 
 	private String readFile(Path file) throws Exception {

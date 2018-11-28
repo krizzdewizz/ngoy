@@ -54,9 +54,9 @@ public class ParserTest {
 		m.invoke(null, ctx);
 	}
 
-	// @org.junit.Test
+//	@org.junit.Test
 	public void parseJavaToJava() throws Exception {
-		DefaultInjector injector = new DefaultInjector(Provider.of(TranslateDirective.class), Provider.of(TranslateService.class),
+		DefaultInjector injector = new DefaultInjector(Provider.of(PersonDetailComponent.class), Provider.of(TranslateDirective.class), Provider.of(TranslateService.class),
 				Provider.useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)));
 		Parser parser = new Parser(new Resolver() {
 			@Override
@@ -110,10 +110,6 @@ public class ParserTest {
 		Path src = ANgoyTest.getTestPath()
 				.resolve("X.java");
 		Files.write(src, html.getBytes("UTF-8"));
-
-		// assertThat(flatten(html)).isEqualTo(
-		// "<body> <div class=\"x y\"> abc hello krizz <br> hello <a href=\"x\"
-		// title=\"gogo\">you</a> z </div> </body>");
 	}
 
 	String flatten(String html) {

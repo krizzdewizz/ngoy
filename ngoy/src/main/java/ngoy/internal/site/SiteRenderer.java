@@ -11,11 +11,11 @@ import ngoy.core.Inject;
 import ngoy.core.NgoyException;
 import ngoy.core.Optional;
 import ngoy.core.internal.StyleUrlsDirective;
-import ngoy.router.Location;
-import ngoy.router.Route;
 import ngoy.router.Router;
 
 public class SiteRenderer {
+
+	private static final String MAIN_CSS = "styles/main.css";
 
 	@Inject
 	@Optional
@@ -29,7 +29,30 @@ public class SiteRenderer {
 			renderRoutes(ngoy, folder);
 			writeCss(folder);
 		} else {
-			render(ngoy, folder, "index.html");
+			render(ngoy, folder.resolve("index.html"));
+		}
+	}
+
+	private void renderRoutes(Ngoy<?> ngoy, Path folder) {
+		styleUrlsDirective.href = MAIN_CSS;
+		try {
+			router.withActivatedRoutesDo(route -> {
+				String file = format("%s.html", route.getPath());
+				renderPage(ngoy, folder.resolve(file));
+			});
+		} finally {
+			styleUrlsDirective.href = null;
+		}
+	}
+
+	private void renderPage(Ngoy<?> ngoy, Path page) {
+		try {
+			ensureDirectory(page);
+			try (OutputStream out = Files.newOutputStream(page)) {
+				ngoy.render(out);
+			}
+		} catch (Exception e) {
+			throw new NgoyException(e, "Error while rendering site page '%s'", page);
 		}
 	}
 
@@ -39,45 +62,19 @@ public class SiteRenderer {
 			if (styles.isEmpty()) {
 				return;
 			}
-			Path stylesFolder = folder.resolve("styles");
-			Files.createDirectories(stylesFolder);
-			Files.write(stylesFolder.resolve("main.css"), styles.getBytes("UTF-8"));
+			Path cssFile = folder.resolve(MAIN_CSS);
+			ensureDirectory(cssFile);
+			Files.write(cssFile, styles.getBytes("UTF-8"));
 		} catch (Exception e) {
 			throw NgoyException.wrap(e);
 		}
 	}
 
-	private void renderRoutes(Ngoy<?> ngoy, Path folder) {
-		Location oldLocation = router.location;
-		styleUrlsDirective.href = "styles/main.css";
+	private void ensureDirectory(Path file) {
 		try {
-			for (Route route : router.getRoutes()) {
-				String path = route.getPath();
-
-				String baseHref = router.config.getBaseHref();
-				String slash = "/".equals(baseHref) ? "" : "/";
-				String location = format("%s%s%s", baseHref, slash, path);
-				router.location = () -> location;
-
-				String file = format("%s.html", path);
-				render(ngoy, folder, file);
-			}
-		} finally {
-			router.location = oldLocation;
-			styleUrlsDirective.href = null;
-		}
-	}
-
-	private void render(Ngoy<?> ngoy, Path folder, String file) {
-		Path page = folder.resolve(file);
-		try {
-			Files.createDirectories(page.getParent());
-
-			try (OutputStream out = Files.newOutputStream(page)) {
-				ngoy.render(out);
-			}
+			Files.createDirectories(file.getParent());
 		} catch (Exception e) {
-			throw new NgoyException(e, "Error while rendering site page '%s'", page);
+			throw NgoyException.wrap(e);
 		}
 	}
 }

@@ -257,15 +257,19 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("if (ctx.evalBool(\"", escapeJava(expr), "\")) {");
 	}
 
-	@Override
-	public void componentStart(CmpRef cmpRef, List<String> params) {
+	public void componentStartInput(CmpRef cmpRef, List<String> params) {
 		String ps = flattenStrings(params);
-		$$("ctx.pushCmpContext(\"", cmpRef.clazz.getName(), "\"");
+		$$("ctx.pushCmpContextInput(\"", cmpRef.clazz.getName(), "\"");
 		if (!ps.isEmpty()) {
 			$$(",");
 			$$(ps);
 		}
 		$(");");
+	}
+
+	@Override
+	public void componentStart(CmpRef cmpRef) {
+		$$("ctx.pushCmpContext(\"", cmpRef.clazz.getName(), "\");");
 	}
 
 	private String flattenStrings(List<String> params) {
