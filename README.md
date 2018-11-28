@@ -37,6 +37,8 @@ public static void main(String[] args) {
 
 Clone [ngoy-starter-web](https://github.com/krizzdewizz/ngoy-starter-web) to get started.
 
+Run the complete [Tour of Heroes](https://github.com/krizzdewizz/ngoy-tour-of-heroes) tutorial rewritten using ngoy.
+
 Visit the ngoy [website](https://krizzdewizz.github.io/ngoy).
 
 More docs about to come...
