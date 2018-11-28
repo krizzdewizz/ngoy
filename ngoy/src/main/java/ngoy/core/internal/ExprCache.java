@@ -7,7 +7,7 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 
 public class ExprCache {
-	private Map<String, Expression> cache = new HashMap<>();
+	private final Map<String, Expression> cache = new HashMap<>();
 
 	public Expression get(String expr, ExpressionParser parser) {
 		Expression expression;

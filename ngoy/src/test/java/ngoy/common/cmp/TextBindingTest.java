@@ -21,12 +21,8 @@ public class TextBindingTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "test", template = "hello {{'world'}} {{'x'}} {{0}} {{true}} <span>{{'s'}}</span> ")
-	public static class TextNull {
-	}
-
 	@Test
 	public void testTextNull() {
-		assertThat(render(TextNull.class)).isEqualTo("hello world x 0 true <span>s</span> ");
+		assertThat(render("hello {{'world'}} {{'x'}} {{0}} {{true}} <span>{{'s'}}</span> ")).isEqualTo("hello world x 0 true <span>s</span> ");
 	}
 }

@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.PropertyResourceBundle;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -48,7 +49,6 @@ import ngoy.core.OnInit;
 import ngoy.core.Pipe;
 import ngoy.core.Provide;
 import ngoy.core.Provider;
-import ngoy.core.TemplateCache;
 import ngoy.core.cli.Cli;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.CoreInternalModule;
@@ -144,8 +144,7 @@ public class Ngoy<T> {
 		public Builder<T> modules(Package... packages) {
 			return modules(Stream.of(packages)
 					.map(Package::getName)
-					.collect(toList())
-					.toArray(new String[0]));
+					.toArray(String[]::new));
 		}
 
 		/**
@@ -228,6 +227,7 @@ public class Ngoy<T> {
 		 */
 		public Ngoy<T> build() {
 			return new Ngoy<T>(appRoot, //
+					null, //
 					config, //
 					injectors, //
 					modules, //
@@ -290,7 +290,7 @@ public class Ngoy<T> {
 	 */
 	public static void renderString(String template, Context context, OutputStream out, Config... config) {
 		Config cfg = config.length > 0 ? config[0] : new Config();
-		new Ngoy<Void>(cfg).render(template, cfg.templateIsExpression, context, out);
+		new Ngoy<Void>(template, cfg).render(context, out);
 	}
 
 	/**
@@ -359,18 +359,22 @@ public class Ngoy<T> {
 	private T appInstance;
 	private Resolver resolver;
 	private DefaultInjector injector;
-	private final TemplateCache cache = new TemplateCache();
 	private final Events events = new Events();
+	private final Class<?> templateClass;
+	private final String template;
+	private final Map<String, Provider> pipeDecls = new HashMap<>();
 
-	protected Ngoy(Config config) {
-		this(Object.class, config, emptyList(), emptyList(), emptyList(), emptyList());
+	protected Ngoy(String template, Config config) {
+		this(Object.class, template, config, emptyList(), emptyList(), emptyList(), emptyList());
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Ngoy(Class<?> appRoot, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
+	protected Ngoy(Class<?> appRoot, String template, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
+		this.template = config.templateIsExpression ? template : null;
 		this.appRoot = (Class<T>) appRoot;
 		this.config = config;
-		this.init(injectors, modules, packagePrefixes, rootProviders);
+		init(injectors, modules, packagePrefixes, rootProviders);
+		templateClass = config.templateIsExpression ? null : compile(template);
 	}
 
 	private void init(List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
@@ -383,7 +387,6 @@ public class Ngoy<T> {
 
 		List<Provider> cmpProviders = new ArrayList<>();
 		Map<String, List<Provider>> cmpDecls = new LinkedHashMap<>(); // order of css
-		Map<String, Provider> pipeDecls = new HashMap<>();
 
 		if (provides(LocaleProvider.class, rootProviders) == null) {
 			cmpProviders.add(useValue(LocaleProvider.class, new LocaleProvider.Default(config.locale != null ? config.locale : Locale.getDefault())));
@@ -531,7 +534,7 @@ public class Ngoy<T> {
 				.render(this, folder);
 	}
 
-	private void render(String template, boolean templateIsExpr, Context context, OutputStream out) {
+	private void render(Context context, OutputStream out) {
 		try {
 
 			Object app = context == null ? appInstance : context.getModel();
@@ -540,7 +543,7 @@ public class Ngoy<T> {
 				((OnInit) app).ngOnInit();
 			}
 
-			Ctx ctx = Ctx.of(app, injector);
+			Ctx ctx = Ctx.of(app, injector, pipeDecls);
 			if (context != null) {
 				for (Map.Entry<String, Object> v : context.getVariables()
 						.entrySet()) {
@@ -550,12 +553,12 @@ public class Ngoy<T> {
 
 			events.tick();
 
-			if (templateIsExpr) {
+			if (config.templateIsExpression) {
 				NgoyScript script = new NgoyScript(resolver);
 				Object result = script.run(template, ctx);
 				newPrintStream(out).print(result);
 			} else {
-				parseAndRender(appRoot, template, createParser(resolver, config), ctx, newPrintStream(out));
+				invokeRender(ctx, newPrintStream(out));
 			}
 
 			if (app instanceof OnDestroy) {
@@ -572,12 +575,32 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		render(null, false, null, out);
+		render(null, out);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void addModuleDecls(Class<?> clazz, Map<String, List<Provider>> targetCmps, Map<String, Provider> targetPipes, List<Provider> providers) {
-		Component cmp = clazz.getAnnotation(Component.class);
+	private void addModuleDecls(Class<?> mod, Map<String, List<Provider>> targetCmps, Map<String, Provider> targetPipes, List<Provider> providers) {
+
+		NgModule ngMod = mod.getAnnotation(NgModule.class);
+		if (ngMod != null) {
+			addDecls(toProviders(asList(ngMod.declarations())), targetCmps, targetPipes);
+
+			for (Class<?> imp : ngMod.imports()) {
+				addModuleDecls(imp, targetCmps, targetPipes, providers);
+			}
+
+			for (Class<?> prov : ngMod.providers()) {
+				providers.add(of(prov));
+			}
+
+			for (Provide prov : ngMod.provide()) {
+				Class p = prov.provide();
+				Class c = prov.useClass();
+				providers.add(useClass(p, c));
+			}
+		}
+
+		Component cmp = mod.getAnnotation(Component.class);
 		if (cmp != null) {
 
 			for (Class<?> prov : cmp.providers()) {
@@ -588,38 +611,6 @@ public class Ngoy<T> {
 				Class p = prov.provide();
 				Class c = prov.useClass();
 				providers.add(useClass(p, (Class<?>) c));
-			}
-		}
-
-		Directive dir = clazz.getAnnotation(Directive.class);
-		if (dir != null) {
-
-			for (Class<?> prov : dir.providers()) {
-				providers.add(of(prov));
-			}
-
-			for (Provide prov : dir.provide()) {
-				Class p = prov.provide();
-				Class c = prov.useClass();
-				providers.add(useClass(p, (Class<?>) c));
-			}
-		}
-
-		NgModule mod = clazz.getAnnotation(NgModule.class);
-		if (mod != null) {
-			addDecls(toProviders(asList(mod.declarations())), targetCmps, targetPipes);
-
-			for (Class<?> imp : mod.imports()) {
-				addModuleDecls(imp, targetCmps, targetPipes, providers);
-			}
-
-			for (Class<?> prov : mod.providers()) {
-				providers.add(of(prov));
-			}
-			for (Provide prov : mod.provide()) {
-				Class p = prov.provide();
-				Class c = prov.useClass();
-				providers.add(useClass(p, c));
 			}
 		}
 	}
@@ -668,11 +659,17 @@ public class Ngoy<T> {
 		list.add(p);
 	}
 
-	protected void parseAndRender(Class<T> appRoot, String template, Parser parser, Ctx ctx, PrintStream out) {
-		invokeRender(cache.get(appRoot.getName(), className -> createTemplate(className, parser, template != null ? template : getTemplate(appRoot), getContentType(config))), ctx, out);
+	private String templateClassName() {
+		return format("%s.Tpl%s", getClass().getPackage()
+				.getName(), Math.abs(Objects.hash(appRoot, this)));
 	}
 
-	private void invokeRender(Class<?> templateClass, Ctx ctx, PrintStream out) {
+	private Class<?> compile(String template) {
+		Parser parser = createParser(resolver, config);
+		return createTemplate(templateClassName(), parser, template != null ? template : getTemplate(appRoot), getContentType(config));
+	}
+
+	private void invokeRender(Ctx ctx, PrintStream out) {
 		try {
 			ctx.setOut(out, getContentType(config));
 			Method m = templateClass.getMethod("render", Ctx.class);
@@ -702,8 +699,8 @@ public class Ngoy<T> {
 		return contentType;
 	}
 
-	private Parser createParser(@Nullable Resolver r, Config config) {
-		Parser parser = new Parser(r);
+	private Parser createParser(@Nullable Resolver resolver, Config config) {
+		Parser parser = new Parser(resolver);
 		parser.contentType = getContentType(config);
 		parser.inlineComponents = config.inlineComponents;
 		parser.inlineAll = "text/plain".equals(parser.contentType);

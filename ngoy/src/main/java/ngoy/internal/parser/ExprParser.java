@@ -19,7 +19,6 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
-import ngoy.core.internal.Ctx;
 import ngoy.core.internal.Resolver;
 
 public class ExprParser {
@@ -62,7 +61,7 @@ public class ExprParser {
 				throw new ParseException("Pipe %s must implement %s", resolvedPipe.getName(), PipeTransform.class.getName());
 			}
 
-			e = format("%s.pipe(\"%s\").transform(%s%s)", Ctx.CTX_VARIABLE, resolvedPipe.getName(), e, params.isEmpty() ? "" : format(",%s", params));
+			e = format("$%s(%s%s)", pipe, e, params.isEmpty() ? "" : format(",%s", params));
 		}
 		return e;
 	}

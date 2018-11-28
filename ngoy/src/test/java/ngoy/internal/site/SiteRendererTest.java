@@ -24,7 +24,7 @@ public class SiteRendererTest extends ANgoyTest {
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
 
-	@Component(selector = "home", template = "hello home")
+	@Component(selector = "home", template = "hello home", styleUrls = { "home.component.css" })
 	public static class HomeCmp {
 	}
 
@@ -59,9 +59,28 @@ public class SiteRendererTest extends ANgoyTest {
 
 		String settings = readFile(f.resolve("abc/settings.html"));
 		assertThat(settings).isEqualTo("site:<settings>hello settings</settings>");
+
+		String css = readFile(f.resolve("styles/main.css"));
+		assertThat(css).isEqualTo("a { color: red; }");
+	}
+
+	//
+
+	@Test
+	public void testSinglePage() throws Exception {
+		Ngoy<?> ngoy = Ngoy.app(defineCmp("the site"))
+				.build();
+
+		Path f = folder.newFolder()
+				.toPath();
+		ngoy.renderSite(f);
+
+		String index = readFile(f.resolve("index.html"));
+		assertThat(index).isEqualTo("the site");
 	}
 
 	private String readFile(Path file) throws Exception {
 		return new String(Files.readAllBytes(file), "UTF-8");
 	}
+
 }

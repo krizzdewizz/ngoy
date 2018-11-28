@@ -27,11 +27,11 @@ public class EvalContext implements EvaluationContext {
 	private final List<MethodResolver> methodResolvers;
 	private final Map<String, Object> variables;
 
-	public EvalContext(EvaluationContext target, Map<String, Object> variables) {
+	public EvalContext(EvaluationContext target, Map<String, Object> variables, MethodResolver pipeMethodResolver) {
 		this.target = target;
 		this.variables = variables;
 		constructorResolvers = asList(new ReflectiveConstructorResolver());
-		methodResolvers = asList(new ReflectiveMethodResolver());
+		methodResolvers = asList(pipeMethodResolver, new ReflectiveMethodResolver());
 
 		StandardTypeLocator locator = new StandardTypeLocator();
 		locator.registerImport("java.util");

@@ -29,7 +29,7 @@ public class SiteRenderer {
 			renderRoutes(ngoy, folder);
 			writeCss(folder);
 		} else {
-			render(ngoy, folder.resolve("index.html"));
+			renderPage(ngoy, folder.resolve("index.html"));
 		}
 	}
 

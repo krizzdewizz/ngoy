@@ -11,8 +11,6 @@ import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.LocaleProvider;
 import ngoy.core.NgModule;
-import ngoy.translate.TranslateModule;
-import ngoy.translate.TranslateService;
 
 public class TranslatePipeTest extends ANgoyTest {
 
@@ -40,5 +38,17 @@ public class TranslatePipeTest extends ANgoyTest {
 	@Test
 	public void test() {
 		assertThat(render(Cmp.class, useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.GERMAN)))).isEqualTo("hallo qbert ist cool ist qbert.");
+	}
+
+	//
+
+	@Component(selector = "test", template = "{{ null | translate }}")
+	@NgModule(imports = { TranslateModule.class })
+	public static class NullCmp {
+	}
+
+	@Test
+	public void testNull() {
+		assertThat(render(NullCmp.class)).isEqualTo("");
 	}
 }

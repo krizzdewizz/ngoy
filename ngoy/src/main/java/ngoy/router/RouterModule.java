@@ -1,6 +1,5 @@
 package ngoy.router;
 
-import static java.util.stream.Collectors.toList;
 import static ngoy.core.Provider.useValue;
 
 import ngoy.core.ModuleWithProviders;
@@ -8,7 +7,9 @@ import ngoy.core.NgModule;
 import ngoy.router.internal.OutletComponent;
 
 @NgModule(declarations = { OutletComponent.class, RouterLinkDirective.class }, providers = { Router.class, RouteParams.class })
-public class RouterModule {
+public final class RouterModule {
+	private RouterModule() {
+	}
 
 	public static ModuleWithProviders<RouterModule> forRoot(RouterConfig config) {
 		return ModuleWithProviders.<RouterModule>of(RouterModule.class)
@@ -21,7 +22,6 @@ public class RouterModule {
 		return config.getRoutes()
 				.stream()
 				.map(Route::getComponent)
-				.collect(toList())
-				.toArray(new Class<?>[0]);
+				.toArray(Class[]::new);
 	}
 }

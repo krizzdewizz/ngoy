@@ -2,7 +2,7 @@ package ngoy.internal.scan.a.b;
 
 import ngoy.core.Component;
 
-@Component(selector = "b")
+@Component(selector = "b", template = "scanb")
 public class BCmp {
 
 }
