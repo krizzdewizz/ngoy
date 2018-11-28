@@ -64,47 +64,36 @@ public class Ctx {
 		return Objects.equals(a, b);
 	}
 
-	public class ContextApi implements MethodResolver {
-		// see ExprParser
-		public Object pipe(String pipeClass) {
-			try {
-				return injector.get(loadClass(pipeClass));
-			} catch (Exception e) {
-				throw wrap(e);
-			}
-		}
-
+	public class PipeMethodResolver implements MethodResolver {
 		@Override
 		public MethodExecutor resolve(EvaluationContext context, Object targetObject, String name, List<TypeDescriptor> argumentTypes) throws AccessException {
-			if (name.startsWith("$")) {
-
-				if (argumentTypes.isEmpty()) {
-					throw new NgoyException("Missing first argument to invocation of pipe '%s'", name);
-				}
-
-				String pipeName = name.substring(1);
-				Provider pipeProvider = pipeDecls.get(pipeName);
-				if (pipeProvider == null) {
-					throw new NgoyException("No provider for pipe '%s'", pipeName);
-				}
-				PipeTransform pipe = (PipeTransform) injector.get(pipeProvider.getProvide());
-				return (EvaluationContext ctx, Object target, Object... arguments) -> {
-					List<Object> rest = asList(arguments).subList(1, arguments.length);
-					return new TypedValue(pipe.transform(arguments[0], rest.toArray(new Object[rest.size()])));
-				};
+			if (!name.startsWith("$")) {
+				return null;
 			}
-			return null;
+
+			if (argumentTypes.isEmpty()) {
+				throw new NgoyException("Missing first argument to invocation of pipe '%s'", name);
+			}
+
+			String pipeName = name.substring(1);
+			Provider pipeProvider = pipeDecls.get(pipeName);
+			if (pipeProvider == null) {
+				throw new NgoyException("No provider for pipe '%s'", pipeName);
+			}
+			PipeTransform pipe = (PipeTransform) injector.get(pipeProvider.getProvide());
+			return (EvaluationContext ctx, Object target, Object... arguments) -> {
+				List<Object> rest = asList(arguments).subList(1, arguments.length);
+				return new TypedValue(pipe.transform(arguments[0], rest.toArray(new Object[rest.size()])));
+			};
 		}
 	}
-
-	public static String CTX_VARIABLE = "$ngoyctx";
 
 	private final LinkedList<EvaluationContext> spelCtxs = new LinkedList<>();
 	private final Set<String> variables = new HashSet<>();
 	private final ExpressionParser exprParser = new SpelExpressionParser();
 	private final LinkedList<Map<String, Object>> iterationVars = new LinkedList<>();
 	private final ExprCache exprCache = new ExprCache();
-	private final ContextApi api = new ContextApi();
+	private final PipeMethodResolver pipeMethodResolver = new PipeMethodResolver();
 	private final Map<String, Provider> pipeDecls;
 	private final Injector injector;
 	private PrintStream out;
@@ -163,9 +152,7 @@ public class Ctx {
 		SimpleEvaluationContext evalCtx = SimpleEvaluationContext.forPropertyAccessors(accessor)
 				.withRootObject(model)
 				.build();
-		Map<String, Object> vars = new HashMap<String, Object>(variables);
-		vars.put(CTX_VARIABLE, api);
-		return new EvalContext(evalCtx, vars, api);
+		return new EvalContext(evalCtx, variables, pipeMethodResolver);
 	}
 
 	public Ctx variable(String variableName, @Nullable Object variableValue) {
