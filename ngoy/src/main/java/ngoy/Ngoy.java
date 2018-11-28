@@ -228,6 +228,7 @@ public class Ngoy<T> {
 		 */
 		public Ngoy<T> build() {
 			return new Ngoy<T>(appRoot, //
+					null, //
 					config, //
 					injectors, //
 					modules, //
@@ -290,7 +291,7 @@ public class Ngoy<T> {
 	 */
 	public static void renderString(String template, Context context, OutputStream out, Config... config) {
 		Config cfg = config.length > 0 ? config[0] : new Config();
-		new Ngoy<Void>(cfg).render(template, cfg.templateIsExpression, context, out);
+		new Ngoy<Void>(template, cfg).render(context, out);
 	}
 
 	/**
@@ -361,16 +362,20 @@ public class Ngoy<T> {
 	private DefaultInjector injector;
 	private final TemplateCache cache = new TemplateCache();
 	private final Events events = new Events();
+	private final Class<?> templateClass;
+	private final String template;
 
-	protected Ngoy(Config config) {
-		this(Object.class, config, emptyList(), emptyList(), emptyList(), emptyList());
+	protected Ngoy(String template, Config config) {
+		this(Object.class, template, config, emptyList(), emptyList(), emptyList(), emptyList());
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Ngoy(Class<?> appRoot, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
+	protected Ngoy(Class<?> appRoot, String template, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
+		this.template = config.templateIsExpression ? template : null;
 		this.appRoot = (Class<T>) appRoot;
 		this.config = config;
-		this.init(injectors, modules, packagePrefixes, rootProviders);
+		init(injectors, modules, packagePrefixes, rootProviders);
+		templateClass = config.templateIsExpression ? null : compile(template);
 	}
 
 	private void init(List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
@@ -531,7 +536,7 @@ public class Ngoy<T> {
 				.render(this, folder);
 	}
 
-	private void render(String template, boolean templateIsExpr, Context context, OutputStream out) {
+	private void render(Context context, OutputStream out) {
 		try {
 
 			Object app = context == null ? appInstance : context.getModel();
@@ -550,12 +555,12 @@ public class Ngoy<T> {
 
 			events.tick();
 
-			if (templateIsExpr) {
+			if (config.templateIsExpression) {
 				NgoyScript script = new NgoyScript(resolver);
 				Object result = script.run(template, ctx);
 				newPrintStream(out).print(result);
 			} else {
-				parseAndRender(appRoot, template, createParser(resolver, config), ctx, newPrintStream(out));
+				invokeRender(ctx, newPrintStream(out));
 			}
 
 			if (app instanceof OnDestroy) {
@@ -572,7 +577,7 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		render(null, false, null, out);
+		render(null, out);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -668,11 +673,12 @@ public class Ngoy<T> {
 		list.add(p);
 	}
 
-	protected void parseAndRender(Class<T> appRoot, String template, Parser parser, Ctx ctx, PrintStream out) {
-		invokeRender(cache.get(appRoot.getName(), className -> createTemplate(className, parser, template != null ? template : getTemplate(appRoot), getContentType(config))), ctx, out);
+	private Class<?> compile(String template) {
+		Parser parser = createParser(resolver, config);
+		return cache.get(appRoot.getName(), className -> createTemplate(className, parser, template != null ? template : getTemplate(appRoot), getContentType(config)));
 	}
 
-	private void invokeRender(Class<?> templateClass, Ctx ctx, PrintStream out) {
+	private void invokeRender(Ctx ctx, PrintStream out) {
 		try {
 			ctx.setOut(out, getContentType(config));
 			Method m = templateClass.getMethod("render", Ctx.class);
