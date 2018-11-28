@@ -1,6 +1,5 @@
 package ngoy.router;
 
-import static java.util.stream.Collectors.toList;
 import static ngoy.core.Provider.useValue;
 
 import ngoy.core.ModuleWithProviders;
@@ -23,7 +22,6 @@ public final class RouterModule {
 		return config.getRoutes()
 				.stream()
 				.map(Route::getComponent)
-				.collect(toList())
-				.toArray(new Class<?>[0]);
+				.toArray(Class[]::new);
 	}
 }

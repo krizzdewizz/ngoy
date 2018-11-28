@@ -144,8 +144,7 @@ public class Ngoy<T> {
 		public Builder<T> modules(Package... packages) {
 			return modules(Stream.of(packages)
 					.map(Package::getName)
-					.collect(toList())
-					.toArray(new String[0]));
+					.toArray(String[]::new));
 		}
 
 		/**

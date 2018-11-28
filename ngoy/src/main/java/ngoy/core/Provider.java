@@ -1,7 +1,6 @@
 package ngoy.core;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 import java.util.stream.Stream;
 
@@ -34,8 +33,7 @@ public class Provider {
 	public static Provider[] of(Class<?>... classes) {
 		return Stream.of(classes)
 				.map(Provider::of)
-				.collect(toList())
-				.toArray(new Provider[0]);
+				.toArray(Provider[]::new);
 	}
 
 	/**
