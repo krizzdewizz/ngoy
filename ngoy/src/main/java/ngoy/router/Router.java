@@ -19,6 +19,9 @@ public class Router {
 	@Inject
 	public RouterConfig config;
 
+	@Inject
+	public RouteParams routeParams;
+
 	private Integer activeRouteOverride;
 
 	public boolean isActive(Route route) {
@@ -58,11 +61,26 @@ public class Router {
 			sub = sub.substring(1); // remove slash
 		}
 
+		String[] subSplits = sub.split("/");
+
 		List<Route> routes = getRoutes();
 		for (int i = 0, n = routes.size(); i < n; i++) {
-			if (routes.get(i)
-					.getPath()
-					.equals(sub)) {
+			String p = routes.get(i)
+					.getPath();
+
+			String[] splits = p.split("/");
+
+			if (splits[0].equals(subSplits[0])) {
+
+				if (splits.length > 1) {
+					String param = splits[1];
+					if (param.startsWith(":")) {
+						param = param.substring(1);
+					}
+					String value = subSplits.length > 1 ? subSplits[1] : null;
+					routeParams.put(param, value);
+				}
+
 				return i;
 			}
 		}

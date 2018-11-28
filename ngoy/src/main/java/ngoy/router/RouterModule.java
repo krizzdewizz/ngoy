@@ -7,7 +7,7 @@ import ngoy.core.ModuleWithProviders;
 import ngoy.core.NgModule;
 import ngoy.router.internal.OutletComponent;
 
-@NgModule(declarations = { OutletComponent.class, RouterLinkDirective.class }, providers = { Router.class })
+@NgModule(declarations = { OutletComponent.class, RouterLinkDirective.class }, providers = { Router.class, RouteParams.class })
 public class RouterModule {
 
 	public static ModuleWithProviders<RouterModule> forRoot(RouterConfig config) {
