@@ -699,8 +699,8 @@ public class Ngoy<T> {
 		return contentType;
 	}
 
-	private Parser createParser(@Nullable Resolver r, Config config) {
-		Parser parser = new Parser(r);
+	private Parser createParser(@Nullable Resolver resolver, Config config) {
+		Parser parser = new Parser(resolver);
 		parser.contentType = getContentType(config);
 		parser.inlineComponents = config.inlineComponents;
 		parser.inlineAll = "text/plain".equals(parser.contentType);
