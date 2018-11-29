@@ -1,5 +1,6 @@
 package ngoy.core.internal;
 
+import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.NgoyException.wrap;
@@ -37,12 +38,14 @@ public class DefaultInjector implements Injector {
 	private final Map<Class<?>, Provider> providers;
 	private final Map<Class<?>, Object> providerInstances = new HashMap<>();
 	private final Injector[] moreInjectors;
+	private final Set<Class<?>> cmpDecls;
 
 	public DefaultInjector(Provider... providers) {
-		this(new Injector[0], providers);
+		this(emptySet(), new Injector[0], providers);
 	}
 
-	public DefaultInjector(Injector[] more, Provider... providers) {
+	public DefaultInjector(Set<Class<?>> cmpDecls, Injector[] more, Provider... providers) {
+		this.cmpDecls = cmpDecls;
 		this.moreInjectors = more;
 		Map<Class<?>, Provider> all = new LinkedHashMap<>();
 		for (Provider p : providers) {
@@ -84,11 +87,14 @@ public class DefaultInjector implements Injector {
 				return (T) object;
 			}
 
-			for (Injector inj : moreInjectors) {
-				if ((object = inj.get(clazz)) != null) {
-					providerInstances.put(clazz, object);
-					injectFields(clazz, object, resolving);
-					return (T) object;
+			if (!cmpDecls.contains(clazz)) {
+				for (Injector inj : moreInjectors) {
+					if ((object = inj.get(clazz)) != null) {
+						providerInstances.put(clazz, object);
+						// bean injected/dev mode. find better solution
+						injectFields(clazz, object, resolving);
+						return (T) object;
+					}
 				}
 			}
 
@@ -141,7 +147,14 @@ public class DefaultInjector implements Injector {
 		}
 	}
 
+	@Override
+	public <T> T getNew(Class<T> clazz) {
+		providerInstances.remove(clazz);
+		return get(clazz);
+	}
+
 	public void injectFields(Class<?> clazz, Object inst, Set<Class<?>> resolving) {
+
 		try {
 			for (Field field : clazz.getFields()) {
 				int mods = field.getModifiers();

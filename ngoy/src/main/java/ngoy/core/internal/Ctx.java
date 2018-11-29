@@ -276,8 +276,7 @@ public class Ctx {
 
 	public void pushCmpContextInput(String className, String... paramPairs) {
 		try {
-			Class<?> clazz = loadClass(className);
-			setInputs(clazz, injector.get(clazz), paramPairs);
+			setInputs(loadClass(className), injector.getNew(loadClass(className)), paramPairs);
 		} catch (Exception e) {
 			throw wrap(e);
 		}
@@ -285,8 +284,7 @@ public class Ctx {
 
 	public void pushCmpContext(String className) {
 		try {
-			Class<?> clazz = loadClass(className);
-			Object cmp = injector.get(clazz);
+			Object cmp = injector.get(loadClass(className));
 
 			// *ngFor on a component
 			Map<String, Object> vars = iterationVars.isEmpty() ? emptyMap() : iterationVars.peek();

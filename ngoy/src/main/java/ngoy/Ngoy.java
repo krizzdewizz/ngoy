@@ -357,10 +357,10 @@ public class Ngoy<T> {
 	private final Config config;
 	private final Class<T> appRoot;
 	private T appInstance;
+	private Class<?> templateClass;
 	private Resolver resolver;
 	private DefaultInjector injector;
 	private final Events events = new Events();
-	private final Class<?> templateClass;
 	private final String template;
 	private final Map<String, Provider> pipeDecls = new HashMap<>();
 
@@ -374,7 +374,9 @@ public class Ngoy<T> {
 		this.appRoot = (Class<T>) appRoot;
 		this.config = config;
 		init(injectors, modules, packagePrefixes, rootProviders);
-		templateClass = config.templateIsExpression ? null : compile(template);
+		if (!config.templateIsExpression) {
+			compile(template);
+		}
 	}
 
 	private void init(List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
@@ -415,6 +417,7 @@ public class Ngoy<T> {
 		// collection done
 
 		resolver = createResolver(cmpDecls, pipeDecls);
+		Set<Class<?>> cmpDeclsSet = new HashSet<>();
 
 		all.add(useValue(Resolver.class, resolver));
 		all.add(useValue(Events.class, events));
@@ -423,11 +426,14 @@ public class Ngoy<T> {
 		cmpDecls.values()
 				.stream()
 				.flatMap(List::stream)
-				.forEach(all::add);
+				.forEach(decl -> {
+					all.add(decl);
+					cmpDeclsSet.add(decl.getProvide());
+				});
 		all.addAll(pipeDecls.values());
 		all.addAll(rootProviders);
 
-		injector = new DefaultInjector(injectors.toArray(new Injector[injectors.size()]), all.toArray(new Provider[all.size()]));
+		injector = new DefaultInjector(cmpDeclsSet, injectors.toArray(new Injector[injectors.size()]), all.toArray(new Provider[all.size()]));
 
 		initAppInstance(rootProviders);
 
@@ -531,7 +537,7 @@ public class Ngoy<T> {
 	 */
 	public void renderSite(Path folder) {
 		injector.get(SiteRenderer.class)
-				.render(this, folder);
+				.render(this, folder, () -> compile(template));
 	}
 
 	private void render(Context context, OutputStream out) {
@@ -664,9 +670,9 @@ public class Ngoy<T> {
 				.getName(), Math.abs(Objects.hash(appRoot, this)));
 	}
 
-	private Class<?> compile(String template) {
+	private void compile(String template) {
 		Parser parser = createParser(resolver, config);
-		return createTemplate(templateClassName(), parser, template != null ? template : getTemplate(appRoot), getContentType(config));
+		templateClass = createTemplate(templateClassName(), parser, template != null ? template : getTemplate(appRoot), getContentType(config));
 	}
 
 	private void invokeRender(Ctx ctx, PrintStream out) {
