@@ -89,7 +89,8 @@ public class DefaultInjector implements Injector {
 			for (Injector inj : moreInjectors) {
 				if ((object = inj.get(clazz)) != null) {
 					providerInstances.put(clazz, object);
-					injectFields(clazz, object, resolving);
+					// bean injected/dev mode. find better solution
+					injectFields(clazz, object, resolving, false);
 					return (T) object;
 				}
 			}
@@ -131,7 +132,7 @@ public class DefaultInjector implements Injector {
 				inst = ctor.newInstance(arr);
 			}
 
-			injectFields(useClass, inst, resolving);
+			injectFields(useClass, inst, resolving, true);
 
 			providerInstances.put(clazz, inst);
 
@@ -143,9 +144,11 @@ public class DefaultInjector implements Injector {
 		}
 	}
 
-	public void injectFields(Class<?> clazz, Object inst, Set<Class<?>> resolving) {
+	public void injectFields(Class<?> clazz, Object inst, Set<Class<?>> resolving, boolean verifyInputs) {
 
-		verifyFieldInputs(clazz, inst);
+		if (verifyInputs) {
+			verifyFieldInputs(clazz, inst);
+		}
 
 		try {
 			for (Field field : clazz.getFields()) {
@@ -184,7 +187,7 @@ public class DefaultInjector implements Injector {
 		}
 	}
 
-	private static void verifyFieldInputs(Class<?> cmpClazz, Object cmp) {
+	private void verifyFieldInputs(Class<?> cmpClazz, Object cmp) {
 		try {
 			for (Field field : cmpClazz.getFields()) {
 				Input input = field.getAnnotation(Input.class);
