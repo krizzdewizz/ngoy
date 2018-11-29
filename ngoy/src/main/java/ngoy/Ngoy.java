@@ -417,6 +417,7 @@ public class Ngoy<T> {
 		// collection done
 
 		resolver = createResolver(cmpDecls, pipeDecls);
+		Set<Class<?>> cmpDeclsSet = new HashSet<>();
 
 		all.add(useValue(Resolver.class, resolver));
 		all.add(useValue(Events.class, events));
@@ -425,11 +426,14 @@ public class Ngoy<T> {
 		cmpDecls.values()
 				.stream()
 				.flatMap(List::stream)
-				.forEach(all::add);
+				.forEach(decl -> {
+					all.add(decl);
+					cmpDeclsSet.add(decl.getProvide());
+				});
 		all.addAll(pipeDecls.values());
 		all.addAll(rootProviders);
 
-		injector = new DefaultInjector(injectors.toArray(new Injector[injectors.size()]), all.toArray(new Provider[all.size()]));
+		injector = new DefaultInjector(cmpDeclsSet, injectors.toArray(new Injector[injectors.size()]), all.toArray(new Provider[all.size()]));
 
 		initAppInstance(rootProviders);
 
@@ -444,7 +448,7 @@ public class Ngoy<T> {
 		Provider appRootProvider = provides(appRoot, rootProviders);
 		if (appRootProvider != null && appRootProvider.getUseValue() != null) {
 			appInstance = (T) appRootProvider.getUseValue();
-			injector.injectFields(appRoot, appInstance, new HashSet<>(), false);
+			injector.injectFields(appRoot, appInstance, new HashSet<>());
 		} else {
 			injector.put(of(appRoot));
 			appInstance = (T) injector.get(appRoot);

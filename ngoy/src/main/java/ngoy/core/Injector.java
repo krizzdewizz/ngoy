@@ -11,8 +11,22 @@ package ngoy.core;
  */
 public interface Injector {
 	/**
+	 * Returns an instance.
+	 * 
 	 * @return for an additional injector: null if none
-	 * @throws NgoyException for a root injector if no instance found for class
+	 * @throws NgoyException for a root injector if no instance/provider found for
+	 *                       class
 	 */
 	<T> T get(Class<T> clazz);
+
+	/**
+	 * Return always a new instance.
+	 * 
+	 * @return for an additional injector: null if none
+	 * @throws NgoyException for a root injector if no instance/provider found for
+	 *                       class
+	 */
+	default <T> T getNew(@SuppressWarnings("unused") Class<T> clazz) {
+		return null;
+	}
 }

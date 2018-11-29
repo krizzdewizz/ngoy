@@ -52,6 +52,6 @@ public class TranslateDirective {
 
 	@Input
 	public void translate(String key) {
-		translation = key == null ? null : translateService.translate(key);
+		translation = translateService.translate(key);
 	}
 }

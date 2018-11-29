@@ -83,10 +83,7 @@ public class Inputs {
 		String attr = isExpr ? format("[%s]", input) : input;
 		String inp = el.attr(attr);
 		if (inp == null) {
-			if (!isExpr || excludeBindings.contains(input)) {
-				return;
-			}
-			inp = defaultExprForType(fieldType);
+			return;
 		}
 
 		if (valueType == VALUE_TEXT && !fieldType.equals(String.class)) {
@@ -100,22 +97,4 @@ public class Inputs {
 		excludeBindings.add(fieldName.toLowerCase());
 	}
 
-	private static String defaultExprForType(Class<?> fieldType) {
-		// check most often used first
-		if (Object.class.isAssignableFrom(fieldType)) {
-			return "null";
-		} else if (int.class == fieldType || long.class == fieldType) {
-			return "0";
-		} else if (boolean.class == fieldType) {
-			return "false";
-		} else if (char.class == fieldType) {
-			return "'\\0'.charAt(0)";
-		} else if (short.class == fieldType) {
-			return "T(Short).valueOf('0')";
-		} else if (byte.class == fieldType) {
-			return "T(Byte).valueOf('0')";
-		} else {
-			return "0";
-		}
-	}
 }

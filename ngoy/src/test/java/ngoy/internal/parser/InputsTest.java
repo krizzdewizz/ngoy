@@ -4,13 +4,10 @@ import static java.util.Arrays.asList;
 import static ngoy.core.Provider.useValue;
 import static ngoy.internal.parser.Inputs.fieldName;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
 
 import java.util.List;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
@@ -18,14 +15,10 @@ import ngoy.core.Inject;
 import ngoy.core.Injector;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
-import ngoy.core.NgoyException;
 import ngoy.model.Person;
 import ngoy.service.TestService;
 
 public class InputsTest extends ANgoyTest {
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Test
 	public void test() {
@@ -98,14 +91,5 @@ public class InputsTest extends ANgoyTest {
 	public static class ErrInitCmp {
 		@Input
 		public boolean ok = true;
-	}
-
-	@Test
-	public void testErrInit() {
-		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Input field"));
-		expectedEx.expectMessage(containsString("ErrInitCmp.ok"));
-		expectedEx.expectMessage(containsString("must not be initialized"));
-		render(ErrInitCmp.class);
 	}
 }
