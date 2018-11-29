@@ -24,18 +24,19 @@ public class SiteRenderer {
 	@Inject
 	public StyleUrlsDirective styleUrlsDirective;
 
-	public void render(Ngoy<?> ngoy, Path folder) {
+	public void render(Ngoy<?> ngoy, Path folder, Runnable compile) {
 		if (router != null) {
-			renderRoutes(ngoy, folder);
+			renderRoutes(ngoy, folder, compile);
 			writeCss(folder);
 		} else {
 			renderPage(ngoy, folder.resolve("index.html"));
 		}
 	}
 
-	private void renderRoutes(Ngoy<?> ngoy, Path folder) {
+	private void renderRoutes(Ngoy<?> ngoy, Path folder, Runnable compile) {
 		styleUrlsDirective.href = MAIN_CSS;
 		try {
+			compile.run();
 			router.withActivatedRoutesDo(route -> {
 				String file = format("%s.html", route.getPath());
 				renderPage(ngoy, folder.resolve(file));
