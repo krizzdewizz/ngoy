@@ -17,9 +17,11 @@ import java.util.Map;
 import java.util.Set;
 
 import ngoy.core.Injector;
+import ngoy.core.Input;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.Provider;
+import ngoy.core.Util;
 
 public class DefaultInjector implements Injector {
 
@@ -142,6 +144,9 @@ public class DefaultInjector implements Injector {
 	}
 
 	public void injectFields(Class<?> clazz, Object inst, Set<Class<?>> resolving) {
+
+		verifyFieldInputs(clazz, inst);
+
 		try {
 			for (Field field : clazz.getFields()) {
 				int mods = field.getModifiers();
@@ -172,6 +177,22 @@ public class DefaultInjector implements Injector {
 				Object obj = getInternal(meth.getParameterTypes()[0], resolving, optional);
 				if (!optional || obj != null) {
 					meth.invoke(inst, obj);
+				}
+			}
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
+	private static void verifyFieldInputs(Class<?> cmpClazz, Object cmp) {
+		try {
+			for (Field field : cmpClazz.getFields()) {
+				Input input = field.getAnnotation(Input.class);
+				if (input == null) {
+					continue;
+				}
+				if (!Util.isDefaultForType(field.getType(), field.get(cmp))) {
+					throw new NgoyException("Input field %s.%s must not be initialized. It will be overwritten. Initialize the field in ngOnInit() instead.", cmpClazz.getName(), field.getName());
 				}
 			}
 		} catch (Exception e) {

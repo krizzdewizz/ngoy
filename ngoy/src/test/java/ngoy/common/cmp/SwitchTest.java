@@ -8,6 +8,7 @@ import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
+import ngoy.core.OnInit;
 
 public class SwitchTest extends ANgoyTest {
 
@@ -17,9 +18,14 @@ public class SwitchTest extends ANgoyTest {
 			"<ng-template [ngSwitchCase]=\"'sad'\"><div>SAD</div></ng-template>" + //
 			"<ng-template ngSwitchDefault><div>NONE</div></ng-template>" + //
 			"</h1>")
-	public static class EmoyCmp {
+	public static class EmoyCmp implements OnInit {
 		@Input()
-		public String emotion = "sad";
+		public String emotion;
+
+		@Override
+		public void ngOnInit() {
+			emotion = "sad";
+		}
 	}
 
 	@Component(selector = "test", template = "<emoy></emoy>")
@@ -39,9 +45,14 @@ public class SwitchTest extends ANgoyTest {
 			"<ng-template [ngSwitchCase]=\"'happy'\"><div>HAPPY</div></ng-template>" + //
 			"<ng-template [ngSwitchCase]=\"'sad'\"><div>SAD</div></ng-template>" + //
 			"</h1>")
-	public static class EmoyNoDefaultCmp {
+	public static class EmoyNoDefaultCmp implements OnInit {
 		@Input()
-		public String emotion = "x";
+		public String emotion;
+
+		@Override
+		public void ngOnInit() {
+			emotion = "x";
+		}
 	}
 
 	@Component(selector = "test", template = "<emoy></emoy>")

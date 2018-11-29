@@ -146,4 +146,36 @@ public class Util {
 		return tpl;
 
 	}
+
+	/**
+	 * Checks whether the given value is the JVM default for a field of the given
+	 * type.
+	 * 
+	 * @param fieldType Field's type
+	 * @param value     value
+	 * @return true if is default, else false
+	 */
+	public static boolean isDefaultForType(Class<?> fieldType, Object value) {
+		if (Object.class.isAssignableFrom(fieldType)) {
+			return value == null;
+		} else if (boolean.class == fieldType) {
+			return !((Boolean) value);
+		} else if (int.class == fieldType) {
+			return ((Integer) value) == 0;
+		} else if (long.class == fieldType) {
+			return ((Long) value) == 0;
+		} else if (char.class == fieldType) {
+			return ((Character) value) == 0;
+		} else if (short.class == fieldType) {
+			return ((Short) value) == 0;
+		} else if (byte.class == fieldType) {
+			return ((Byte) value) == 0;
+		} else if (float.class == fieldType) {
+			return ((Float) value) == 0;
+		} else if (double.class == fieldType) {
+			return ((Double) value) == 0;
+		}
+
+		return value == null;
+	}
 }
