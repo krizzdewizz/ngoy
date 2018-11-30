@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 import jodd.jerry.Jerry;
 import ngoy.common.CommonModule;
 import ngoy.common.DatePipe;
+import ngoy.core.AppRoot;
 import ngoy.core.Component;
 import ngoy.core.Context;
 import ngoy.core.Directive;
@@ -453,6 +454,7 @@ public class Ngoy<T> {
 			injector.put(of(appRoot));
 			appInstance = (T) injector.get(appRoot);
 		}
+		injector.put(Provider.useValue(AppRoot.class, () -> appRoot));
 	}
 
 	private List<Provider> toProviders(List<Class<?>> list) {

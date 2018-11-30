@@ -206,4 +206,17 @@ public class XDom {
 		return first.get(0)
 				.equals(second.get(0));
 	}
+
+	/**
+	 * Sets the name of the given element, which must be an instance of
+	 * {@link NgoyElement}.
+	 * 
+	 * @param el   Element
+	 * @param name the new name
+	 * @return el
+	 */
+	public static Jerry setNodeName(Jerry el, String name) {
+		NgoyElement.setNodeName(el, name);
+		return el;
+	}
 }

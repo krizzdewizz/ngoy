@@ -20,7 +20,7 @@ public interface Injector {
 	<T> T get(Class<T> clazz);
 
 	/**
-	 * Return always a new instance.
+	 * Returns always a new instance.
 	 * 
 	 * @return for an additional injector: null if none
 	 * @throws NgoyException for a root injector if no instance/provider found for

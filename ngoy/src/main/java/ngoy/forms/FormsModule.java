@@ -7,7 +7,7 @@ import ngoy.core.NgModule;
  * 
  * @author krizz
  */
-@NgModule(declarations = { FormPostActionDirective.class, ButtonClickDirective.class })
+@NgModule(declarations = { FormPostActionDirective.class, ButtonClickDirective.class, FormComponent.class })
 public final class FormsModule {
 	private FormsModule() {
 	}
