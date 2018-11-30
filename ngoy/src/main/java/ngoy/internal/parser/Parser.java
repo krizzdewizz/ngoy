@@ -204,6 +204,11 @@ public class Parser {
 		List<CmpRef> cmpRefs = resolver.resolveCmps(el);
 		compileCmps(cmpRefs, el);
 
+		if (getNodeName(el).equals(NG_TEMPLATE)) {
+			// may the component/directive has changed the node name in ngOnCompile()
+			return;
+		}
+
 		cmpRefParser.acceptCmpRefs(el, cmpRefs);
 
 		if (isSet(handler.textOverrideExpr)) {

@@ -86,7 +86,7 @@ public class Inputs {
 			return;
 		}
 
-		if (valueType == VALUE_TEXT && !fieldType.equals(String.class)) {
+		if (valueType == VALUE_TEXT && !fieldType.isAssignableFrom(String.class)) {
 			throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(),
 					fieldType.getName(), format("[%s]", input));
 		}

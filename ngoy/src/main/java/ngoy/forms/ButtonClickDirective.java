@@ -1,9 +1,9 @@
 package ngoy.forms;
 
-import static ngoy.core.dom.NgoyElement.setNodeName;
 import static ngoy.core.dom.XDom.appendChild;
 import static ngoy.core.dom.XDom.cloneNode;
 import static ngoy.core.dom.XDom.removeContents;
+import static ngoy.core.dom.XDom.setNodeName;
 
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Attribute;
@@ -28,22 +28,25 @@ public class ButtonClickDirective implements OnCompile {
 				.findFirst()
 				.get();
 
-		String actionAttr = clickAttr.getName()
-				.replace("(click)", "action");
-		String action = clickAttr.getValue();
+		String controllerAttr = clickAttr.getName()
+				.replace("(click)", "controller");
+		String controllerMethod = clickAttr.getValue();
 
-		Jerry buttonClone = cloneNode(el);
+		Jerry form = XDom.createElement("form", el);
+		Jerry buttonClone = appendChild(form, cloneNode(el));
 		buttonClone.removeAttr(clickAttr.getName());
 		buttonClone.attr("type", "submit");
 
-		setNodeName(el, "form");
 		for (Attribute attr : XDom.getAttributes(el)) {
 			el.removeAttr(attr.getName());
 		}
 		removeContents(el);
-		el.attr("method", "POST");
-		el.attr(actionAttr, action);
-		appendChild(el, buttonClone);
+		setNodeName(el, "ng-template");
+
+		form.attr("method", "POST");
+		form.attr(controllerAttr, controllerMethod);
+
+		appendChild(el, form);
 	}
 
 }

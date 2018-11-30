@@ -10,14 +10,14 @@ import ngoy.core.NgModule;
 
 public class ButtonClickDirectiveTest extends ANgoyTest {
 
-	@Component(selector = "person", template = "save me: <button class=\"x\" x=\"y\" (click)=\"/saveme\"></button>")
+	@Component(selector = "person", template = "save me: <button class=\"x\" x=\"y\" (click)=\"saveme\"></button>")
 	@NgModule(declarations = { ButtonClickDirective.class })
 	public static class Cmp {
 	}
 
 	@Test
 	public void test() {
-		assertThat(render(Cmp.class)).isEqualTo("save me: <form method=\"POST\" action=\"/saveme\"><button x=\"y\" type=\"submit\" class=\"x\"></button></form>");
+		assertThat(render(Cmp.class)).isEqualTo("save me: <form method=\"POST\" controller=\"saveme\"><button x=\"y\" type=\"submit\" class=\"x\"></button></form>");
 	}
 
 	//
@@ -25,12 +25,12 @@ public class ButtonClickDirectiveTest extends ANgoyTest {
 	@Component(selector = "person", template = "save me: <button class=\"x\" x=\"y\" [(click)]=\"saveUrl\"></button>")
 	@NgModule(declarations = { ButtonClickDirective.class })
 	public static class BindingCmp {
-		public String saveUrl = "/saveme";
+		public String saveUrl = "saveme";
 	}
 
 	@Test
 	public void testBinding() {
-		assertThat(render(BindingCmp.class)).isEqualTo("save me: <form method=\"POST\" action=\"/saveme\"><button x=\"y\" type=\"submit\" class=\"x\"></button></form>");
+		assertThat(render(BindingCmp.class)).isEqualTo("save me: <form method=\"POST\" controller=\"saveme\"><button x=\"y\" type=\"submit\" class=\"x\"></button></form>");
 	}
 
 }

@@ -24,40 +24,44 @@ public class FormPostActionDirective implements OnCompile {
 
 	@Override
 	public void ngOnCompile(Jerry el, String componentClass) {
+		String controllerMethod = el.attr("ngoyFormPost");
+
+		if (controllerMethod.isEmpty()) {
+			throw new NgoyException("'ngoyFormPost' attribute must not be empty on '%s'", el.get(0)
+					.getCssPath());
+		}
+
+		String path = findControllerMethodAction(componentClass, controllerMethod);
+
+		el.attr("action", path);
+		el.attr("method", "post");
+	}
+
+	public static String findControllerMethodAction(String componentClass, String controllerMethod) {
 		try {
-			String controllerMethod = el.attr("ngoyFormPost");
-
-			if (controllerMethod.isEmpty()) {
-				throw new NgoyException("'ngoyFormPost' attribute must not be empty on '%s'", el.get(0)
-						.getCssPath());
-			}
-
 			Class<?> clazz = Thread.currentThread()
 					.getContextClassLoader()
 					.loadClass(componentClass);
 
-			String requestPath = findRequestMapping(clazz).map(this::findPath)
+			String requestPath = findRequestMapping(clazz).map(FormPostActionDirective::findPath)
 					.orElse("");
 
 			String postPath = Stream.of(clazz.getMethods())
 					.filter(method -> method.getName()
 							.equals(controllerMethod))
 					.findFirst()
-					.flatMap(this::findPostMapping)
-					.map(this::findPath)
+					.flatMap(FormPostActionDirective::findPostMapping)
+					.map(FormPostActionDirective::findPath)
 					.orElseThrow(() -> new NgoyException("Controller method %s.%s with a @PostMapping annotation could not be not found", componentClass, controllerMethod));
 
 			String path = requestPath.isEmpty() ? postPath : format("%s/%s", requestPath, postPath);
-
-			el.attr("action", path);
-			el.attr("method", "post");
-
+			return path;
 		} catch (Exception e) {
 			throw wrap(e);
 		}
 	}
 
-	private Optional<Annotation> findRequestMapping(Class<?> clazz) {
+	private static Optional<Annotation> findRequestMapping(Class<?> clazz) {
 		return Stream.of(clazz.getAnnotations())
 				.filter(ann -> ann.annotationType()
 						.getSimpleName()
@@ -65,7 +69,7 @@ public class FormPostActionDirective implements OnCompile {
 				.findFirst();
 	}
 
-	private Optional<Annotation> findPostMapping(Method method) {
+	private static Optional<Annotation> findPostMapping(Method method) {
 		return Stream.of(method.getAnnotations())
 				.filter(ann -> ann.annotationType()
 						.getSimpleName()
@@ -73,7 +77,7 @@ public class FormPostActionDirective implements OnCompile {
 				.findFirst();
 	}
 
-	private String findPath(Annotation ann) {
+	private static String findPath(Annotation ann) {
 		Class<?> at = ann.annotationType();
 		String path = "";
 		try {
