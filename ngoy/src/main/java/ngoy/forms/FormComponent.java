@@ -30,6 +30,12 @@ public class FormComponent implements OnInit {
 	@Override
 	public void ngOnInit() {
 		formInputs.clear();
+		formAction = null;
+
+		if (controller == null) {
+			return;
+		}
+
 		String controllerMethod;
 		if (controller instanceof List) {
 			List<?> list = (List<?>) controller;
