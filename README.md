@@ -39,6 +39,8 @@ Clone [ngoy-starter-web](https://github.com/krizzdewizz/ngoy-starter-web) to get
 
 Run the complete [Tour of Heroes](https://github.com/krizzdewizz/ngoy-tour-of-heroes) tutorial rewritten using ngoy.
 
+Checkout the [examples collection](https://github.com/krizzdewizz/ngoy-examples).
+
 Visit the ngoy [website](https://krizzdewizz.github.io/ngoy-website).
 
 More docs about to come...
