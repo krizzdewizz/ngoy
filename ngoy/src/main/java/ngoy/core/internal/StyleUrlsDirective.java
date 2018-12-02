@@ -1,6 +1,9 @@
 package ngoy.core.internal;
 
+import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.isSet;
@@ -8,7 +11,9 @@ import static ngoy.core.dom.XDom.appendChild;
 import static ngoy.core.dom.XDom.createElement;
 
 import java.io.InputStream;
-import java.util.Optional;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
@@ -17,13 +22,29 @@ import ngoy.core.Directive;
 import ngoy.core.Inject;
 import ngoy.core.NgoyException;
 import ngoy.core.OnCompile;
+import ngoy.core.Optional;
 
 @Directive(selector = "html")
 public class StyleUrlsDirective implements OnCompile {
+
+	private static final Pattern CSS_RULE_PATTERN = Pattern.compile("(.*)\\{");
+
+	public static class Config {
+		public Config(String href, boolean prefix) {
+			this.href = href;
+			this.prefix = prefix;
+		}
+
+		public String href;
+		public boolean prefix;
+	}
+
 	@Inject
 	public Resolver resolver;
 
-	public String href;
+	@Inject
+	@Optional
+	public Config config = new Config(null, false);
 
 	@Override
 	public void ngOnCompile(Jerry el, String componentClass) {
@@ -34,11 +55,11 @@ public class StyleUrlsDirective implements OnCompile {
 				return;
 			}
 
-			if (isSet(href)) {
+			if (isSet(config.href)) {
 				Jerry lnk = appendChild(findParent(el), createElement("link", el));
 				lnk.attr("rel", "stylesheet");
 				lnk.attr("type", "text/css");
-				lnk.attr("href", href);
+				lnk.attr("href", config.href);
 			} else {
 				Jerry st = appendChild(findParent(el), createElement("style", el));
 				st.attr("type", "text/css");
@@ -53,32 +74,46 @@ public class StyleUrlsDirective implements OnCompile {
 		return resolver.getCmpClasses()
 				.stream()
 				.map(this::getStyles)
+				.flatMap(List::stream)
 				.filter(style -> !style.isEmpty())
 				.collect(joining("\n"))
 				.trim();
 	}
 
-	private String getStyles(Class<?> clazz) {
-		return Optional.ofNullable(clazz.getAnnotation(Component.class))
-				.map(ann -> Stream.of(ann.styleUrls())
-						.filter(url -> !url.isEmpty())
-						.map(url -> {
-							InputStream in = clazz.getResourceAsStream(url);
-							if (in == null) {
-								throw new NgoyException("Style could not be found: '%s'. Component: %s", url, clazz.getName());
-							}
-							String style;
-							try (InputStream inn = in) {
-								style = copyToString(inn);
-							} catch (Exception e) {
-								throw wrap(e);
-							}
+	private String readStyles(Class<?> clazz, String url) {
+		InputStream in = clazz.getResourceAsStream(url);
+		if (in == null) {
+			throw new NgoyException("Style resource could not be found: '%s'. Component: %s", url, clazz.getName());
+		}
+		String style;
+		try (InputStream inn = in) {
+			style = copyToString(inn);
+		} catch (Exception e) {
+			throw wrap(e);
+		}
 
-							return style;
-						})
-						.collect(joining("\n")))
-				.orElse("");
+		return style;
+	}
 
+	private List<String> getStyles(Class<?> clazz) {
+		Component cmp = clazz.getAnnotation(Component.class);
+		if (cmp == null) {
+			return emptyList();
+		}
+
+		String selector = cmp.selector();
+
+		List<String> styles = Stream.of(cmp.styleUrls())
+				.filter(url -> !url.isEmpty())
+				.map(url -> readStyles(clazz, url))
+				.map(style -> addPrefix(style, selector))
+				.collect(toList());
+
+		for (String style : cmp.styles()) {
+			styles.add(addPrefix(style, selector));
+		}
+
+		return styles;
 	}
 
 	private Jerry findParent(Jerry el) {
@@ -93,4 +128,20 @@ public class StyleUrlsDirective implements OnCompile {
 		return parent;
 	}
 
+	private String addPrefix(String css, String prefix) {
+		if (!config.prefix || prefix.isEmpty()) {
+			return css;
+		}
+		Matcher matcher = CSS_RULE_PATTERN.matcher(css);
+		StringBuffer sb = new StringBuffer();
+		while (matcher.find()) {
+			String head = matcher.group(1);
+
+			String newHead = format("%s %s{", prefix, head);
+			matcher.appendReplacement(sb, newHead);
+		}
+		matcher.appendTail(sb);
+
+		return sb.toString();
+	}
 }

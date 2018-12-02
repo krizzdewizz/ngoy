@@ -34,7 +34,7 @@ public class SiteRenderer {
 	}
 
 	private void renderRoutes(Ngoy<?> ngoy, Path folder, Runnable compile) {
-		styleUrlsDirective.href = MAIN_CSS;
+		styleUrlsDirective.config.href = MAIN_CSS;
 		try {
 			compile.run();
 			router.withActivatedRoutesDo(route -> {
@@ -42,7 +42,7 @@ public class SiteRenderer {
 				renderPage(ngoy, folder.resolve(file));
 			});
 		} finally {
-			styleUrlsDirective.href = null;
+			styleUrlsDirective.config.href = null;
 		}
 	}
 

@@ -56,6 +56,7 @@ import ngoy.core.internal.CoreInternalModule;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.Resolver;
+import ngoy.core.internal.StyleUrlsDirective;
 import ngoy.internal.parser.ByteCodeTemplate;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.scan.ClassScanner;
@@ -190,6 +191,18 @@ public class Ngoy<T> {
 		 */
 		public Builder<T> contentType(String contentType) {
 			config.contentType = contentType;
+			return this;
+		}
+
+		/**
+		 * Whether to prefix css style rules with the component's selector (element
+		 * name).
+		 *
+		 * @param prefixCss true to prefix
+		 * @return this
+		 */
+		public Builder<T> prefixCss(boolean prefixCss) {
+			config.prefixCss = prefixCss;
 			return this;
 		}
 
@@ -353,6 +366,11 @@ public class Ngoy<T> {
 		 * Whether to treat the template as an expression.
 		 */
 		public boolean templateIsExpression;
+
+		/**
+		 * If true, prefixes a component's style rule with it's selector.
+		 */
+		public boolean prefixCss;
 	}
 
 	private final Config config;
@@ -399,6 +417,10 @@ public class Ngoy<T> {
 		boolean hasTranslateBundle = isSet(translateBundle);
 		if (hasTranslateBundle) {
 			addModuleDecls(TranslateModule.class, cmpDecls, pipeDecls, cmpProviders);
+		}
+
+		if (config.prefixCss) {
+			cmpProviders.add(useValue(StyleUrlsDirective.Config.class, new StyleUrlsDirective.Config(null, true)));
 		}
 
 		addModuleDecls(CoreInternalModule.class, cmpDecls, pipeDecls, cmpProviders);

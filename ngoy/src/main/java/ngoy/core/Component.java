@@ -59,6 +59,16 @@ public @interface Component {
 	String[] styleUrls() default {};
 
 	/**
+	 * CSS styles.
+	 * <p>
+	 * Styles are inlined into the template upon compilation. Either in first
+	 * existing &lt;style&gt; element or into a new one.
+	 * 
+	 * @return Styles
+	 */
+	String[] styles() default {};
+
+	/**
 	 * Providers/services that this component depends on.
 	 * 
 	 * @return providers
@@ -80,4 +90,5 @@ public @interface Component {
 	 * @see Config#contentType
 	 */
 	String contentType() default "";
+
 }
