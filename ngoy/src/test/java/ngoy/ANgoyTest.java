@@ -111,6 +111,11 @@ public abstract class ANgoyTest {
 					public String contentType() {
 						return "";
 					}
+
+					@Override
+					public String[] styles() {
+						return new String[0];
+					}
 				})
 				.make()
 				.load(ANgoyTest.class.getClassLoader())
