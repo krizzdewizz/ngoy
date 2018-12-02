@@ -39,8 +39,15 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 				.getNodeType() == ELEMENT) {
 			replaceNgIf(el);
 			replaceNgFor(el);
-			replaceSwitchCase(el);
-			replaceSwitchDefault(el);
+
+			if (el.attr("[ngSwitch]") != null) {
+				el.children()
+						.each((child, index) -> {
+							replaceSwitchCase(child);
+							replaceSwitchDefault(child);
+							return true;
+						});
+			}
 		}
 
 		target.start(el);

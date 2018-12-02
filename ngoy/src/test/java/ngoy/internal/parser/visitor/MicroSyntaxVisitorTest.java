@@ -61,7 +61,7 @@ public class MicroSyntaxVisitorTest {
 		accept(nodes, visitor);
 		assertThat(nodes).hasSize(1);
 		assertThat(nodes.get(0)
-				.getHtml()).isEqualTo("<ng-template [ngSwitchCase]=\"'happy'\"><div>HAPPY</div></ng-template>");
+				.getHtml()).isEqualTo("<div *ngSwitchCase=\"'happy'\">HAPPY</div>");
 	}
 
 	@Test
@@ -71,7 +71,7 @@ public class MicroSyntaxVisitorTest {
 		accept(nodes, visitor);
 		assertThat(nodes).hasSize(1);
 		assertThat(nodes.get(0)
-				.getHtml()).isEqualTo("<ng-template ngSwitchDefault><div>HAPPY</div></ng-template>");
+				.getHtml()).isEqualTo("<div *ngSwitchDefault>HAPPY</div>");
 	}
 
 	@Test

@@ -11,11 +11,10 @@ import ngoy.core.NgModule;
 
 public class SwitchTest extends ANgoyTest {
 
-	@Component(selector = "emoy", template = "" //
-			+ "<h1 [ngSwitch]=\"emotion\">" + //
-			"<ng-template [ngSwitchCase]=\"'happy'\"><div>HAPPY</div></ng-template>" + //
-			"<ng-template [ngSwitchCase]=\"'sad'\"><div>SAD</div></ng-template>" + //
-			"<ng-template ngSwitchDefault><div>NONE</div></ng-template>" + //
+	@Component(selector = "emoy", template = "<h1 [ngSwitch]=\"emotion\">\n" + //
+			"    <div *ngSwitchCase=\"'happy'\">HAPPY</div>\n" + //
+			"    <div *ngSwitchCase=\"'sad'\">SAD</div>\n" + //
+			"    <div *ngSwitchDefault>NONE</div>\n" + //
 			"</h1>")
 	public static class EmoyCmp {
 		@Input()
