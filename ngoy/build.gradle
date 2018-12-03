@@ -1,7 +1,7 @@
 buildscript {
 	repositories {
 	    jcenter()
-	    
+
 	     dependencies {
 	        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
 	    }
@@ -21,7 +21,7 @@ apply plugin: 'java-library'
 apply plugin: 'com.github.johnrengelman.shadow'
 sourceCompatibility = 1.8
 
-version = '1.0.0-rc0-SNAPSHOT'
+version = '1.0.0-rc0'
 
 project.ext.buildTimestamp = new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
 def implementationVersion = "${version} (${project.ext.buildTimestamp})"
@@ -35,7 +35,7 @@ dependencies {
 	implementation 'org.cojen:cojen:2.2.5'
 	implementation 'commons-cli:commons-cli:1.4'
 	implementation 'org.jodd:jodd-lagarto:5.0.6'
- 
+
     // JUnit test framework
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.assertj:assertj-core:3.11.1'
@@ -57,7 +57,7 @@ jacocoTestReport {
     }
 }
 
-tasks.withType(JavaCompile) { 
+tasks.withType(JavaCompile) {
      options.encoding = 'UTF-8'
 }
 
