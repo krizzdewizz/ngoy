@@ -5,14 +5,26 @@ git update-index --chmod=+x <file>
 # make release
 git checkout master
 git pull
+
 git merge develop
-gradle build
+
+# build.gradle remove -SNAPSHOT
+
+# build binaries
+gradle clean build javadoc shadowJar
+
+git add build.gradle
+git commit -m "<release>"
 git push
 
-# does not work with jitpack anymore -> create release manually on github
-git tag <release>
-git push origin <release>
+# check travis
 
-# update version in shell scripts
+# make release in github
 
 git checkout develop
+git merge master
+
+# build.gradle next version -SNAPSHOT
+git add build.gradle
+git commit -m "<next-release>-SNAPSHOT"
+git push
