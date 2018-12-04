@@ -73,18 +73,17 @@ public class CliTest {
 
 	@Test
 	public void testComponentNoPackage() throws Exception {
-		run("c", "person");
+		run("c", "Person");
 
-		Path packFolder = cwd.resolve("ngoygen/person");
-		assertThat(packFolder.toFile()
+		assertThat(cwd.toFile()
 				.listFiles()).hasSize(3);
 	}
 
 	@Test
 	public void testComponentPackage() throws Exception {
-		run("c", "-p", "org.qbert", "person");
+		run("c", "org.qbert.Person");
 
-		Path packFolder = cwd.resolve("org/qbert/person");
+		Path packFolder = cwd.resolve("org/qbert");
 		assertThat(packFolder.toFile()
 				.listFiles()).hasSize(3);
 	}
@@ -92,11 +91,11 @@ public class CliTest {
 	@Test
 	public void testComponentAppPrefix() throws Exception {
 
-		Files.write(cli.getPropertiesPath(), "app.prefix=myapp\napp.package=mypack".getBytes());
+		Files.write(cli.getPropertiesPath(), "app.prefix=myapp".getBytes());
 
-		run("c", "person");
+		run("c", "person.Person");
 
-		Path packFolder = cwd.resolve("mypack/person");
+		Path packFolder = cwd.resolve("person");
 		assertThat(packFolder.toFile()
 				.listFiles()).hasSize(3);
 
@@ -110,7 +109,7 @@ public class CliTest {
 		Path mainJava = cwd.resolve("src/main/java");
 		Files.createDirectories(mainJava);
 
-		run("p", "-p", "org.qbert", "person");
+		run("pi", "org.qbert.Person");
 
 		Path packFolder = cwd.resolve("src/main/java/org/qbert");
 		assertThat(packFolder.toFile()
@@ -120,7 +119,7 @@ public class CliTest {
 	@Test
 	public void testPipeSrcFolderParam() throws Exception {
 
-		run("p", "-p", "org.qbert", "-t", "abc/def", "person");
+		run("pi", "org.qbert.Person", "-t", "abc/def");
 
 		Path packFolder = cwd.resolve("abc/def/org/qbert");
 		assertThat(packFolder.toFile()

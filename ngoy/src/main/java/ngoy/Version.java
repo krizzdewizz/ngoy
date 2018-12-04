@@ -19,9 +19,19 @@ public final class Version {
 	}
 
 	/**
-	 * @return The ngoy version.
+	 * @return The ngoy version with timestamp.
 	 */
 	public static String getImplementationVersion() {
 		return IMPLEMENTATION_VERSION;
+	}
+
+	/**
+	 * @return The ngoy version without timestamp.
+	 */
+	public static String getVersion() {
+		int pos = IMPLEMENTATION_VERSION.indexOf('(');
+		return pos < 0 ? IMPLEMENTATION_VERSION
+				: IMPLEMENTATION_VERSION.substring(0, pos)
+						.trim();
 	}
 }

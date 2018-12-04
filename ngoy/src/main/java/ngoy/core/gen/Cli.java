@@ -1,6 +1,5 @@
 package ngoy.core.gen;
 
-import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
 
 import java.io.IOException;
@@ -30,19 +29,16 @@ public class Cli {
 	static {
 		options = new Options() //
 				.addOption("h", "help", false, "display this help")
-				.addOption("p", "package", true, "package prefix for the generated artifact. Default is 'ngoygen'.")
 				.addOption("t", "target", true, "target folder for the generated artifacts. A default is searched in the following order: [./src/main/java, ./src, .]")
 				.addOption(null, "version", false, "print version information");
 	}
 
 	private final Generator generator = new Generator();
 	private String appPrefix;
-	private String appPackage;
 
 	private void loadProperties() {
 
 		appPrefix = "app";
-		appPackage = "ngoygen";
 
 		Path propsPath = getPropertiesPath();
 		if (!Files.exists(propsPath)) {
@@ -53,7 +49,6 @@ public class Cli {
 			props.load(in);
 
 			ifPropSet(props, "app.prefix", prop -> appPrefix = prop);
-			ifPropSet(props, "app.package", prop -> appPackage = prop);
 		} catch (IOException e) {
 			throw wrap(e);
 		}
@@ -85,7 +80,7 @@ public class Cli {
 			String targetOption = cmd.getOptionValue('t');
 			Path target = targetOption != null ? getCwd().resolve(targetOption) : findSrcFolder();
 
-			if (cmd.hasOption('h') || !generate(argList, cmd.getOptionValue('p'), target)) {
+			if (cmd.hasOption('h') || !generate(argList, target)) {
 				printHelp();
 				return;
 			}
@@ -96,41 +91,45 @@ public class Cli {
 		}
 	}
 
-	private boolean generate(List<String> argList, String pack, Path target) {
+	private boolean generate(List<String> argList, Path target) {
 		if (argList.size() < 2) {
 			return false;
 		}
 
-		if (pack == null || pack.isEmpty()) {
-			pack = appPackage;
+		String artifactKind = argList.get(0);
+
+		String kind;
+		if (artifactKind.length() == 1) {
+			if (artifactKind.charAt(0) == 'p') {
+				throw new NgoyException("Ambiguous artifact type: %s. Could be [p]roject] or [p]ipe.", artifactKind);
+			}
+			kind = artifactKind;
+		} else {
+			kind = artifactKind.substring(0, 2);
 		}
 
-		char kind = argList.get(0)
-				.charAt(0);
 		String name = argList.get(1);
 
-		if (kind == 'c') {
-			// components are in sub package
-			pack = format("%s.%s", pack, name.replace('-', '_'));
-		}
-
-		GenModel model = new GenModel(appPrefix, pack, name);
+		GenModel model = new GenModel(appPrefix, name, Version.getVersion());
 
 		switch (kind) {
-		case 'c':
+		case "c":
 			generator.component(model, target);
 			return true;
-		case 'd':
+		case "d":
 			generator.directive(model, target);
 			return true;
-		case 'p':
-			generator.pipe(model, target);
-			return true;
-		case 'm':
+		case "m":
 			generator.mod(model, target);
 			return true;
-		case 's':
+		case "s":
 			generator.service(model, target);
+			return true;
+		case "pi":
+			generator.pipe(model, target);
+			return true;
+		case "pr":
+			generator.project(model, target);
 			return true;
 		default:
 			throw new NgoyException("Unknown artifact type '%s'", kind);
@@ -152,8 +151,8 @@ public class Cli {
 	}
 
 	private void printHelp() {
-		new HelpFormatter().printHelp("ngoy-gen [options] component|directive|pipe|module|service name",
-				"\nname should be lower-case-separated-with-dashes.\n\nExamples:\n  ngoy-gen component person-list\n  ngoy-gen -p com.example pipe quantity-format\n\nShortcuts works as well:\n  ngoy-gen p my-pipe\n\nOptions:",
+		new HelpFormatter().printHelp("ngoy-gen [options] project|component|directive|pipe|module|service name",
+				"\nname should be a fully qualified Java class name.\n\nExamples:\n  ngoy-gen component org.myapp.PersonList\n\nShortcuts works as well:\n  ngoy-gen pi org.myapp.MyPipe\n\nOptions:",
 				options, "");
 	}
 

@@ -1,2 +1,2 @@
 @echo off
-java -jar build/libs/ngoy-0.0.8-SNAPSHOT-all.jar %*
+java -jar %~dp0build/libs/ngoy-1.0.0-rc1-SNAPSHOT-all.jar %*

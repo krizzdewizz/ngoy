@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -45,8 +46,12 @@ public class Cli {
 	}
 
 	public void run(String[] args, OutputStream out) {
-
-		if (isGen(args)) {
+		if (isNew(args)) {
+			List<String> rest = new ArrayList<>(asList(args).subList(1, args.length));
+			rest.add(0, "project");
+			createGenCli().run(rest.toArray(new String[rest.size()]), out);
+			return;
+		} else if (isGen(args)) {
 			List<String> rest = asList(args).subList(1, args.length);
 			createGenCli().run(rest.toArray(new String[rest.size()]), out);
 			return;
@@ -95,6 +100,10 @@ public class Cli {
 		}
 	}
 
+	private boolean isNew(String[] args) {
+		return args.length > 0 && (args[0].equals("new"));
+	}
+
 	private boolean isGen(String[] args) {
 		return args.length > 0 && (args[0].equals("g") || args[0].equals("gen") || args[0].equals("generate"));
 	}
@@ -104,7 +113,8 @@ public class Cli {
 	}
 
 	private void printHelp() {
-		new HelpFormatter().printHelp("ngoy [g|gen|generate] [options] template", "\nIf generate is given, the rest of the arguments are passed over to ngoy-gen.\n\nOptions:", options, "");
+		new HelpFormatter().printHelp("ngoy [new|g|gen|generate] [options] template", "\nIf 'new' or 'generate' is given, the rest of the arguments are passed over to ngoy-gen.\n\nOptions:", options,
+				"");
 	}
 
 	private void printVersion() {

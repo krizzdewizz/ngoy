@@ -132,6 +132,18 @@ public class CliTest {
 	}
 
 	@Test
+	public void testNew() {
+		genCli = new ngoy.core.gen.Cli() {
+			@Override
+			public void run(String[] args, OutputStream out) {
+				Util.newPrintStream(out)
+						.print(asList(args));
+			}
+		};
+		assertThat(run("new", "org.myapp.Qbert")).isEqualTo("[project, org.myapp.Qbert]");
+	}
+
+	@Test
 	public void testGen() {
 		genCli = new ngoy.core.gen.Cli() {
 			@Override
