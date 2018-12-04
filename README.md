@@ -49,3 +49,8 @@ More docs about to come...
 
 [Travis CI](https://travis-ci.com/krizzdewizz/ngoy)
 
+### Build
+```
+gradle clean buildAll
+```
+

@@ -1,2 +1,4 @@
 #!/bin/bash
-java -jar `dirname "$0"`/build/libs/ngoy-1.0.0-rc1-SNAPSHOT-all.jar $@
+ngoyVersion=1.0.0-rc1-SNAPSHOT
+ngoyJar=`dirname "$0"`/ngoy-$ngoyVersion-all.jar
+java -jar $ngoyJar $@

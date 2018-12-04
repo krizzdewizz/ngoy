@@ -103,3 +103,11 @@ shadowJar {
 	minimize()
 }
 
+task buildAll(type: Zip, dependsOn: ['build', 'shadowJar']) {
+   from 'build/libs/' include "ngoy-$version-all.jar"
+   from '.' include 'ngoy'
+   from '.' include 'ngoy.cmd'
+   archiveName "ngoy-$version-all.zip"
+   into "ngoy-$version"
+   destinationDir(file('/build/libs'))
+}

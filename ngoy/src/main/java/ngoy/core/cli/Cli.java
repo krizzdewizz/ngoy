@@ -113,8 +113,8 @@ public class Cli {
 	}
 
 	private void printHelp() {
-		new HelpFormatter().printHelp("ngoy [new|g|gen|generate] [options] template", "\nIf 'new' or 'generate' is given, the rest of the arguments are passed over to ngoy-gen.\n\nOptions:", options,
-				"");
+		new HelpFormatter().printHelp("ngoy [new|g|gen|generate] [options] template",
+				"\nIf 'generate' is given, the rest of the arguments are passed over to ngoy-gen. 'new' is an alias for 'generate project'.\n\nOptions:", options, "");
 	}
 
 	private void printVersion() {
