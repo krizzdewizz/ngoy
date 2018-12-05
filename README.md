@@ -43,7 +43,24 @@ Checkout the [examples collection](https://github.com/krizzdewizz/ngoy-examples)
 
 Visit the ngoy [website](https://krizzdewizz.github.io/ngoy-website).
 
-More docs about to come...
+## Distribution
+
+You can download the ngoy binaries from [here](https://github.com/krizzdewizz/ngoy/releases) or via jitpack.io:
+
+`build.gradle`:
+```
+repositories {
+	maven { url "https://jitpack.io" }
+}
+
+dependencies {
+	implementation("com.github.krizzdewizz:ngoy:1.0.0-rc0")
+}
+```
+
+## Feedback
+
+We would love to hear your feedback! Please file an issue [here](https://github.com/krizzdewizz/ngoy/issues). 
 
 ## Development
 
