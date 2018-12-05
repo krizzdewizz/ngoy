@@ -213,7 +213,7 @@ public class Ctx {
 					root = rootClass.getName();
 				}
 			}
-			throw new NgoyException(e, format("Error while converting result of expression '%s' to boolean: %s. model: %s. templateUrl: %s.", expr, e.getMessage(), root, templateUrl));
+			throw new NgoyException(e, format("Error while evaluating boolean expression '%s': %s. model: %s. templateUrl: %s.", expr, e.getMessage(), root, templateUrl));
 		}
 	}
 

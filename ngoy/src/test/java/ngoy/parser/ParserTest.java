@@ -10,13 +10,13 @@ import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
 import jodd.jerry.Jerry;
-import ngoy.ANgoyTest;
 import ngoy.JavaTemplate;
 import ngoy.common.UpperCasePipe;
 import ngoy.core.Directive;
@@ -107,13 +107,16 @@ public class ParserTest {
 		// System.out.println(flatten(html));
 		String html = new String(baos.toByteArray(), "UTF-8");
 
-		Path src = ANgoyTest.getTestPath()
-				.resolve("X.java");
+		Path src = getTestPath().resolve("X.java");
 		Files.write(src, html.getBytes("UTF-8"));
 	}
 
 	String flatten(String html) {
 		return html.replaceAll("\\n", "");
+	}
+
+	Path getTestPath() {
+		return Paths.get(System.getProperty("user.dir"), "src/test/java/ngoy");
 	}
 
 }

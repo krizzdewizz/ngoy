@@ -16,12 +16,12 @@ import java.util.function.Consumer;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 
 import ngoy.Version;
 import ngoy.core.NgoyException;
 import ngoy.core.Util;
+import ngoy.core.cli.internal.Formatter;
 
 public class Cli {
 
@@ -59,6 +59,14 @@ public class Cli {
 	}
 
 	public void run(String[] args, OutputStream out) {
+		try {
+			doRun(args, out);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void doRun(String[] args, OutputStream out) {
 
 		loadProperties();
 
@@ -151,8 +159,8 @@ public class Cli {
 	}
 
 	private void printHelp() {
-		new HelpFormatter().printHelp("ngoy-gen [options] project|component|directive|pipe|module|service name",
-				"\nname should be a fully qualified Java class name.\n\nExamples:\n  ngoy-gen component org.myapp.PersonList\n\nShortcuts works as well:\n  ngoy-gen pi org.myapp.MyPipe\n\nOptions:",
+		new Formatter().printHelp("ngoy-gen [options] project|component|directive|pipe|module|service name",
+				"\n'name' should be a fully qualified Java class name.\n\nExamples:\n  ngoy-gen component org.myapp.PersonList\n\nShortcuts works as well:\n  ngoy-gen pi org.myapp.MyPipe\n\nOptions:",
 				options, "");
 	}
 

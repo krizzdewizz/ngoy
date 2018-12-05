@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import ngoy.ANgoyTest;
@@ -15,16 +14,6 @@ import ngoy.core.NgModule;
 import ngoy.model.Person;
 
 public class TextPlainWithCmpsTest extends ANgoyTest {
-
-	@Before
-	public void beforeEach() {
-		parseForJUnit = false;
-	}
-
-	@Before
-	public void afterEach() {
-		parseForJUnit = null;
-	}
 
 	@Component(selector = "header", template = "Welcome, {{name}}\n")
 	public static class HeaderCmp {

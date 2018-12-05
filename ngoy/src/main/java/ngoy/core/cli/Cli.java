@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -25,6 +24,7 @@ import org.apache.commons.cli.ParseException;
 import ngoy.Ngoy.Config;
 import ngoy.Version;
 import ngoy.core.Context;
+import ngoy.core.cli.internal.Formatter;
 
 public class Cli {
 
@@ -46,6 +46,14 @@ public class Cli {
 	}
 
 	public void run(String[] args, OutputStream out) {
+		try {
+			doRun(args, out);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void doRun(String[] args, OutputStream out) {
 		if (isNew(args)) {
 			List<String> rest = new ArrayList<>(asList(args).subList(1, args.length));
 			rest.add(0, "project");
@@ -113,7 +121,7 @@ public class Cli {
 	}
 
 	private void printHelp() {
-		new HelpFormatter().printHelp("ngoy [new|g|gen|generate] [options] template",
+		new Formatter().printHelp("ngoy [new|g|gen|generate] [options] template",
 				"\nIf 'generate' is given, the rest of the arguments are passed over to ngoy-gen. 'new' is an alias for 'generate project'.\n\nOptions:", options, "");
 	}
 

@@ -1,12 +1,13 @@
 package ngoy;
 
 import static java.util.Collections.emptyMap;
-import static ngoy.ANgoyTest.getTestResourcesPath;
 import static ngoy.core.Util.newPrintStream;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import ngoy.common.DatePipe;
 import ngoy.common.LowerCasePipe;
@@ -20,6 +21,10 @@ import ngoy.testapp.PersonService;
 import ngoy.testapp.TestApp;
 
 public class XTest {
+
+	private static Path getTestResourcesPath() {
+		return Paths.get(System.getProperty("user.dir"), "src\\test\\resources\\ngoy");
+	}
 
 //	@org.junit.Test
 	public void testNgoy() throws Exception {

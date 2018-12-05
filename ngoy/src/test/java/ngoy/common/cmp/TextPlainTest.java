@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import ngoy.ANgoyTest;
@@ -13,17 +12,6 @@ import ngoy.core.Component;
 import ngoy.model.Person;
 
 public class TextPlainTest extends ANgoyTest {
-
-	@Before
-	public void beforeEach() {
-		parseForJUnit = false;
-	}
-
-	@Before
-	public void afterEach() {
-		parseForJUnit = null;
-	}
-
 	@Component(selector = "test", contentType = "text/plain", template = "\nage of {{person.name}}:\t {{person.age}}\n")
 	public static class Cmp {
 		public Person person = new Person("peter", 22);

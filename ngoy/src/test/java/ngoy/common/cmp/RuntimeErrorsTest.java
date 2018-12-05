@@ -89,8 +89,7 @@ public class RuntimeErrorsTest extends ANgoyTest {
 	@Test
 	public void testNotBoolean() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Error while converting result of expression"));
-		expectedEx.expectMessage(containsString("to boolean"));
+		expectedEx.expectMessage(containsString("Error while evaluating boolean expression"));
 		render(CmpNotBoolean.class);
 	}
 }

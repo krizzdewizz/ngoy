@@ -5,8 +5,6 @@ import static ngoy.core.NgoyException.wrap;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.annotation.Annotation;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -22,16 +20,7 @@ import ngoy.core.Provider;
 
 public abstract class ANgoyTest {
 
-	public static Path getTestPath() {
-		return Paths.get(System.getProperty("user.dir"), "src\\test\\java\\ngoy");
-	}
-
-	public static Path getTestResourcesPath() {
-		return Paths.get(System.getProperty("user.dir"), "src\\test\\resources\\ngoy");
-	}
-
 	protected boolean debugPrint;
-	protected Boolean parseForJUnit;
 
 	@Rule
 	public MockitoRule mockitoRule = MockitoJUnit.rule();
