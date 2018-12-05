@@ -167,7 +167,7 @@ public class Cli {
 	private void ifPropSet(Properties props, String name, Consumer<String> value) {
 		String prop = props.getProperty(name);
 		if (prop != null) {
-			value.accept(prop);
+			value.accept(prop.trim());
 		}
 	}
 }
