@@ -25,12 +25,12 @@ Ngoy.renderString("hello {{name}}", Context.of("name", "world"), System.out);
 @Component(selector = "app", template = "hello {{ name | uppercase }}")
 public class App {
     public String name = "world";
-}
 
-public static void main(String[] args) {
-    Ngoy.app(App.class)
-            .build()
-            .render(System.out);
+    public static void main(String[] args) {
+        Ngoy.app(App.class)
+                .build()
+                .render(System.out);
+    }
 }
 
 // hello WORLD
