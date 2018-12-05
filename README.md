@@ -1,12 +1,13 @@
-[![master](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=master)](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=master) [![develop](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=develop)](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=develop)
+# [ngoy](https://krizzdewizz.github.io/ngoy-website)
 
-# ngoy
 
-A template engine for the JVM, based on the Angular+ component architecture.
+A template engine for the JVM, based on the Angular component architecture.
 
 ngoy == Template + JVM + Angular
 
 enjoy ngoy!
+
+[![master](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=master)](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=master) [![develop](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=develop)](https://travis-ci.com/krizzdewizz/ngoy.svg?branch=develop)
 
 ## Examples
 
@@ -35,9 +36,11 @@ public static void main(String[] args) {
 // hello WORLD
 ```
 
+## Getting Started
+
 Clone [ngoy-starter-web](https://github.com/krizzdewizz/ngoy-starter-web) to get started.
 
-Run the complete [Tour of Heroes](https://github.com/krizzdewizz/ngoy-tour-of-heroes) tutorial rewritten using ngoy.
+Run the complete [Tour of Heroes](https://github.com/krizzdewizz/ngoy-tour-of-heroes) tutorial rewrite using ngoy.
 
 Checkout the [examples collection](https://github.com/krizzdewizz/ngoy-examples).
 
@@ -60,7 +63,7 @@ dependencies {
 
 ## Feedback
 
-We would love to hear your feedback! Please file an issue [here](https://github.com/krizzdewizz/ngoy/issues). 
+We would love to hear your feedback! Please file an issue [here](https://github.com/krizzdewizz/ngoy/issues).
 
 ## Development
 
