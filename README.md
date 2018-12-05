@@ -57,7 +57,7 @@ repositories {
 }
 
 dependencies {
-	implementation("com.github.krizzdewizz:ngoy:1.0.0-rc0")
+	implementation("com.github.krizzdewizz:ngoy:1.0.0-rc1")
 }
 ```
 
