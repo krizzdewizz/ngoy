@@ -11,7 +11,7 @@ git merge develop
 # build.gradle remove -SNAPSHOT
 
 # build binaries
-gradle clean build javadoc shadowJar
+gradle clean buildAll
 
 git add build.gradle
 git commit -m "<release>"
