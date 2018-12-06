@@ -8,12 +8,12 @@ git pull
 
 git merge develop
 
-# build.gradle remove -SNAPSHOT
+# remove -SNAPSHOT in build.gradle, ngoy, ngoy.cmd
 
 # build binaries
 gradle clean buildAll
 
-git add build.gradle
+git add build.gradle ngoy ngoy.cmd
 git commit -m "<release>"
 git push
 
@@ -24,7 +24,7 @@ git push
 git checkout develop
 git merge master
 
-# build.gradle next version -SNAPSHOT
-git add build.gradle
+# next version -SNAPSHOT in build.gradle, ngoy, ngoy.cmd
+git add build.gradle ngoy ngoy.cmd
 git commit -m "<next-release>-SNAPSHOT"
 git push

@@ -1,4 +1,4 @@
 #!/bin/bash
-ngoyVersion=1.0.0-rc2
+ngoyVersion=1.0.0-rc3-SNAPSHOT
 ngoyJar=`dirname "$0"`/ngoy-$ngoyVersion-all.jar
 java -jar $ngoyJar "$@"
