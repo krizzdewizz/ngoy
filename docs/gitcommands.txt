@@ -9,6 +9,7 @@ git pull
 git merge develop
 
 # remove -SNAPSHOT in build.gradle, ngoy, ngoy.cmd
+# update version in README.md
 
 # build binaries
 gradle clean buildAll
