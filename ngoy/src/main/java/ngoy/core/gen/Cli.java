@@ -160,7 +160,7 @@ public class Cli {
 
 	private void printHelp() {
 		new Formatter().printHelp("ngoy-gen [options] project|component|directive|pipe|module|service name",
-				"\n'name' should be a fully qualified Java class name.\n\nExamples:\n  ngoy-gen component org.myapp.PersonList\n\nShortcuts works as well:\n  ngoy-gen pi org.myapp.MyPipe\n\nOptions:",
+				"\n'name' should be a fully qualified Java class name.\n\nExamples:\n  ngoy-gen component org.myapp.person.PersonList\n\nShortcuts works as well:\n  ngoy-gen pi org.myapp.MyPipe\n\nOptions:",
 				options, "");
 	}
 
