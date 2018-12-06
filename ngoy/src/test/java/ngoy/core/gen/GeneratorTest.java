@@ -20,7 +20,7 @@ import ngoy.core.Util;
 
 public class GeneratorTest {
 
-	private static final String TEST_VERSION = "1.0.0-rc2";
+	private static final String TEST_VERSION = "1.0.0-rc3";
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
