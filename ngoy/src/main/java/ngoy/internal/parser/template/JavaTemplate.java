@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.commons.text.StringEscapeUtils;
+import org.unbescape.java.JavaEscape;
 
 import ngoy.core.NgoyException;
 import ngoy.core.Pipe;
@@ -40,7 +40,7 @@ import ngoy.internal.parser.ParserHandler;
 public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	public static String escapeJava(String text) {
-		return StringEscapeUtils.escapeJava(text);
+		return JavaEscape.escapeJava(text);
 	}
 
 	private static class CmpVar {

@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+import org.unbescape.html.HtmlEscape;
+
 /**
  * Utils.
  * 
@@ -79,27 +81,7 @@ public class Util {
 	 * @return Escaped text
 	 */
 	public static String escapeHtmlXml(String text) {
-		// why 20?: doubleling seems to much as those chars don't occur often
-		StringBuilder sb = new StringBuilder(text.length() + 20);
-		for (int i = 0, n = text.length(); i < n; i++) {
-			switch (text.charAt(i)) {
-			case '"':
-				sb.append("&quot;");
-				break;
-			case '&':
-				sb.append("&amp;");
-				break;
-			case '<':
-				sb.append("&lt;");
-				break;
-			case '>':
-				sb.append("&gt;");
-				break;
-			default:
-				sb.append(text.charAt(i));
-			}
-		}
-		return sb.toString();
+		return HtmlEscape.escapeHtml5(text);
 	}
 
 	/**
