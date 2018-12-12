@@ -2,16 +2,18 @@ package ngoy.internal.parser;
 
 import static ngoy.core.Util.escape;
 
+import ngoy.internal.parser.template.JavaTemplate;
+
 public abstract class BufferedOutput implements Output {
 	private final StringBuilder buf = new StringBuilder();
 
 	@Override
-	public void print(String text, boolean isExpr, boolean escape,  String contentType) {
+	public void print(String text, boolean isExpr, boolean escape, String contentType) {
 		if (isExpr) {
 			flush();
 			doPrint(text, true);
 		} else {
-			buf.append(escape ? escape(text, contentType) : text);
+			buf.append(escape ? JavaTemplate.escapeJava(escape(text, contentType)) : text);
 		}
 	}
 

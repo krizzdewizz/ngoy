@@ -64,13 +64,15 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final Map<String, Integer> localVars = new HashMap<>();
 	private final Map<String, Variable<?>> variables;
 	private final boolean bodyOnly;
+	private final String contentType;
 	private String cmpVar;
 
-	public JavaTemplate(PrintStream prn, boolean bodyOnly, Map<String, Variable<?>> variables) {
+	public JavaTemplate(PrintStream prn, String contentType, boolean bodyOnly, Map<String, Variable<?>> variables) {
 		super(new PrintStreamPrinter(prn));
 		this.bodyOnly = bodyOnly;
 		this.variables = variables;
-		out = new TextOutput(printer);
+		this.contentType = contentType;
+		out = new TextOutput(printer, () -> depth);
 	}
 
 	@Override
@@ -84,7 +86,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		addApiHelpers();
 		addPipeMethods(pipes);
 
-		$("  public static void render(", Ctx.class, " ctx) throws Exception {");
+		$("public static void render(", Ctx.class, " ctx) throws Exception {");
 		setPipes(pipes);
 		addVariables();
 
@@ -116,9 +118,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 					.value();
 			String pipeFun = format("$%s", pipeName);
 			pipeNames.add(pipeFun);
-			$$("private static ", PipeTransform.class, " __", pipeFun, ";");
+			$("private static ", PipeTransform.class, " _", pipeFun, ";");
 			$("private static Object ", pipeFun, "(Object obj, Object... args) {");
-			$("  return __", pipeFun, ".transform(obj, args);");
+			$("  return _", pipeFun, ".transform(obj, args);");
 			$("}");
 		}
 	}
@@ -128,7 +130,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			String pipeName = pipe.getAnnotation(Pipe.class)
 					.value();
 			String pipeFun = format("$%s", pipeName);
-			$("__", pipeFun, " = ctx.getPipe(\"", pipeName, "\");");
+			$("_", pipeFun, " = ctx.getPipe(\"", pipeName, "\");");
 		}
 	}
 
@@ -151,7 +153,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			printOutExpr(prefixName(text, cmpVars.peek().name));
 		} else {
 			if (escape) {
-				out.printEscaped(escapeJava(text), false);
+				out.print(text, false, true, contentType);
 			} else {
 				printOut(text);
 			}
@@ -244,7 +246,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			idx++;
 		}
 		localVars.put(tag, idx);
-		return format("_%s%s", tag, idx);
+		return format("_%s%s", tag, idx == 0 ? "" : String.valueOf(idx));
 	}
 
 	@Override
@@ -404,9 +406,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String cmpClass = cmpRef.clazz.getName()
 				.replace('$', '.');
 
-		cmpVar = createLocalVar("cmp");
+		cmpVar = createLocalVar(cmpRef.clazz.getSimpleName());
 		String cmpCall = appRoot ? "cmp" : "cmpNew";
-		$(cmpClass, " ", cmpVar, "=(", cmpClass, ")ctx.", cmpCall, " (", cmpClass, ".class);");
+		$(cmpClass, " ", cmpVar, "=(", cmpClass, ")ctx.", cmpCall, "(", cmpClass, ".class);");
 		$("{");
 
 		// testForOfNested2

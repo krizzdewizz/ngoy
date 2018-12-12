@@ -95,7 +95,7 @@ public class JavaParserTest {
 		Ngoy.createTemplate = (String className, Parser parser, String template, String contentType) -> {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			PrintStream out = newPrintStream(baos);
-			JavaTemplate bct = new JavaTemplate(out, false, emptyMap());
+			JavaTemplate bct = new JavaTemplate(out, "", false, emptyMap());
 			parser.parse(template, bct);
 			try {
 				MyTemplate.code = new String(baos.toByteArray(), "UTF-8");

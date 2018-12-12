@@ -731,7 +731,7 @@ public class Ngoy<T> {
 		}
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PrintStream ps = new PrintStream(baos)) {
-			JavaTemplate tpl = new JavaTemplate(ps, true, context != null ? context.getVariables() : emptyMap());
+			JavaTemplate tpl = new JavaTemplate(ps, getContentType(config), true, context != null ? context.getVariables() : emptyMap());
 
 			parser.parse(template, tpl);
 
