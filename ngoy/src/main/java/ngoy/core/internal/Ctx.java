@@ -1,15 +1,17 @@
 package ngoy.core.internal;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.joining;
 import static ngoy.core.Util.escape;
 
 import java.io.PrintStream;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
@@ -155,9 +157,25 @@ public class Ctx {
 		return (PipeTransform) injector.get(pipeProvider.getProvide());
 	}
 
-	public String join(List<String> list, String delimiter) {
-		return list.stream()
-				.map(Object::toString)
-				.collect(joining(delimiter));
+	public static String join(Collection<String> list, String delimiter) {
+		StringJoiner joiner = new StringJoiner(delimiter);
+		for (String it : list) {
+			joiner.add(it);
+		}
+		return joiner.toString();
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static Map Map(Object... pairs) {
+		Map map = new HashMap();
+		for (int i = 0, n = pairs.length; i < n; i += 2) {
+			map.put(pairs[i], pairs[i + 1]);
+		}
+		return map;
+	}
+
+	@SuppressWarnings({ "rawtypes" })
+	public static List List(Object... items) {
+		return asList(items);
 	}
 }

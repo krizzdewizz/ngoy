@@ -739,7 +739,7 @@ public class Ngoy<T> {
 			java.nio.file.Files.write(java.nio.file.Paths.get("d:/downloads/qbert.java"), baos.toByteArray());
 
 			ClassBodyEvaluator c = new ClassBodyEvaluator();
-			c.setClassName("ngoy.Qbert" + (qbert++));
+//			c.setClassName("ngoy.Qbert" + (qbert++));
 
 			c.cook(code);
 

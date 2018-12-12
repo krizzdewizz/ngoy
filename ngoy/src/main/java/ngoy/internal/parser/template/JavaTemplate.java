@@ -9,10 +9,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,13 +81,25 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			$("public class X {");
 		}
 
+		addApiHelpers();
 		addPipeMethods(pipes);
+
 		$("  public static void render(", Ctx.class, " ctx) throws Exception {");
 		setPipes(pipes);
 		addVariables();
 
 		textOverrideVar = createLocalVar("textOverride");
 		$("String ", textOverrideVar, ";");
+	}
+
+	private void addApiHelpers() {
+		$("private static ", Map.class, " Map(Object...pairs) {");
+		$(" return ", Ctx.class, ".Map(pairs);");
+		$("}");
+
+		$("private static ", List.class, " List(Object...items) {");
+		$(" return ", Ctx.class, ".List(items);");
+		$("}");
 	}
 
 	private void addVariables() {
@@ -150,6 +162,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		Set<String> ex = new HashSet<>(pipeNames);
 		ex.addAll(variables.keySet());
 		ex.add("java");
+		ex.add("Map");
+		ex.add("List");
 		Set<String> more = prefixExcludes.peek();
 		if (more != null) {
 			ex.addAll(more);
@@ -440,7 +454,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private void attributeEval(String attrName, boolean forStyles, List<String[]> exprPairs) {
 		String listVar = createLocalVar(format("%slist", forStyles ? "style" : "class"));
-		$(List.class, "<String> ", listVar, " = new ", ArrayList.class, "<String>();");
+		$(Set.class, "<String> ", listVar, " = new ", LinkedHashSet.class, "<String>();");
 		for (String[] pair : exprPairs) {
 			String clazz = pair[0];
 			String expr = pair[1];
@@ -449,19 +463,29 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			} else {
 				String ex = prefixName(expr, cmpVars.peek().name);
 				if (forStyles) {
-					String[] classAndUnit = parseUnit(clazz);
-					String unit = classAndUnit[1];
-					clazz = classAndUnit[0];
+					if (clazz.equals("ngStyle")) {
+						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()) {");
+						String valueVar = createLocalVar("styleValue");
+						$("Object ", valueVar, "=", "entry.getValue();");
+						$("  if (", valueVar, "!= null && !", valueVar, ".toString().isEmpty()) {");
+						$(listVar, ".add(((String)entry.getKey()).concat(\":\").concat(", valueVar, ".toString()));");
+						$("  }");
+						$("}");
+					} else {
+						String[] classAndUnit = parseUnit(clazz);
+						String unit = classAndUnit[1];
+						clazz = classAndUnit[0];
 
-					String exVar = createLocalVar("expr");
-					$("Object ", exVar, "=", ex, ";");
-					$("if (", exVar, " != null) {");
-					$$(listVar, ".add(\"", clazz, ":\".concat(", exVar, ".toString())");
-					if (!unit.isEmpty()) {
-						$$(".concat(\"", unit, "\")");
+						String exVar = createLocalVar("expr");
+						$("Object ", exVar, "=", ex, ";");
+						$("if (", exVar, " != null && !", exVar, ".toString().isEmpty()) {");
+						$$(listVar, ".add(\"", clazz, ":\".concat(", exVar, ".toString())");
+						if (!unit.isEmpty()) {
+							$$(".concat(\"", unit, "\")");
+						}
+						$(");");
+						$("}");
 					}
-					$(");");
-					$("}");
 				} else {
 					if (clazz.equals("ngClass")) {
 						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()) {");
@@ -483,7 +507,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("if (!", listVar, ".isEmpty()) {");
 		printOut(" ", attrName, "=\"");
 		flushOut();
-		printOutExpr(format("ctx.join(%s, \"%s\")", listVar, delimiter));
+		printOutExpr(format("%s.join(%s, \"%s\")", Ctx.class.getName(), listVar, delimiter));
 		printOut("\"");
 		flushOut();
 		$("}");
