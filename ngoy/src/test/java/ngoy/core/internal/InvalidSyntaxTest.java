@@ -48,7 +48,7 @@ public class InvalidSyntaxTest extends ANgoyTest {
 	@Test
 	public void testObjBinding() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("unexpected token"));
+		expectedEx.expectMessage(containsString("Unexpected token"));
 //		expectedEx.expectMessage(containsString(CmpNestedObj.class.getName()));
 //		expectedEx.expectMessage(containsString("templateUrl: 'invalid-syntax-obj.html'"));
 		// expectedEx.expectMessage(containsString("position: [8:")); //

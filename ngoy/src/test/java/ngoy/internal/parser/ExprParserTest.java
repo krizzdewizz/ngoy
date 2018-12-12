@@ -1,11 +1,14 @@
 package ngoy.internal.parser;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+
+import java.util.HashSet;
 
 import org.junit.Test;
 
@@ -64,12 +67,50 @@ public class ExprParserTest {
 	}
 
 	@Test
-	public void test() throws Exception {
+	public void prefixField() throws Exception {
+		String code = ExprParser.prefixName("name.qbert", "_cmp", emptySet());
+		assertThat(code).isEqualTo("_cmp.name.qbert");
+	}
 
-		String expr = "name.qbert.toLowerCase(locale == null ? defaultLocale : locale)";
+	@Test
+	public void prefixMethodOnly() throws Exception {
+		String code = ExprParser.prefixName("getName()", "_cmp", emptySet());
+		assertThat(code).isEqualTo("_cmp.getName()");
+	}
 
-		String code = ExprParser.prefixName(expr, "_cmp", emptySet());
-		System.out.println(code);
+	@Test
+	public void prefixMethodNested() throws Exception {
+		String code = ExprParser.prefixName("getName(getX(), getY(getQ()))", "_cmp", emptySet());
+		assertThat(code).isEqualTo("_cmp.getName(_cmp.getX(), _cmp.getY(_cmp.getQ()))");
+	}
+
+	@Test
+	public void prefixMethodChain() throws Exception {
+		String code = ExprParser.prefixName("getName().getX()", "_cmp", emptySet());
+		assertThat(code).isEqualTo("_cmp.getName().getX()");
+	}
+
+	@Test
+	public void prefixMethodQualified() throws Exception {
+		String code = ExprParser.prefixName("name.qbert.toLowerCase()", "_cmp", emptySet());
+		assertThat(code).isEqualTo("_cmp.name.qbert.toLowerCase()");
+	}
+
+	@Test
+	public void prefixMethod() throws Exception {
+		String code = ExprParser.prefixName("name.qbert.toLowerCase(locale == null ? defaultLocale : locale)", "_cmp", emptySet());
 		assertThat(code).isEqualTo("_cmp.name.qbert.toLowerCase(_cmp.locale == null ? _cmp.defaultLocale : _cmp.locale)");
+	}
+
+	@Test
+	public void prefixExcludes() throws Exception {
+		String code = ExprParser.prefixName("java.util.Locale.getDefault()", "_cmp", new HashSet<>(asList("java")));
+		assertThat(code).isEqualTo("java.util.Locale.getDefault()");
+	}
+
+	@Test
+	public void prefixExcludesMethod() throws Exception {
+		String code = ExprParser.prefixName("$pipe()", "_cmp", new HashSet<>(asList("$pipe")));
+		assertThat(code).isEqualTo("$pipe()");
 	}
 }

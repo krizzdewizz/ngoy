@@ -31,7 +31,6 @@ repositories {
 }
 
 dependencies {
-	implementation 'com.github.javaparser:javaparser-core:3.7.1'
 	implementation 'org.codehaus.janino:janino:3.0.11'
 	implementation 'commons-cli:commons-cli:1.4'
 	implementation 'org.jodd:jodd-lagarto:5.0.6'

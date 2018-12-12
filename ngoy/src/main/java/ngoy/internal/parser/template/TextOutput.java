@@ -1,9 +1,8 @@
-package ngoy.parser;
+package ngoy.internal.parser.template;
 
 import static java.lang.String.format;
 
 import ngoy.internal.parser.BufferedOutput;
-import ngoy.util.Printer;
 
 public class TextOutput extends BufferedOutput {
 

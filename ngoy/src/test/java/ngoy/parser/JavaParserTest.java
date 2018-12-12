@@ -23,8 +23,8 @@ import ngoy.core.Component;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
 import ngoy.core.internal.Ctx;
-import ngoy.internal.parser.JavaTemplate;
 import ngoy.internal.parser.Parser;
+import ngoy.internal.parser.template.JavaTemplate;
 import ngoy.model.Person;
 
 public class JavaParserTest {

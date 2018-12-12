@@ -1,4 +1,4 @@
-package ngoy.util;
+package ngoy.internal.parser.template;
 
 public class CodeBuilder {
 	private int _depth;

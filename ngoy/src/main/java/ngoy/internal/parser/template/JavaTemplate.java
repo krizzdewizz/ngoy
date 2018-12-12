@@ -1,4 +1,4 @@
-package ngoy.internal.parser;
+package ngoy.internal.parser.template;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -28,12 +28,12 @@ import ngoy.core.Util;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.IterableWithVariables;
+import ngoy.internal.parser.ExprParser;
+import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.Inputs.CmpInput;
 import ngoy.internal.parser.Inputs.InputType;
 import ngoy.internal.parser.Inputs.ValueType;
-import ngoy.parser.TextOutput;
-import ngoy.util.CodeBuilder;
-import ngoy.util.PrintStreamPrinter;
+import ngoy.internal.parser.ParserHandler;
 
 public class JavaTemplate extends CodeBuilder implements ParserHandler {
 

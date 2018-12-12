@@ -1,4 +1,4 @@
-package ngoy.util;
+package ngoy.internal.parser.template;
 
 import java.io.PrintStream;
 
