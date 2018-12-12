@@ -12,12 +12,13 @@ import static ngoy.core.Provider.useValue;
 import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.getTemplate;
 import static ngoy.core.Util.isSet;
-import static ngoy.core.Util.newPrintStream;
+import static ngoy.core.Util.newBufferedWriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Writer;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -595,13 +596,9 @@ public class Ngoy<T> {
 
 			events.tick();
 
-//			if (config.templateIsExpression) {
-//				NgoyScript script = new NgoyScript(resolver);
-//				Object result = script.run(template, ctx);
-//				newPrintStream(out).print(result);
-//			} else {
-			invokeRender(ctx, newPrintStream(out));
-//			}
+			try (Writer writer = newBufferedWriter(out)) {
+				invokeRender(ctx, writer);
+			}
 		} catch (Exception e) {
 			throw wrap(e);
 		}
@@ -707,7 +704,7 @@ public class Ngoy<T> {
 		templateClass = createTemplate(templateClassName(), parser, template != null ? template : getTemplate(appRoot), getContentType(config));
 	}
 
-	private void invokeRender(Ctx ctx, PrintStream out) {
+	private void invokeRender(Ctx ctx, Writer out) {
 		try {
 			ctx.setOut(out, getContentType(config));
 			Method m = templateClass.getMethod("render", Ctx.class);
@@ -748,8 +745,6 @@ public class Ngoy<T> {
 			throw wrap(e);
 		}
 	}
-
-	static int qbert = 0;
 
 	private String getContentType(Config config) {
 		String contentType = config.contentType;

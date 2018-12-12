@@ -4,7 +4,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static ngoy.core.Util.escape;
 
-import java.io.PrintStream;
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.Collection;
@@ -34,7 +35,7 @@ public class Ctx {
 
 	private final Map<String, Provider> pipeDecls;
 	private final Injector injector;
-	private PrintStream out;
+	private Writer out;
 	private String contentType;
 	private Map<String, Variable<?>> variables = new HashMap<>();
 
@@ -111,6 +112,38 @@ public class Ctx {
 		return injector;
 	}
 
+//	public void printEscaped(boolean obj) {
+//		out.print(obj);
+//	}
+//
+//	public void printEscaped(byte obj) {
+//		out.print(obj);
+//	}
+//
+//	public void printEscaped(char obj) {
+//		out.print(obj);
+//	}
+//
+//	public void printEscaped(short obj) {
+//		out.print(obj);
+//	}
+//
+//	public void printEscaped(int obj) {
+//		out.print(obj);
+//	}
+//
+//	public void printEscaped(long obj) {
+//		out.print(obj);
+//	}
+//
+//	public void printEscaped(float obj) {
+//		out.print(obj);
+//	}
+//
+//	public void printEscaped(double obj) {
+//		out.print(obj);
+//	}
+
 	public void printEscaped(@Nullable Object obj) {
 		if (obj != null) {
 			print(escape(obj.toString(), contentType));
@@ -119,11 +152,15 @@ public class Ctx {
 
 	public void print(@Nullable Object obj) {
 		if (obj != null) {
-			out.print(obj);
+			try {
+				out.write(obj.toString());
+			} catch (IOException e) {
+				throw NgoyException.wrap(e);
+			}
 		}
 	}
 
-	public void setOut(PrintStream out, String contentType) {
+	public void setOut(Writer out, String contentType) {
 		this.out = out;
 		this.contentType = contentType;
 	}

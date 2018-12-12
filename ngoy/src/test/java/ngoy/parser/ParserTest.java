@@ -4,7 +4,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static ngoy.core.Util.copyToString;
-import static ngoy.core.Util.newPrintStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -91,7 +90,7 @@ public class ParserTest {
 			}
 		});
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintStream out = newPrintStream(baos);
+		PrintStream out = new PrintStream(baos, true, "UTF-8");
 		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), new JavaTemplate(out, "", false, emptyMap()));
 		out.flush();
 		out.close();

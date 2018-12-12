@@ -4,7 +4,6 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toMap;
-import static ngoy.core.Util.newPrintStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -23,6 +22,7 @@ import ngoy.Ngoy;
 import ngoy.core.Component;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
+import ngoy.core.NgoyException;
 import ngoy.core.internal.Ctx;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.parser.template.JavaTemplate;
@@ -93,16 +93,16 @@ public class JavaParserTest {
 //	@org.junit.Test
 	public void testCmp() throws Exception {
 		Ngoy.createTemplate = (String className, Parser parser, String template, String contentType) -> {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			PrintStream out = newPrintStream(baos);
-			JavaTemplate bct = new JavaTemplate(out, "", false, emptyMap());
-			parser.parse(template, bct);
 			try {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				PrintStream out = new PrintStream(baos, true, "UTF-8");
+				JavaTemplate bct = new JavaTemplate(out, "", false, emptyMap());
+				parser.parse(template, bct);
 				MyTemplate.code = new String(baos.toByteArray(), "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				throw new RuntimeException(e);
+				return MyTemplate.class;
+			} catch (UnsupportedEncodingException e1) {
+				throw NgoyException.wrap(e1);
 			}
-			return MyTemplate.class;
 		};
 
 		Ngoy<Cmp> ngoy = Ngoy.app(Cmp.class)

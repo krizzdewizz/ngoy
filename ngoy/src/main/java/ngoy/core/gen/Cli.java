@@ -1,11 +1,12 @@
 package ngoy.core.gen;
 
 import static ngoy.core.NgoyException.wrap;
+import static ngoy.core.Util.newBufferedWriter;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,7 +21,6 @@ import org.apache.commons.cli.Options;
 
 import ngoy.Version;
 import ngoy.core.NgoyException;
-import ngoy.core.Util;
 import ngoy.core.cli.internal.Formatter;
 
 public class Cli {
@@ -80,8 +80,15 @@ public class Cli {
 				return;
 			}
 
-			PrintStream psOut = Util.newPrintStream(out);
-			generator.setLog(psOut::println);
+			Writer psOut = newBufferedWriter(out);
+			generator.setLog(s -> {
+				try {
+					psOut.write(s);
+					psOut.flush();
+				} catch (IOException e) {
+					throw NgoyException.wrap(e);
+				}
+			});
 
 			List<String> argList = cmd.getArgList();
 

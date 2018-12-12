@@ -2,12 +2,16 @@ package ngoy.core;
 
 import static ngoy.core.NgoyException.wrap;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import org.unbescape.html.HtmlEscape;
+import org.unbescape.html.HtmlEscapeLevel;
+import org.unbescape.html.HtmlEscapeType;
 
 /**
  * Utils.
@@ -20,15 +24,14 @@ public class Util {
 	}
 
 	/**
-	 * Returns a new UTF-8 encoded print stream that prints to the given output
-	 * stream.
+	 * Returns a new UTF-8 encoded writer that writes to the given output stream.
 	 * 
 	 * @param out
-	 * @return PrintStream
+	 * @return Writer
 	 */
-	public static PrintStream newPrintStream(OutputStream out) {
+	public static Writer newBufferedWriter(OutputStream out) {
 		try {
-			return new PrintStream(out, true, "UTF-8");
+			return new BufferedWriter(new OutputStreamWriter(out, "UTF-8"), 4096);
 		} catch (Exception e) {
 			throw wrap(e);
 		}
@@ -81,7 +84,7 @@ public class Util {
 	 * @return Escaped text
 	 */
 	public static String escapeHtmlXml(String text) {
-		return HtmlEscape.escapeHtml5(text);
+		return HtmlEscape.escapeHtml(text, HtmlEscapeType.HTML5_NAMED_REFERENCES_DEFAULT_TO_DECIMAL, HtmlEscapeLevel.LEVEL_0_ONLY_MARKUP_SIGNIFICANT_EXCEPT_APOS);
 	}
 
 	/**

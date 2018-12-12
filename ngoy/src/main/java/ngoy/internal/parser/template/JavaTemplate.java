@@ -12,7 +12,6 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -455,13 +454,19 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private void attributeEval(String attrName, boolean forStyles, List<String[]> exprPairs) {
+		String delimiter = forStyles ? ";" : " ";
 		String listVar = createLocalVar(format("%slist", forStyles ? "style" : "class"));
-		$(Set.class, "<String> ", listVar, " = new ", LinkedHashSet.class, "<String>();");
+		$(StringBuilder.class, " ", listVar, "=new ", StringBuilder.class, "();");
 		for (String[] pair : exprPairs) {
 			String clazz = pair[0];
 			String expr = pair[1];
 			if (expr.isEmpty()) {
-				$(listVar, ".add(\"", clazz, "\");");
+
+				$("if (", listVar, ".length() > 0) {");
+				$(listVar, ".append(\"", delimiter, "\");");
+				$("}");
+
+				$(listVar, ".append(\"", clazz, "\");");
 			} else {
 				String ex = prefixName(expr, cmpVars.peek().name);
 				if (forStyles) {
@@ -470,7 +475,12 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						String valueVar = createLocalVar("styleValue");
 						$("Object ", valueVar, "=", "entry.getValue();");
 						$("  if (", valueVar, "!= null && !", valueVar, ".toString().isEmpty()) {");
-						$(listVar, ".add(((String)entry.getKey()).concat(\":\").concat(", valueVar, ".toString()));");
+
+						$("if (", listVar, ".length() > 0) {");
+						$(listVar, ".append(\"", delimiter, "\");");
+						$("}");
+
+						$(listVar, ".append(((String)entry.getKey()).concat(\":\").concat(", valueVar, ".toString()));");
 						$("  }");
 						$("}");
 					} else {
@@ -481,7 +491,12 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						String exVar = createLocalVar("expr");
 						$("Object ", exVar, "=", ex, ";");
 						$("if (", exVar, " != null && !", exVar, ".toString().isEmpty()) {");
-						$$(listVar, ".add(\"", clazz, ":\".concat(", exVar, ".toString())");
+
+						$("if (", listVar, ".length() > 0) {");
+						$(listVar, ".append(\"", delimiter, "\");");
+						$("}");
+
+						$$(listVar, ".append(\"", clazz, ":\".concat(", exVar, ".toString())");
 						if (!unit.isEmpty()) {
 							$$(".concat(\"", unit, "\")");
 						}
@@ -492,24 +507,32 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 					if (clazz.equals("ngClass")) {
 						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()) {");
 						$("  if ((Boolean)entry.getValue()) {");
-						$(listVar, ".add(entry.getKey());");
+
+						$("if (", listVar, ".length() > 0) {");
+						$(listVar, ".append(\"", delimiter, "\");");
+						$("}");
+
+						$(listVar, ".append(entry.getKey());");
 						$("  }");
 						$("}");
 					} else {
 						$("if (", ex, ") {");
-						$(listVar, ".add(\"", clazz, "\");");
+
+						$("if (", listVar, ".length() > 0) {");
+						$(listVar, ".append(\"", delimiter, "\");");
+						$("}");
+
+						$(listVar, ".append(\"", clazz, "\");");
 						$("}");
 					}
 				}
 			}
 		}
 
-		String delimiter = forStyles ? ";" : " ";
-
-		$("if (!", listVar, ".isEmpty()) {");
+		$("if (", listVar, ".length() > 0) {");
 		printOut(" ", attrName, "=\"");
 		flushOut();
-		printOutExpr(format("%s.join(%s, \"%s\")", Ctx.class.getName(), listVar, delimiter));
+		printOutExpr(listVar);
 		printOut("\"");
 		flushOut();
 		$("}");
