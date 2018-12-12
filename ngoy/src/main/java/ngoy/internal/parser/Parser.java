@@ -108,6 +108,7 @@ public class Parser {
 	public boolean inlineComponents;
 	public boolean inlineAll;
 	public String contentType;
+	public boolean templateIsExpression;
 
 	final Set<Jerry> cmpElements = new HashSet<>();
 	MyHandler handler;
@@ -275,7 +276,11 @@ public class Parser {
 		}
 
 		boolean escapeText = insideScriptOrStyle == 0;
-		ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText));
+		if (templateIsExpression) {
+			handler.text(ExprParser.convertPipesToTransformCalls(text, resolver), true, escapeText);
+		} else {
+			ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText));
+		}
 	}
 
 	private void elementConditionalElse(Jerry el) {

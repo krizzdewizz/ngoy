@@ -62,7 +62,6 @@ import ngoy.core.internal.StyleUrlsDirective;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.parser.template.JavaTemplate;
 import ngoy.internal.scan.ClassScanner;
-import ngoy.internal.script.NgoyScript;
 import ngoy.internal.site.SiteRenderer;
 import ngoy.router.RouterModule;
 import ngoy.translate.TranslateModule;
@@ -401,9 +400,10 @@ public class Ngoy<T> {
 		this.appRoot = (Class<T>) appRoot;
 		this.config = config;
 		init(injectors, modules, packagePrefixes, rootProviders);
-		if (!config.templateIsExpression) {
-			compile(template);
-		}
+//		if (!config.templateIsExpression) {
+//		compile(config.templateIsExpression ? format("{{%s}}", template) : template);
+		compile(template);
+//		}
 	}
 
 	private void init(List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
@@ -595,13 +595,13 @@ public class Ngoy<T> {
 
 			events.tick();
 
-			if (config.templateIsExpression) {
-				NgoyScript script = new NgoyScript(resolver);
-				Object result = script.run(template, ctx);
-				newPrintStream(out).print(result);
-			} else {
-				invokeRender(ctx, newPrintStream(out));
-			}
+//			if (config.templateIsExpression) {
+//				NgoyScript script = new NgoyScript(resolver);
+//				Object result = script.run(template, ctx);
+//				newPrintStream(out).print(result);
+//			} else {
+			invokeRender(ctx, newPrintStream(out));
+//			}
 		} catch (Exception e) {
 			throw wrap(e);
 		}
@@ -767,6 +767,7 @@ public class Ngoy<T> {
 		parser.contentType = getContentType(config);
 		parser.inlineComponents = config.inlineComponents;
 		parser.inlineAll = "text/plain".equals(parser.contentType);
+		parser.templateIsExpression = config.templateIsExpression;
 		return parser;
 	}
 

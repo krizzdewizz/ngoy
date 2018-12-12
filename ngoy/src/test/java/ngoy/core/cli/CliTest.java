@@ -103,20 +103,13 @@ public class CliTest {
 	}
 
 	@Test
-	public void testExpr() {
-		assertThat(run("-e", "{}")).isEqualTo("[]");
-		assertThat(run("-e", "{:}.entrySet().iterator().hasNext()")).isEqualTo("false");
-	}
-
-	@Test
 	public void testNewLine() {
-		assertThat(run(true, "{{'\n'}}")).isEqualTo("\n");
+		assertThat(run(true, "{{\"\\n\"}}")).isEqualTo("\n");
 	}
 
 	@Test
-	public void testNewLine_spel_wrong_question_mark() {
-		// shouldn't it be .isEqualTo("a\na");
-		assertThat(run(true, "-e", "'\\n'")).isEqualTo("\\n");
+	public void testNewLineExpr() {
+		assertThat(run(true, "-e", "'\\n'")).isEqualTo("\n");
 	}
 
 	@Test
@@ -128,7 +121,7 @@ public class CliTest {
 
 	@Test
 	public void testPipe() {
-		assertThat(run("-e", "'hello' | uppercase")).isEqualTo("HELLO");
+		assertThat(run("-e", "\"hello\" | uppercase")).isEqualTo("HELLO");
 	}
 
 	@Test
