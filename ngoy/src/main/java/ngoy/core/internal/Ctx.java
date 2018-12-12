@@ -104,6 +104,10 @@ public class Ctx {
 		return injector.getNew(clazz);
 	}
 
+	public Object cmp(Class<?> clazz) {
+		return injector.get(clazz);
+	}
+
 	public void cmpInit(Object cmp) {
 		if (cmp instanceof OnInit) {
 			((OnInit) cmp).ngOnInit();

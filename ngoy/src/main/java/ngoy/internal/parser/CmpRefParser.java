@@ -82,7 +82,7 @@ public class CmpRefParser {
 
 			int i = 0;
 			for (CmpRef ref : allDirs) {
-				parser.handler.componentStartInput(ref, dirInputs.get(i));
+				parser.handler.componentStartInput(ref, false, dirInputs.get(i));
 				parser.handler.componentStart(ref);
 
 				List<String[]> cNames = new ArrayList<>();
@@ -101,7 +101,7 @@ public class CmpRefParser {
 
 		if (!allCmps.isEmpty()) {
 			CmpRef ref = allCmps.get(0);
-			parser.handler.componentStartInput(ref, cmpInputs);
+			parser.handler.componentStartInput(ref, false, cmpInputs);
 
 			if (parser.inlineComponent(el)) {
 				parser.handler.componentStart(ref);

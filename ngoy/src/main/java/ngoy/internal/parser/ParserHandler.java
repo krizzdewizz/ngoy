@@ -51,7 +51,7 @@ public interface ParserHandler {
 
 	void textOverride(String expr);
 
-	void componentStartInput(CmpRef cmpRef, List<CmpInput> params);
+	void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params);
 
 	class Default implements ParserHandler {
 
@@ -144,7 +144,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void componentStartInput(CmpRef cmpRef, List<CmpInput> params) {
+		public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
 		}
 	}
 
@@ -224,8 +224,8 @@ public interface ParserHandler {
 			target.componentStart(cmpRef);
 		}
 
-		public void componentStartInput(CmpRef cmpRef, List<CmpInput> params) {
-			target.componentStartInput(cmpRef, params);
+		public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
+			target.componentStartInput(cmpRef, appRoot, params);
 		}
 
 		public void componentEnd() {

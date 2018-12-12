@@ -186,7 +186,7 @@ public class Parser {
 	private void acceptDocument(Jerry nodes) {
 		this.handler.documentStart(resolver.resolvePipes());
 		CmpRef appRef = new CmpRef(resolver.getAppRoot(), "", false);
-		this.handler.componentStartInput(appRef, emptyList());
+		this.handler.componentStartInput(appRef, true, emptyList());
 		this.handler.componentStart(appRef);
 		accept(nodes);
 		this.handler.componentEnd();

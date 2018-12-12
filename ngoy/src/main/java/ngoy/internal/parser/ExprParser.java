@@ -45,7 +45,12 @@ public class ExprParser {
 	}
 
 	public static String prefixName(String expr, String prefix, Set<String> excludes) {
-		com.github.javaparser.ast.expr.Expression ex = JavaParser.parseExpression(expr);
+		com.github.javaparser.ast.expr.Expression ex;
+		try {
+			ex = JavaParser.parseExpression(expr);
+		} catch (Exception e) {
+			throw new NgoyException(e, "error while parsing '%s'", expr);
+		}
 		ex.findAll(SimpleName.class)
 				.stream()
 				.filter(simpleName -> !excludes.contains(simpleName.getIdentifier()))

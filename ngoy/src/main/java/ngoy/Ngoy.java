@@ -18,9 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -734,7 +732,7 @@ public class Ngoy<T> {
 			parser.parse(template, tpl);
 
 			String code = new String(baos.toByteArray(), "UTF-8");
-			Files.write(Paths.get("d:/downloads/qbert.java"), baos.toByteArray());
+			java.nio.file.Files.write(java.nio.file.Paths.get("d:/downloads/qbert.java"), baos.toByteArray());
 
 			ClassBodyEvaluator c = new ClassBodyEvaluator();
 			c.setClassName("ngoy.Qbert" + (qbert++));

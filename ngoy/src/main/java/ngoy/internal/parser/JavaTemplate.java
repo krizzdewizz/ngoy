@@ -41,7 +41,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		return StringEscapeUtils.escapeJava(text);
 	}
 
-	static class CmpVar {
+	private static class CmpVar {
 		private String name;
 		private Class<?> cmpClass;
 
@@ -58,8 +58,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final LinkedList<String> switchVars = new LinkedList<>();
 	private final LinkedList<Boolean> switchHadElseIf = new LinkedList<>();
 	private final LinkedList<CmpVar> cmpVars = new LinkedList<>();
-	private final Set<String> pipeNames = new HashSet<>();
 	private final LinkedList<Set<String>> prefixExcludes = new LinkedList<>();
+	private final Set<String> pipeNames = new HashSet<>();
 	private final boolean bodyOnly;
 	private String _cmpVar;
 
@@ -110,7 +110,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void documentEnd() {
 		flushOut();
-		$("  }"); // render
+		$("  }"); // render method
 
 		if (!bodyOnly) {
 			$("}");
@@ -123,8 +123,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			return;
 		}
 		if (textIsExpr) {
-			String prefixed = prefixName(text, cmpVars.peek().name);
-			printOutExpr(prefixed);
+			printOutExpr(prefixName(text, cmpVars.peek().name));
 		} else {
 			if (escape) {
 				out.printEscaped(escapeJava(text), false);
@@ -167,7 +166,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			flushOut();
 
 			out.printEscaped(textOverrideVar, true);
-			$(textOverrideVar, "= null;");
+			$(textOverrideVar, "=null;");
 
 			hadTextOverride = false;
 		}
@@ -210,8 +209,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private String createLocalVar(String tag) {
 		flushOut();
-		String localVar = format("_$l_%s_%s", tag, nextLocalVarIndex++);
-		return localVar;
+		return format("_$l_%s_%s", tag, nextLocalVarIndex++);
 	}
 
 	@Override
@@ -367,13 +365,13 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("if (", prefixName(expr, cmpVars.peek().name), ") {");
 	}
 
-	public void componentStartInput(CmpRef cmpRef, List<CmpInput> params) {
+	public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
 		String cmpClass = cmpRef.clazz.getName()
 				.replace('$', '.');
 
 		_cmpVar = createLocalVar("cmp");
-
-		$(cmpClass, " ", _cmpVar, "=(", cmpClass, ")ctx.cmpNew(", cmpClass, ".class);");
+		String cmpCall = appRoot ? "cmp" : "cmpNew";
+		$(cmpClass, " ", _cmpVar, "=(", cmpClass, ")ctx.", cmpCall, " (", cmpClass, ".class);");
 		$("{");
 
 		// testForOfNested2
