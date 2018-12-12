@@ -23,13 +23,13 @@ public class NgContentSelectTest extends ANgoyTest {
 		personService = TestService.of(new Person("mary"));
 	}
 
-	@Component(selector = "person", template = "hello: {{person.name}}<ng-content select=\"[abc]\"></ng-content>x")
+	@Component(selector = "person", template = "hello: {{person.getName()}}<ng-content select=\"[abc]\"></ng-content>x")
 	public static class PersonCmp {
 		@Input()
 		public Person person;
 	}
 
-	@Component(selector = "test", template = "<person [person]=\"person\"><hr><span abc>kuckuck</span></person>")
+	@Component(selector = "test", template = "<person [person]=\"getPerson()\"><hr><span abc>kuckuck</span></person>")
 	@NgModule(declarations = { PersonCmp.class })
 	public static class Cmp {
 		@Inject

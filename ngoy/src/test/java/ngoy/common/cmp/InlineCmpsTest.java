@@ -12,7 +12,7 @@ import ngoy.model.Person;
 
 public class InlineCmpsTest extends ANgoyTest {
 
-	@Component(selector = "person", template = "hello: {{person.name}}")
+	@Component(selector = "person", template = "hello: {{person.getName()}}")
 	public static class PersonCmp {
 		@Input()
 		public Person person;

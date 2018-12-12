@@ -20,7 +20,7 @@ public class SubclassTest extends ANgoyTest {
 	public static class PersonCmp extends ACmpBase {
 	}
 
-	@Component(selector = "test", template = "<person [name]=\"'a'\"></person><person [name]=\"'b'\"></person>")
+	@Component(selector = "test", template = "<person [name]='\"a\"'></person><person [name]='\"b\"'></person>")
 	@NgModule(declarations = { PersonCmp.class })
 	public static class Cmp extends ACmpBase {
 	}

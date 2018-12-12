@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import ngoy.Ngoy;
@@ -90,7 +89,7 @@ public class JavaParserTest {
 		}
 	}
 
-	@Test
+//	@org.junit.Test
 	public void testCmp() throws Exception {
 		Ngoy.createTemplate = (String className, Parser parser, String template, String contentType) -> {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();

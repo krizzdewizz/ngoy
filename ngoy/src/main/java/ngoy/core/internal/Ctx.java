@@ -2,7 +2,6 @@ package ngoy.core.internal;
 
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
-import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.escape;
 
 import java.io.PrintStream;
@@ -95,39 +94,19 @@ public class Ctx {
 				.getName());
 	}
 
-	public void popCmpContext(Object cmp) {
-//		EvaluationContext pop = spelCtxs.pop();
-//		Object cmp = pop.getRootObject()
-//				.getValue();
+	public void cmpDestroy(Object cmp) {
 		if (cmp instanceof OnDestroy) {
 			((OnDestroy) cmp).ngOnDestroy();
 		}
 	}
 
-	public Object pushCmpContextInput(Class<?> clazz) {
-		try {
-			Object obj = injector.getNew(clazz);
-//			setInputs(clazz, obj, paramPairs);
-			return obj;
-		} catch (Exception e) {
-			throw wrap(e);
-		}
+	public Object cmpNew(Class<?> clazz) {
+		return injector.getNew(clazz);
 	}
 
-	public void pushCmpContext(Object cmp) {
-		try {
-//			Object cmp = injector.get(loadClass(className));
-
-//			// *ngFor on a component
-//			Map<String, Object> vars = iterationVars.isEmpty() ? emptyMap() : iterationVars.peek();
-//
-//			spelCtxs.push(createContext(cmp, vars));
-
-			if (cmp instanceof OnInit) {
-				((OnInit) cmp).ngOnInit();
-			}
-		} catch (Exception e) {
-			throw wrap(e);
+	public void cmpInit(Object cmp) {
+		if (cmp instanceof OnInit) {
+			((OnInit) cmp).ngOnInit();
 		}
 	}
 

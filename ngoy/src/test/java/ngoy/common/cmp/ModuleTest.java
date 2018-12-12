@@ -29,7 +29,7 @@ public class ModuleTest extends ANgoyTest {
 	public static class ModuleA {
 	}
 
-	@Component(selector = "test", template = "<a [value]=\"aService.value\" ></a>")
+	@Component(selector = "test", template = "<a [value]=\"aService.getValue()\" ></a>")
 	@NgModule(imports = { ModuleA.class })
 	public static class Cmp {
 		@Inject
@@ -50,7 +50,7 @@ public class ModuleTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", template = "<a [value]=\"aService.value\" ></a>")
+	@Component(selector = "test", template = "<a [value]=\"aService.getValue()\" ></a>")
 	@NgModule(imports = { ModuleA.class }, provide = @Provide(provide = AService.class, useClass = BService.class))
 	public static class BCmp {
 		@Inject
@@ -71,7 +71,7 @@ public class ModuleTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", template = "<a [value]=\"aService.value\" ></a>", provide = @Provide(provide = AService.class, useClass = CService.class))
+	@Component(selector = "test", template = "<a [value]=\"aService.getValue()\" ></a>", provide = @Provide(provide = AService.class, useClass = CService.class))
 	@NgModule(imports = { ModuleA.class })
 	public static class CCmp {
 		@Inject

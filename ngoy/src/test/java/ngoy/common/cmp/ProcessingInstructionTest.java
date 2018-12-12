@@ -10,12 +10,17 @@ import jodd.lagarto.dom.LagartoDOMBuilder;
 import jodd.lagarto.dom.LagartoDomBuilderConfig;
 import jodd.lagarto.dom.Node.NodeType;
 import ngoy.ANgoyTest;
+import ngoy.core.Component;
 
 public class ProcessingInstructionTest extends ANgoyTest {
 
+	@Component(selector = "", template = "<!doctype html>\n<html> <a><!-- comment -->x</a> <![CDATA[<xml/>]]> </html>")
+	public static class ProcInstrCmp {
+	}
+
 	@Test
 	public void test() {
-		assertThat(render("<!doctype html>\n<html> <a><!-- comment -->x</a> <![CDATA[<xml/>]]> </html>")).isEqualTo("<!DOCTYPE html>\n<html> <a><!-- comment -->x</a> <![CDATA[<xml/>]]> </html>");
+		assertThat(render(ProcInstrCmp.class)).isEqualTo("<!DOCTYPE html>\n<html> <a><!-- comment -->x</a> <![CDATA[<xml/>]]> </html>");
 	}
 
 	@Test

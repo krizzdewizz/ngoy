@@ -27,7 +27,7 @@ public class DirectiveManyTest extends ANgoyTest {
 		public String makeItItalic;
 	}
 
-	@Component(selector = "test", template = "<a [makeItBold]=\"'bi'\" [makeItItalic]=\"'yes'\">XX</a>")
+	@Component(selector = "test", template = "<a [makeItBold]='\"bi\"' [makeItItalic]='\"yes\"'>XX</a>")
 	@NgModule(declarations = { BoldDirective.class, ItalicDirective.class })
 	public static class Cmp {
 	}

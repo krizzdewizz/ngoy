@@ -26,7 +26,7 @@ public class IfTest extends ANgoyTest {
 		personService = TestService.of(asList(new Person("peter"), new Person("paul"), new Person("mary")));
 	}
 
-	@Component(selector = "person", template = "hello: {{person.name}} <span *ngIf=\"mary\">do you have a little lamb?</span>")
+	@Component(selector = "person", template = "hello: {{person.getName()}} <span *ngIf='isMary()'>do you have a little lamb?</span>")
 	public static class PersonCmp {
 		@Input()
 		public Person person;
@@ -36,7 +36,7 @@ public class IfTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", template = "<person *ngFor=\"let it of persons\" [person]=\"it\"></person>")
+	@Component(selector = "test", template = "<person *ngFor='let it of getPersons()' [person]='it'></person>")
 	@NgModule(declarations = { PersonCmp.class })
 	public static class CmpIf {
 		@Inject
@@ -55,7 +55,7 @@ public class IfTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "person", template = "<ng-template #x>xyz</ng-template>hello: {{person.name}} <span *ngIf=\"mary; else x\">do you have a little lamb?</span>")
+	@Component(selector = "person", template = "<ng-template #x>xyz</ng-template>hello: {{person.getName()}} <span *ngIf='isMary(); else x'>do you have a little lamb?</span>")
 	public static class PersonIfElseCmp {
 		@Input()
 		public Person person;
@@ -65,7 +65,7 @@ public class IfTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", template = "<person *ngFor=\"let it of persons\" [person]=\"it\"></person>")
+	@Component(selector = "test", template = "<person *ngFor='let it of getPersons()' [person]='it'></person>")
 	@NgModule(declarations = { PersonIfElseCmp.class })
 	public static class CmpIfElse {
 		@Inject

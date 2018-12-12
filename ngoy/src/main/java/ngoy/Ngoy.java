@@ -50,8 +50,6 @@ import ngoy.core.ModuleWithProviders;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
-import ngoy.core.OnDestroy;
-import ngoy.core.OnInit;
 import ngoy.core.Pipe;
 import ngoy.core.Provide;
 import ngoy.core.Provider;
@@ -584,14 +582,8 @@ public class Ngoy<T> {
 
 	private void render(Context context, OutputStream out) {
 		try {
-
-			Object app = context == null ? appInstance : context.getModel();
-
-			if (app instanceof OnInit) {
-				((OnInit) app).ngOnInit();
-			}
-
 			Ctx ctx = Ctx.of(injector, pipeDecls);
+
 			if (context != null) {
 				for (Map.Entry<String, Object> v : context.getVariables()
 						.entrySet()) {
@@ -607,10 +599,6 @@ public class Ngoy<T> {
 				newPrintStream(out).print(result);
 			} else {
 				invokeRender(ctx, newPrintStream(out));
-			}
-
-			if (app instanceof OnDestroy) {
-				((OnDestroy) app).ngOnDestroy();
 			}
 		} catch (Exception e) {
 			throw wrap(e);
@@ -736,25 +724,30 @@ public class Ngoy<T> {
 	public static CreateTemplate createTemplate;
 
 	protected Class<?> createTemplate(String className, Parser parser, String template, String contentType) {
-		try {
-			if (createTemplate != null) {
-				return createTemplate.createTemplate(className, parser, template, contentType);
-			}
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			JavaTemplate tpl = new JavaTemplate(new PrintStream(baos), true);
+		if (createTemplate != null) {
+			return createTemplate.createTemplate(className, parser, template, contentType);
+		}
+
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PrintStream ps = new PrintStream(baos)) {
+			JavaTemplate tpl = new JavaTemplate(ps, true);
 
 			parser.parse(template, tpl);
 
 			String code = new String(baos.toByteArray(), "UTF-8");
 			Files.write(Paths.get("d:/downloads/qbert.java"), baos.toByteArray());
 
-			ClassBodyEvaluator c = new ClassBodyEvaluator(code);
+			ClassBodyEvaluator c = new ClassBodyEvaluator();
+			c.setClassName("ngoy.Qbert" + (qbert++));
+
+			c.cook(code);
 
 			return c.getClazz();
 		} catch (Exception e) {
 			throw wrap(e);
 		}
 	}
+
+	static int qbert = 0;
 
 	private String getContentType(Config config) {
 		String contentType = config.contentType;

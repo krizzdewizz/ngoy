@@ -32,7 +32,7 @@ public class RuntimeErrorsTest extends ANgoyTest {
 	@Test
 	public void test() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Neither getter method nor field found for property 'a'"));
+		expectedEx.expectMessage(containsString("\"a\" is neither a method, a field"));
 		render(Cmp.class);
 	}
 
@@ -54,7 +54,6 @@ public class RuntimeErrorsTest extends ANgoyTest {
 	@Test
 	public void testSetter() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Error while invoking input setter"));
 		expectedEx.expectCause(instanceOf(Exception.class));
 		render(CmpSetter.class);
 	}
@@ -76,20 +75,20 @@ public class RuntimeErrorsTest extends ANgoyTest {
 	@Test
 	public void testInputWrongType() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Error while setting input field"));
+		expectedEx.expectMessage(containsString("Cannot cast"));
 		render(CmpInputWrongType.class);
 	}
 
 	//
 
-	@Component(selector = "test", template = "<a *ngIf=\"''\"/>")
+	@Component(selector = "test", template = "<a *ngIf='\"\"'/>")
 	public static class CmpNotBoolean {
 	}
 
 	@Test
 	public void testNotBoolean() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Error while evaluating boolean expression"));
+		expectedEx.expectMessage(containsString("Not a boolean expression"));
 		render(CmpNotBoolean.class);
 	}
 }

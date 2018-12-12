@@ -33,7 +33,7 @@ import ngoy.translate.TranslateService;
 
 public class ParserTest {
 
-	@org.junit.Test
+//	@org.junit.Test
 	public void parseJavaToJava() throws Exception {
 
 		DefaultInjector injector = new DefaultInjector(Provider.of(PersonDetailComponent.class), Provider.of(TranslateDirective.class), Provider.of(TranslateService.class),

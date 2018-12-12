@@ -61,6 +61,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final Set<String> pipeNames = new HashSet<>();
 	private final LinkedList<Set<String>> prefixExcludes = new LinkedList<>();
 	private final boolean bodyOnly;
+	private String _cmpVar;
 
 	public JavaTemplate(PrintStream prn, boolean bodyOnly) {
 		super(new PrintStreamPrinter(prn));
@@ -135,6 +136,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private String prefixName(String expr, String prefix) {
 		Set<String> ex = new HashSet<>(pipeNames);
+		ex.add("java");
 		Set<String> more = prefixExcludes.peek();
 		if (more != null) {
 			ex.addAll(more);
@@ -153,7 +155,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	@Override
 	public void textOverride(String expr) {
-		$(textOverrideVar, "=", "(String)ctx.eval(\"", expr, "\");");
+		$(textOverrideVar, "=(String)", prefixName(expr, cmpVars.peek().name), ";");
 		hadTextOverride = true;
 	}
 
@@ -195,9 +197,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String evalResultVar = createLocalVar("evalResult");
 		$("Object ", evalResultVar, ";");
 
-		// qq
-//		$(evalResultVar, " = ctx.eval(\"", escapeJava(expr), "\");");
-		$(evalResultVar, " = (", escapeJava(expr), ");");
+		$(evalResultVar, " = ", prefixName(expr, cmpVars.peek().name), ";");
 
 		$("if (", evalResultVar, " != null) {");
 		printOut(" ", name, "=\"");
@@ -230,13 +230,15 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String switchVar;
 		if (Util.isSet(switchFirstCase)) {
 			switchVar = createLocalVar("switchVar");
-			$("Object ", switchVar, " = ctx.eval(\"", expr, "\");");
+			$("Object ", switchVar, " = ", prefixName(expr, cmpVars.peek().name), ";");
+			$("if (java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase, cmpVars.peek().name), ")) {");
+			switchHadElseIf.push(true);
 		} else {
 			switchVar = "";
 			ifExprIsTrue(expr);
+			switchHadElseIf.push(false);
 		}
 		switchVars.push(switchVar);
-		switchHadElseIf.push(false);
 	}
 
 	@Override
@@ -255,7 +257,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 				switchHadElseIf.push(true);
 			}
 
-			$("if (java.util.Objects.equals(", switchVar, ", ctx.eval(\"", expr, "\"))) {");
+			$("if (java.util.Objects.equals(", switchVar, ", ", prefixName(expr, cmpVars.peek().name), ")) {");
 		}
 	}
 
@@ -368,36 +370,42 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	public void componentStartInput(CmpRef cmpRef, List<CmpInput> params) {
 		String cmpClass = cmpRef.clazz.getName()
 				.replace('$', '.');
-		String cmpVar = createLocalVar("cmp");
-		cmpVars.push(new CmpVar(cmpVar, cmpRef.clazz));
-		$(cmpClass, " ", cmpVar, "=(", cmpClass, ")ctx.pushCmpContextInput(", cmpClass, ".class);");
+
+		_cmpVar = createLocalVar("cmp");
+
+		$(cmpClass, " ", _cmpVar, "=(", cmpClass, ")ctx.cmpNew(", cmpClass, ".class);");
 		$("{");
+
+		// testForOfNested2
+		cmpVars.push(new CmpVar(_cmpVar, cmpRef.clazz));
 		setInputs(params);
+		cmpVars.pop();
 	}
 
 	@Override
 	public void componentStart(CmpRef cmpRef) {
-		$("ctx.pushCmpContext(", cmpVars.peek().name, ");");
+		cmpVars.push(new CmpVar(_cmpVar, cmpRef.clazz));
+		$("ctx.cmpInit(", _cmpVar, ");");
 	}
 
 	@Override
 	public void componentEnd() {
 		String cmpVar = cmpVars.pop().name;
 		flushOut();
-		$("ctx.popCmpContext(", cmpVar, ");");
+		$("ctx.cmpDestroy(", cmpVar, ");");
 		$("}");
 	}
 
 	@Override
 	public void ngContentStart() {
 		flushOut();
-		$("ctx.pushParentContext();");
+		cmpVars.push(cmpVars.get(1));
 	}
 
 	@Override
 	public void ngContentEnd() {
 		flushOut();
-		$("ctx.popContext();");
+		cmpVars.pop();
 	}
 
 	private String[] parseUnit(String s) {
@@ -413,7 +421,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private void attributeEval(String attrName, boolean forStyles, List<String[]> exprPairs) {
 		String listVar = createLocalVar(format("%slist", forStyles ? "style" : "class"));
-		$(List.class, "<String> ", listVar, " = new ", ArrayList.class, "<>();");
+		$(List.class, "<String> ", listVar, " = new ", ArrayList.class, "<String>();");
 		for (String[] pair : exprPairs) {
 			String clazz = pair[0];
 			String expr = pair[1];
@@ -422,7 +430,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			} else {
 				String ex = prefixName(expr, cmpVars.peek().name);
 				if (forStyles) {
-
 					String[] classAndUnit = parseUnit(clazz);
 					String unit = classAndUnit[1];
 					clazz = classAndUnit[0];
@@ -435,11 +442,20 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						$$(".concat(\"", unit, "\")");
 					}
 					$(");");
+					$("}");
 				} else {
-					$("if (", ex, ") {");
-					$(listVar, ".add(\"", clazz, "\");");
+					if (clazz.equals("ngClass")) {
+						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()) {");
+						$("  if ((Boolean)entry.getValue()) {");
+						$(listVar, ".add(entry.getKey());");
+						$("  }");
+						$("}");
+					} else {
+						$("if (", ex, ") {");
+						$(listVar, ".add(\"", clazz, "\");");
+						$("}");
+					}
 				}
-				$("}");
 			}
 		}
 
@@ -459,7 +475,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			InputType inputType = input.type;
 			ValueType inputValueType = input.valueType;
 
-			String value = inputValueType == ValueType.EXPR ? prefixName(input.value, cmpVars.get(1).name) : escapeJava(input.value);
+			String value = inputValueType == ValueType.EXPR ? prefixName(input.value, cmpVars.get(1).name) : format("\"%s\"", escapeJava(input.value));
 			switch (inputType) {
 			case FIELD:
 				$(cmpVars.peek().name, ".", input.input, "=(", input.inputClass, ")", value, ";");

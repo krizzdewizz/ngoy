@@ -34,7 +34,7 @@ public class InputTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", template = "<person [name]=\"'a'\" [namex]=\"'b'\" [nameY]=\"'c'\" [qbertInTheSky]=\"'d'\"></person>")
+	@Component(selector = "test", template = "<person [name]='\"a\"' [namex]='\"b\"' [nameY]='\"c\"' [qbertInTheSky]='\"d\"'></person>")
 	@NgModule(declarations = { PersonCmp.class })
 	public static class Cmp {
 	}

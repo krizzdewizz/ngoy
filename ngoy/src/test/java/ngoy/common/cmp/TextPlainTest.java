@@ -12,7 +12,7 @@ import ngoy.core.Component;
 import ngoy.model.Person;
 
 public class TextPlainTest extends ANgoyTest {
-	@Component(selector = "test", contentType = "text/plain", template = "\nage of {{person.name}}:\t {{person.age}}\n")
+	@Component(selector = "test", contentType = "text/plain", template = "\nage of {{person.getName()}}:\t {{person.getAge()}}\n")
 	public static class Cmp {
 		public Person person = new Person("peter", 22);
 	}
@@ -24,7 +24,7 @@ public class TextPlainTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "test", contentType = "text/plain", template = "<ng-container *ngFor=\"let p of persons\">{{p.name}}{{delim}}{{p.age}}\n</ng-container>")
+	@Component(selector = "test", contentType = "text/plain", template = "<ng-container *ngFor=\"let p of persons\">{{p.getName()}}{{delim}}{{p.getAge()}}\n</ng-container>")
 	public static class CmpRepeated {
 		public final String delim = ";";
 		public List<Person> persons = asList(new Person("petör", 22), new Person("paul", 26), new Person("märy", 24));

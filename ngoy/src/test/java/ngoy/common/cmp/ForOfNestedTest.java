@@ -26,7 +26,7 @@ public class ForOfNestedTest extends ANgoyTest {
 		personService = TestService.of(asList(new Person("peter"), new Person("paul"), new Person("mary")));
 	}
 
-	@Component(selector = "persons", template = "<b *ngFor=\"let it of persons\" [class.selected]=\"selectedPerson == it\">{{it.name}}</b>")
+	@Component(selector = "persons", template = "<b *ngFor=\"let it of getPersons()\" [class.selected]=\"selectedPerson == it\">{{it.getName()}}</b>")
 	public static class PersonsCmp {
 		@Inject
 		public TestService<List<Person>> service;
