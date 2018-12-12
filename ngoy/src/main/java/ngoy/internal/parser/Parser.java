@@ -179,7 +179,7 @@ public class Parser {
 			acceptDocument(nodes);
 		} catch (Exception e) {
 			String message = e.getMessage();
-			throw new NgoyException(e, "Error while parsing: %s. %s", isSet(message) ? message : e, exceptionInfo());
+			throw new NgoyException(e, "Error while parsing: %s. %s", isSet(message) ? message : e, exceptionInfo(template));
 		}
 	}
 
@@ -352,7 +352,7 @@ public class Parser {
 		return resolver.resolveCmpClass(peek == null ? null : peek.clazz);
 	}
 
-	String exceptionInfo() {
+	String exceptionInfo(String template) {
 		Jerry currentEl = replacingVisitor.currentEl;
 		String position = currentEl == null ? "" : getPosition(currentEl).toString();
 
@@ -365,6 +365,10 @@ public class Parser {
 			if (cmp != null) {
 				templateUrl = cmp.templateUrl();
 			}
+		}
+
+		if (!isSet(templateUrl)) {
+			templateUrl = template;
 		}
 
 		return format("\nComponent: %s\ntemplateUrl: '%s'\nposition: %s", className, templateUrl, position);

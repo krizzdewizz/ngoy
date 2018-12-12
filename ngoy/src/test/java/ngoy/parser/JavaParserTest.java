@@ -2,6 +2,7 @@ package ngoy.parser;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toMap;
 import static ngoy.core.Util.newPrintStream;
 
@@ -94,7 +95,7 @@ public class JavaParserTest {
 		Ngoy.createTemplate = (String className, Parser parser, String template, String contentType) -> {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			PrintStream out = newPrintStream(baos);
-			JavaTemplate bct = new JavaTemplate(out, false);
+			JavaTemplate bct = new JavaTemplate(out, false, emptyMap());
 			parser.parse(template, bct);
 			try {
 				MyTemplate.code = new String(baos.toByteArray(), "UTF-8");

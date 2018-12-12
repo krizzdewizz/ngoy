@@ -7,10 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 import org.junit.Test;
 
-import ngoy.Ngoy;
 import ngoy.Ngoy.Config;
 import ngoy.core.Context;
 
@@ -38,7 +38,7 @@ public class RenderStringTest {
 	public void test() {
 		Config config = new Config();
 		config.contentType = "text/plain";
-		Context ctx = Context.of("all", asList(11, 22, 33));
+		Context<?> ctx = Context.of("all", List.class, asList(11, 22, 33));
 		Out out = new Out();
 		Ngoy.renderString("<ng-container *ngFor=\"let x of all; index as i\">hello {{x}}, {{i}}\n</ng-container>", ctx, out, config);
 		assertThat(out.toString()).isEqualTo("hello 11, 0\nhello 22, 1\nhello 33, 2\n");
@@ -48,7 +48,7 @@ public class RenderStringTest {
 	public void testMicroSyntax() {
 		Config config = new Config();
 		config.contentType = "text/plain";
-		Context ctx = Context.of("all", asList(11, 22, 33));
+		Context<?> ctx = Context.of("all", List.class, asList(11, 22, 33));
 		Out out = new Out();
 		Ngoy.renderString("*ngFor let x of all; index as i:hello {{x}}, {{i}}\n", ctx, out, config);
 		assertThat(out.toString()).isEqualTo("hello 11, 0\nhello 22, 1\nhello 33, 2\n");
@@ -68,7 +68,7 @@ public class RenderStringTest {
 
 	@Test
 	public void some() {
-		Ngoy.renderString("hello: {{name}}", Context.of("name", "peter"), System.out);
-		Ngoy.renderString("hello: {{name}}", Context.of(new Person("sam")), System.out);
+//		Ngoy.renderString("hello: {{name}}", Context.of("name", String.class, "peter"), System.out);
+		Ngoy.renderString("hello: {{getName()}}", Context.of(Person.class, new Person("sam")), System.out);
 	}
 }

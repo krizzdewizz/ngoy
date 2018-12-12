@@ -11,6 +11,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +26,7 @@ import ngoy.core.NgoyException;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
 import ngoy.core.Util;
+import ngoy.core.Variable;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.IterableWithVariables;
@@ -52,7 +54,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private final TextOutput out;
-	private int nextLocalVarIndex;
 	private String textOverrideVar;
 	private boolean hadTextOverride;
 	private final LinkedList<String> switchVars = new LinkedList<>();
@@ -60,12 +61,15 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final LinkedList<CmpVar> cmpVars = new LinkedList<>();
 	private final LinkedList<Set<String>> prefixExcludes = new LinkedList<>();
 	private final Set<String> pipeNames = new HashSet<>();
+	private final Map<String, Integer> localVars = new HashMap<>();
+	private final Map<String, Variable<?>> variables;
 	private final boolean bodyOnly;
-	private String _cmpVar;
+	private String cmpVar;
 
-	public JavaTemplate(PrintStream prn, boolean bodyOnly) {
+	public JavaTemplate(PrintStream prn, boolean bodyOnly, Map<String, Variable<?>> variables) {
 		super(new PrintStreamPrinter(prn));
 		this.bodyOnly = bodyOnly;
+		this.variables = variables;
 		out = new TextOutput(printer);
 	}
 
@@ -80,9 +84,18 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		addPipeMethods(pipes);
 		$("  public static void render(", Ctx.class, " ctx) throws Exception {");
 		setPipes(pipes);
+		addVariables();
 
 		textOverrideVar = createLocalVar("textOverride");
 		$("String ", textOverrideVar, ";");
+	}
+
+	private void addVariables() {
+		for (Entry<String, Variable<?>> vars : variables.entrySet()) {
+			Variable<?> var = vars.getValue();
+			String name = vars.getKey();
+			$(var.type, " ", name, "=(", var.type, ")ctx.getVariableValue(\"", name, "\");");
+		}
 	}
 
 	private void addPipeMethods(List<Class<?>> pipes) {
@@ -135,6 +148,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private String prefixName(String expr, String prefix) {
 		Set<String> ex = new HashSet<>(pipeNames);
+		ex.addAll(variables.keySet());
 		ex.add("java");
 		Set<String> more = prefixExcludes.peek();
 		if (more != null) {
@@ -193,7 +207,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void attributeExpr(String name, String expr) {
 		flushOut();
-		String evalResultVar = createLocalVar("evalResult");
+		String evalResultVar = createLocalVar("attrExpr");
 		$("Object ", evalResultVar, ";");
 
 		$(evalResultVar, " = ", prefixName(expr, cmpVars.peek().name), ";");
@@ -209,7 +223,14 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private String createLocalVar(String tag) {
 		flushOut();
-		return format("_$l_%s_%s", tag, nextLocalVarIndex++);
+		Integer idx = localVars.get(tag);
+		if (idx == null) {
+			idx = 0;
+		} else {
+			idx++;
+		}
+		localVars.put(tag, idx);
+		return format("_%s%s", tag, idx);
 	}
 
 	@Override
@@ -369,21 +390,21 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String cmpClass = cmpRef.clazz.getName()
 				.replace('$', '.');
 
-		_cmpVar = createLocalVar("cmp");
+		cmpVar = createLocalVar("cmp");
 		String cmpCall = appRoot ? "cmp" : "cmpNew";
-		$(cmpClass, " ", _cmpVar, "=(", cmpClass, ")ctx.", cmpCall, " (", cmpClass, ".class);");
+		$(cmpClass, " ", cmpVar, "=(", cmpClass, ")ctx.", cmpCall, " (", cmpClass, ".class);");
 		$("{");
 
 		// testForOfNested2
-		cmpVars.push(new CmpVar(_cmpVar, cmpRef.clazz));
+		cmpVars.push(new CmpVar(cmpVar, cmpRef.clazz));
 		setInputs(params);
 		cmpVars.pop();
 	}
 
 	@Override
 	public void componentStart(CmpRef cmpRef) {
-		cmpVars.push(new CmpVar(_cmpVar, cmpRef.clazz));
-		$("ctx.cmpInit(", _cmpVar, ");");
+		cmpVars.push(new CmpVar(cmpVar, cmpRef.clazz));
+		$("ctx.cmpInit(", cmpVar, ");");
 	}
 
 	@Override

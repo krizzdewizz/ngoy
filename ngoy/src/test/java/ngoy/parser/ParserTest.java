@@ -1,6 +1,7 @@
 package ngoy.parser;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.newPrintStream;
@@ -91,7 +92,7 @@ public class ParserTest {
 		});
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = newPrintStream(baos);
-		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), new JavaTemplate(out, false));
+		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), new JavaTemplate(out, false, emptyMap()));
 		out.flush();
 		out.close();
 		// System.out.println(flatten(html));

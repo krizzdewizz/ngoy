@@ -7,10 +7,9 @@ import static ngoy.core.Util.escape;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
@@ -19,6 +18,7 @@ import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
 import ngoy.core.PipeTransform;
 import ngoy.core.Provider;
+import ngoy.core.Variable;
 
 public class Ctx {
 
@@ -30,21 +30,11 @@ public class Ctx {
 		return new Ctx(injector, pipes);
 	}
 
-	private final Set<Variable> variables = new HashSet<>();
 	private final Map<String, Provider> pipeDecls;
 	private final Injector injector;
 	private PrintStream out;
 	private String contentType;
-
-	public static class Variable {
-		public final String name;
-		public final Object value;
-
-		public Variable(String name, Object value) {
-			this.name = name;
-			this.value = value;
-		}
-	}
+	private Map<String, Variable<?>> variables = new HashMap<>();
 
 	private Ctx() {
 		this(null, emptyMap());
@@ -53,11 +43,6 @@ public class Ctx {
 	private Ctx(@Nullable Injector injector, Map<String, Provider> pipeDecls) {
 		this.injector = injector;
 		this.pipeDecls = pipeDecls;
-	}
-
-	public Ctx variable(String variableName, @Nullable Object variableValue) {
-		variables.add(new Variable(variableName, variableValue));
-		return this;
 	}
 
 	public IterableWithVariables forOfStart(Object iterable) {
@@ -146,8 +131,20 @@ public class Ctx {
 		this.contentType = null;
 	}
 
-	public Set<Variable> getVariables() {
+	public Map<String, Variable<?>> getVariables() {
 		return variables;
+	}
+
+	public Object getVariableValue(String name) {
+		Variable<?> variable = getVariables().get(name);
+		if (variable == null) {
+			throw new NgoyException("Variable '%s' could not be found", name);
+		}
+		return variable.value;
+	}
+
+	public void setVariables(Map<String, Variable<?>> variables) {
+		this.variables = variables;
 	}
 
 	public PipeTransform getPipe(String pipeName) {

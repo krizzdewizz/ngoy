@@ -10,15 +10,15 @@ import java.util.Map;
  * 
  * @author krizz
  */
-public final class Context {
+public final class Context<T> {
 
 	/**
 	 * Returns an empty context.
 	 * 
 	 * @return Context
 	 */
-	public static Context of() {
-		return new Context(null, new HashMap<>());
+	public static <T> Context<T> of() {
+		return new Context<T>(null, null, new HashMap<>());
 	}
 
 	/**
@@ -27,8 +27,8 @@ public final class Context {
 	 * @param model Model
 	 * @return Context
 	 */
-	public static Context of(Object model) {
-		return new Context(model, new HashMap<>());
+	public static <T> Context<T> of(Class<T> modelClass, T model) {
+		return new Context<T>(modelClass, model, new HashMap<>());
 	}
 
 	/**
@@ -38,14 +38,17 @@ public final class Context {
 	 * @param variableValue Value of the variable
 	 * @return Context
 	 */
-	public static Context of(String variableName, Object variableValue) {
-		return of().variable(variableName, variableValue);
+	public static <V> Context<?> of(String variableName, Class<V> variableType, V variableValue) {
+		return Context.of()
+				.variable(variableName, variableType, variableValue);
 	}
 
-	private final Object model;
-	private final Map<String, Object> variables;
+	private final T model;
+	private final Map<String, Variable<?>> variables;
+	private final Class<T> modelClass;
 
-	private Context(Object model, Map<String, Object> variables) {
+	private Context(Class<T> modelClass, T model, Map<String, Variable<?>> variables) {
+		this.modelClass = modelClass;
 		this.model = model;
 		this.variables = variables;
 	}
@@ -57,16 +60,20 @@ public final class Context {
 	 * @param variableValue may be null
 	 * @return this
 	 */
-	public Context variable(String variableName, Object variableValue) {
-		variables.put(variableName, variableValue);
+	public <V> Context<T> variable(String variableName, Class<V> variableType, V variableValue) {
+		variables.put(variableName, new Variable<V>(variableType, variableValue));
 		return this;
 	}
 
-	public Object getModel() {
+	public T getModel() {
 		return model;
 	}
 
-	public Map<String, Object> getVariables() {
+	public Map<String, Variable<?>> getVariables() {
 		return variables;
+	}
+
+	public Class<T> getModelClass() {
+		return modelClass;
 	}
 }

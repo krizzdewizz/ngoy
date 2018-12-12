@@ -3,6 +3,7 @@ package ngoy;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Provider.of;
@@ -247,7 +248,8 @@ public class Ngoy<T> {
 					injectors, //
 					modules, //
 					packagePrefixes, //
-					providers);
+					providers, //
+					null);
 		}
 	}
 
@@ -303,9 +305,9 @@ public class Ngoy<T> {
 	 * @param out      Where the processed template is written to
 	 * @param config   Optional configuration
 	 */
-	public static void renderString(String template, Context context, OutputStream out, Config... config) {
+	public static void renderString(String template, Context<?> context, OutputStream out, Config... config) {
 		Config cfg = config.length > 0 ? config[0] : new Config();
-		new Ngoy<Void>(template, cfg).render(context, out);
+		new Ngoy<Void>(template, cfg, context).render(out);
 	}
 
 	/**
@@ -322,7 +324,7 @@ public class Ngoy<T> {
 	 * @param config       Optional configuration
 	 * @see #renderString(String, Context, OutputStream, Config...)
 	 */
-	public static void renderTemplate(String templatePath, Context context, OutputStream out, Config... config) {
+	public static void renderTemplate(String templatePath, Context<?> context, OutputStream out, Config... config) {
 		InputStream in = Ngoy.class.getResourceAsStream(templatePath);
 		if (in == null) {
 			throw new NgoyException("Template could not be found: '%s'", templatePath);
@@ -383,13 +385,18 @@ public class Ngoy<T> {
 	private final Events events = new Events();
 	private final String template;
 	private final Map<String, Provider> pipeDecls = new HashMap<>();
+	private final Context<?> context;
 
-	protected Ngoy(String template, Config config) {
-		this(Object.class, template, config, emptyList(), emptyList(), emptyList(), emptyList());
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	protected Ngoy(String template, Config config, Context context) {
+		this(context.getModel() != null ? context.getModelClass() : Object.class, template, config, emptyList(), emptyList(), emptyList(),
+				context.getModel() != null ? asList(useValue(context.getModelClass(), context.getModel())) : emptyList(), context);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Ngoy(Class<?> appRoot, String template, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
+	protected Ngoy(Class<?> appRoot, String template, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders,
+			Context<?> context) {
+		this.context = context;
 		this.template = config.templateIsExpression ? template : null;
 		this.appRoot = (Class<T>) appRoot;
 		this.config = config;
@@ -578,15 +585,12 @@ public class Ngoy<T> {
 				.render(this, folder, () -> compile(template));
 	}
 
-	private void render(Context context, OutputStream out) {
+	private void doRender(OutputStream out) {
 		try {
 			Ctx ctx = Ctx.of(injector, pipeDecls);
 
 			if (context != null) {
-				for (Map.Entry<String, Object> v : context.getVariables()
-						.entrySet()) {
-					ctx.variable(v.getKey(), v.getValue());
-				}
+				ctx.setVariables(context.getVariables());
 			}
 
 			events.tick();
@@ -609,7 +613,7 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		render(null, out);
+		doRender(out);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -727,7 +731,7 @@ public class Ngoy<T> {
 		}
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PrintStream ps = new PrintStream(baos)) {
-			JavaTemplate tpl = new JavaTemplate(ps, true);
+			JavaTemplate tpl = new JavaTemplate(ps, true, context != null ? context.getVariables() : emptyMap());
 
 			parser.parse(template, tpl);
 
