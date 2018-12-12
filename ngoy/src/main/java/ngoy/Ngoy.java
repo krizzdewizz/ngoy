@@ -13,11 +13,14 @@ import static ngoy.core.Util.getTemplate;
 import static ngoy.core.Util.isSet;
 import static ngoy.core.Util.newPrintStream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +33,8 @@ import java.util.Objects;
 import java.util.PropertyResourceBundle;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import org.codehaus.janino.ClassBodyEvaluator;
 
 import jodd.jerry.Jerry;
 import ngoy.common.CommonModule;
@@ -57,7 +62,7 @@ import ngoy.core.internal.Ctx;
 import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.Resolver;
 import ngoy.core.internal.StyleUrlsDirective;
-import ngoy.internal.parser.ByteCodeTemplate;
+import ngoy.internal.parser.JavaTemplate;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.scan.ClassScanner;
 import ngoy.internal.script.NgoyScript;
@@ -540,6 +545,19 @@ public class Ngoy<T> {
 						.forEach(all::add);
 				return all;
 			}
+
+			@Override
+			public Class<?> getAppRoot() {
+				return appRoot;
+			}
+
+			@Override
+			public List<Class<?>> resolvePipes() {
+				return pipeDecls.values()
+						.stream()
+						.map(Provider::getProvide)
+						.collect(toList());
+			}
 		};
 	}
 
@@ -573,7 +591,7 @@ public class Ngoy<T> {
 				((OnInit) app).ngOnInit();
 			}
 
-			Ctx ctx = Ctx.of(app, injector, pipeDecls);
+			Ctx ctx = Ctx.of(injector, pipeDecls);
 			if (context != null) {
 				for (Map.Entry<String, Object> v : context.getVariables()
 						.entrySet()) {
@@ -711,11 +729,31 @@ public class Ngoy<T> {
 		}
 	}
 
-	private Class<?> createTemplate(String className, Parser parser, String template, String contentType) {
-		ByteCodeTemplate bct = new ByteCodeTemplate(className, contentType);
-		parser.parse(template, bct);
-		return bct.getClassFile()
-				.defineClass();
+	public interface CreateTemplate {
+		Class<?> createTemplate(String className, Parser parser, String template, String contentType);
+	}
+
+	public static CreateTemplate createTemplate;
+
+	protected Class<?> createTemplate(String className, Parser parser, String template, String contentType) {
+		try {
+			if (createTemplate != null) {
+				return createTemplate.createTemplate(className, parser, template, contentType);
+			}
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			JavaTemplate tpl = new JavaTemplate(new PrintStream(baos), true);
+
+			parser.parse(template, tpl);
+
+			String code = new String(baos.toByteArray(), "UTF-8");
+			Files.write(Paths.get("d:/downloads/qbert.java"), baos.toByteArray());
+
+			ClassBodyEvaluator c = new ClassBodyEvaluator(code);
+
+			return c.getClazz();
+		} catch (Exception e) {
+			throw wrap(e);
+		}
 	}
 
 	private String getContentType(Config config) {

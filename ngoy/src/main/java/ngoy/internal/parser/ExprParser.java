@@ -5,21 +5,27 @@ import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.expression.Expression;
-import org.springframework.expression.ParserContext;
-import org.springframework.expression.common.CompositeStringExpression;
-import org.springframework.expression.common.LiteralExpression;
-import org.springframework.expression.common.TemplateParserContext;
-import org.springframework.expression.spel.standard.SpelExpression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 
 import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
 import ngoy.core.internal.Resolver;
+import ngoy.internal.parser.org.springframework.expression.CompositeStringExpression;
+import ngoy.internal.parser.org.springframework.expression.Expression;
+import ngoy.internal.parser.org.springframework.expression.LiteralExpression;
+import ngoy.internal.parser.org.springframework.expression.ParserContext;
+import ngoy.internal.parser.org.springframework.expression.SpelExpression;
+import ngoy.internal.parser.org.springframework.expression.TemplateAwareExpressionParser;
+import ngoy.internal.parser.org.springframework.expression.TemplateParserContext;
 
 public class ExprParser {
 
@@ -36,6 +42,30 @@ public class ExprParser {
 
 	private static String unescapeOr(String s) {
 		return s.replace(OR_ESCAPE, "||");
+	}
+
+	public static String prefixName(String expr, String prefix, Set<String> excludes) {
+		com.github.javaparser.ast.expr.Expression ex = JavaParser.parseExpression(expr);
+		ex.findAll(SimpleName.class)
+				.stream()
+				.filter(simpleName -> !excludes.contains(simpleName.getIdentifier()))
+				.forEach(simpleName -> {
+					Node parent = simpleName.getParentNode()
+							.get();
+					boolean doIt = true;
+					if (parent instanceof MethodCallExpr) {
+						MethodCallExpr methodCall = (MethodCallExpr) parent;
+						doIt = !methodCall.getScope()
+								.isPresent();
+					} else if (parent instanceof FieldAccessExpr) {
+						doIt = false;
+					}
+					if (doIt) {
+//						simpleName.setIdentifier(format("_cmp.%s", convertFieldAccess(getters, simpleName.getIdentifier())));
+						simpleName.setIdentifier(format("%s.%s", prefix, simpleName.getIdentifier()));
+					}
+				});
+		return ex.toString();
 	}
 
 	public static String convertPipesToTransformCalls(String expressionString, Resolver resolver) {
@@ -66,7 +96,7 @@ public class ExprParser {
 		return e;
 	}
 
-	private static class ExpressionWithPipesParser extends SpelExpressionParser {
+	public static class ExpressionWithPipesParser extends TemplateAwareExpressionParser {
 
 		private final Resolver resolver;
 
@@ -75,9 +105,9 @@ public class ExprParser {
 		}
 
 		@Override
-		protected SpelExpression doParseExpression(String expressionString, ParserContext context) throws ParseException {
+		protected Expression doParseExpression(String expressionString, ParserContext context) throws ParseException {
 			String e = convertPipesToTransformCalls(expressionString, resolver);
-			return new SpelExpression(e, null, null);
+			return new SpelExpression(e);
 		}
 	}
 

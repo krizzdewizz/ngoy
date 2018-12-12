@@ -31,16 +31,16 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework:spring-expression:5.1.2.RELEASE'
-	implementation 'org.cojen:cojen:2.2.5'
+	implementation 'com.github.javaparser:javaparser-core:3.7.1'
+	implementation 'org.codehaus.janino:janino:3.0.11'
 	implementation 'commons-cli:commons-cli:1.4'
 	implementation 'org.jodd:jodd-lagarto:5.0.6'
+    implementation 'org.apache.commons:commons-text:1.6'
 
     // JUnit test framework
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.assertj:assertj-core:3.11.1'
     testImplementation 'org.mockito:mockito-core:2.23.0'
-    testImplementation 'org.apache.commons:commons-text:1.6'
 }
 
 test {
@@ -100,6 +100,10 @@ jar {
 
 shadowJar {
 	from fileTree(dir: 'more-jar-content', include: '**')
+	
+	relocate 'jodd', 'ngoy.core.dom.jodd'
+	relocate 'org', 'ngoy.internal.lib.org'
+	
 	minimize()
 }
 

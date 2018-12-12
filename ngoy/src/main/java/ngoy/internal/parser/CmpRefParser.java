@@ -18,6 +18,7 @@ import java.util.Set;
 import jodd.jerry.Jerry;
 import ngoy.core.dom.NodeVisitor;
 import ngoy.core.internal.CmpRef;
+import ngoy.internal.parser.Inputs.CmpInput;
 
 public class CmpRefParser {
 
@@ -66,8 +67,8 @@ public class CmpRefParser {
 		splitComponentsAndDirectives(cmpRefs, allCmps, allDirs);
 
 		Set<String> excludeBindings = new HashSet<>();
-		List<String> cmpInputs = allCmps.isEmpty() ? emptyList() : cmpInputs(el, allCmps.get(0).clazz, excludeBindings, parser.resolver);
-		List<List<String>> dirInputs = allDirs.stream()
+		List<CmpInput> cmpInputs = allCmps.isEmpty() ? emptyList() : cmpInputs(el, allCmps.get(0).clazz, excludeBindings, parser.resolver);
+		List<List<CmpInput>> dirInputs = allDirs.stream()
 				.map(ref -> cmpInputs(el, ref.clazz, excludeBindings, parser.resolver))
 				.collect(toList());
 

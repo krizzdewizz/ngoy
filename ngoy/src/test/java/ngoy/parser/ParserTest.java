@@ -1,13 +1,12 @@
 package ngoy.parser;
 
-import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.newPrintStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,7 +16,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import jodd.jerry.Jerry;
-import ngoy.JavaTemplate;
 import ngoy.common.UpperCasePipe;
 import ngoy.core.Directive;
 import ngoy.core.Injector;
@@ -25,37 +23,19 @@ import ngoy.core.LocaleProvider;
 import ngoy.core.Provider;
 import ngoy.core.Util;
 import ngoy.core.internal.CmpRef;
-import ngoy.core.internal.Ctx;
 import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.Resolver;
-import ngoy.internal.parser.ByteCodeTemplate;
+import ngoy.internal.parser.JavaTemplate;
 import ngoy.internal.parser.Parser;
-import ngoy.model.Person;
 import ngoy.testapp.PersonDetailComponent;
 import ngoy.translate.TranslateDirective;
 import ngoy.translate.TranslateService;
 
 public class ParserTest {
 
-	// @org.junit.Test
-	public void parseToByteCode() throws Exception {
-		Parser parser = new Parser();
-		ByteCodeTemplate bb = new ByteCodeTemplate("ngoy.XByteCode", null);
-		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), bb);
-
-		Class<?> clazz = bb.getClassFile()
-				.defineClass();
-		Ctx ctx = Ctx.of()
-				.variable("x", true)
-				.variable("person", new Person("krizz"))
-				.variable("persons", asList(new Person("krizz"), new Person("qbert")));
-		ctx.setOut(System.out, null);
-		Method m = clazz.getMethod("render", Ctx.class);
-		m.invoke(null, ctx);
-	}
-
-//	@org.junit.Test
+	@org.junit.Test
 	public void parseJavaToJava() throws Exception {
+
 		DefaultInjector injector = new DefaultInjector(Provider.of(PersonDetailComponent.class), Provider.of(TranslateDirective.class), Provider.of(TranslateService.class),
 				Provider.useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)));
 		Parser parser = new Parser(new Resolver() {
@@ -98,10 +78,20 @@ public class ParserTest {
 			public Set<Class<?>> getCmpClasses() {
 				return emptySet();
 			}
+
+			@Override
+			public Class<?> getAppRoot() {
+				return null;
+			}
+
+			@Override
+			public List<Class<?>> resolvePipes() {
+				return emptyList();
+			}
 		});
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = newPrintStream(baos);
-		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), new JavaTemplate(out));
+		parser.parse(copyToString(getClass().getResourceAsStream("test.html")), new JavaTemplate(out, false));
 		out.flush();
 		out.close();
 		// System.out.println(flatten(html));
@@ -115,7 +105,7 @@ public class ParserTest {
 		return html.replaceAll("\\n", "");
 	}
 
-	Path getTestPath() {
+	static Path getTestPath() {
 		return Paths.get(System.getProperty("user.dir"), "src/test/java/ngoy");
 	}
 

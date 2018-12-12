@@ -5,3 +5,5 @@ ng-test/
 out/
 .sonarlint/
 RemoteSystemsTempFiles/
+bench/
+bench2/

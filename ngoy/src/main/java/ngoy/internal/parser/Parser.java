@@ -1,6 +1,7 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static jodd.lagarto.dom.Node.NodeType.ELEMENT;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
@@ -183,8 +184,12 @@ public class Parser {
 	}
 
 	private void acceptDocument(Jerry nodes) {
-		this.handler.documentStart();
+		this.handler.documentStart(resolver.resolvePipes());
+		CmpRef appRef = new CmpRef(resolver.getAppRoot(), "", false);
+		this.handler.componentStartInput(appRef, emptyList());
+		this.handler.componentStart(appRef);
 		accept(nodes);
+		this.handler.componentEnd();
 		this.handler.documentEnd();
 	}
 

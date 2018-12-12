@@ -4,9 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import ngoy.core.internal.CmpRef;
+import ngoy.internal.parser.Inputs.CmpInput;
 
 public interface ParserHandler {
-	void documentStart();
+	void documentStart(List<Class<?>> pipes);
 
 	void documentEnd();
 
@@ -50,12 +51,12 @@ public interface ParserHandler {
 
 	void textOverride(String expr);
 
-	void componentStartInput(CmpRef cmpRef, List<String> params);
+	void componentStartInput(CmpRef cmpRef, List<CmpInput> params);
 
 	class Default implements ParserHandler {
 
 		@Override
-		public void documentStart() {
+		public void documentStart(List<Class<?>> pipes) {
 		}
 
 		@Override
@@ -143,7 +144,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void componentStartInput(CmpRef cmpRef, List<String> params) {
+		public void componentStartInput(CmpRef cmpRef, List<CmpInput> params) {
 		}
 	}
 
@@ -154,8 +155,8 @@ public interface ParserHandler {
 			this.target = target;
 		}
 
-		public void documentStart() {
-			target.documentStart();
+		public void documentStart(List<Class<?>> pipes) {
+			target.documentStart(pipes);
 		}
 
 		public void documentEnd() {
@@ -223,7 +224,7 @@ public interface ParserHandler {
 			target.componentStart(cmpRef);
 		}
 
-		public void componentStartInput(CmpRef cmpRef, List<String> params) {
+		public void componentStartInput(CmpRef cmpRef, List<CmpInput> params) {
 			target.componentStartInput(cmpRef, params);
 		}
 
