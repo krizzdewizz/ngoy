@@ -586,22 +586,15 @@ public class Ngoy<T> {
 				.render(this, folder, () -> compile(template));
 	}
 
-	private void doRender(OutputStream out) {
-		try {
-			Ctx ctx = Ctx.of(injector, pipeDecls);
+	private Ctx createRenderContext() {
+		Ctx ctx = Ctx.of(injector, pipeDecls);
 
-			if (context != null) {
-				ctx.setVariables(context.getVariables());
-			}
-
-			events.tick();
-
-			try (Writer writer = newBufferedWriter(out)) {
-				invokeRender(ctx, writer);
-			}
-		} catch (Exception e) {
-			throw wrap(e);
+		if (context != null) {
+			ctx.setVariables(context.getVariables());
 		}
+
+		events.tick();
+		return ctx;
 	}
 
 	/**
@@ -610,7 +603,22 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		doRender(out);
+		try {
+			try (Writer writer = newBufferedWriter(out)) {
+				invokeRender(createRenderContext(), writer);
+			}
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
+	/**
+	 * Renders the app to the given writer.
+	 *
+	 * @param out To where to write the app to
+	 */
+	public void render(Writer out) {
+		invokeRender(createRenderContext(), out);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
