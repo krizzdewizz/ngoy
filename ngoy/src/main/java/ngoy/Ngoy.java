@@ -29,7 +29,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.PropertyResourceBundle;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -401,10 +400,7 @@ public class Ngoy<T> {
 		this.appRoot = (Class<T>) appRoot;
 		this.config = config;
 		init(injectors, modules, packagePrefixes, rootProviders);
-//		if (!config.templateIsExpression) {
-//		compile(config.templateIsExpression ? format("{{%s}}", template) : template);
 		compile(template);
-//		}
 	}
 
 	private void init(List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
@@ -603,10 +599,8 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		try {
-			try (Writer writer = newBufferedWriter(out)) {
-				invokeRender(createRenderContext(), writer);
-			}
+		try (Writer writer = newBufferedWriter(out)) {
+			invokeRender(createRenderContext(), writer);
 		} catch (Exception e) {
 			throw wrap(e);
 		}
@@ -702,14 +696,9 @@ public class Ngoy<T> {
 		list.add(p);
 	}
 
-	private String templateClassName() {
-		return format("%s.Tpl%s", getClass().getPackage()
-				.getName(), Math.abs(Objects.hash(appRoot, this)));
-	}
-
 	private void compile(String template) {
 		Parser parser = createParser(resolver, config);
-		templateClass = createTemplate(templateClassName(), parser, template != null ? template : getTemplate(appRoot), getContentType(config));
+		templateClass = createTemplate(parser, template != null ? template : getTemplate(appRoot));
 	}
 
 	private void invokeRender(Ctx ctx, Writer out) {
@@ -725,30 +714,21 @@ public class Ngoy<T> {
 	}
 
 	public interface CreateTemplate {
-		Class<?> createTemplate(String className, Parser parser, String template, String contentType);
+		Class<?> createTemplate(Parser parser, String template, String contentType);
 	}
 
-	public static CreateTemplate createTemplate;
-
-	protected Class<?> createTemplate(String className, Parser parser, String template, String contentType) {
-		if (createTemplate != null) {
-			return createTemplate.createTemplate(className, parser, template, contentType);
-		}
-
+	protected Class<?> createTemplate(Parser parser, String template) {
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PrintStream ps = new PrintStream(baos)) {
 			JavaTemplate tpl = new JavaTemplate(ps, getContentType(config), true, context != null ? context.getVariables() : emptyMap());
 
 			parser.parse(template, tpl);
 
 			String code = new String(baos.toByteArray(), "UTF-8");
-			java.nio.file.Files.write(java.nio.file.Paths.get("d:/downloads/qbert.java"), baos.toByteArray());
+//			java.nio.file.Files.write(java.nio.file.Paths.get("d:/downloads/qbert.java"), baos.toByteArray());
 
-			ClassBodyEvaluator c = new ClassBodyEvaluator();
-//			c.setClassName("ngoy.Qbert" + (qbert++));
-
-			c.cook(code);
-
-			return c.getClazz();
+			ClassBodyEvaluator bodyEvaluator = new ClassBodyEvaluator();
+			bodyEvaluator.cook(code);
+			return bodyEvaluator.getClazz();
 		} catch (Exception e) {
 			throw wrap(e);
 		}

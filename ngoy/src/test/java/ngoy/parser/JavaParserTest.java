@@ -2,15 +2,9 @@ package ngoy.parser;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toMap;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -18,14 +12,10 @@ import java.util.stream.Stream;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import ngoy.Ngoy;
 import ngoy.core.Component;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
-import ngoy.core.NgoyException;
 import ngoy.core.internal.Ctx;
-import ngoy.internal.parser.Parser;
-import ngoy.internal.parser.template.JavaTemplate;
 import ngoy.model.Person;
 
 public class JavaParserTest {
@@ -73,7 +63,8 @@ public class JavaParserTest {
 				.toLowerCase() + field.substring(1);
 	}
 
-	private String convertFieldAccess(Map<String, String> getters, String identifier) {
+	// maybe used sometime
+	String convertFieldAccess(Map<String, String> getters, String identifier) {
 		String getter = getters.get(identifier);
 		if (getter != null) {
 			return format("%s()", getter);
@@ -87,29 +78,6 @@ public class JavaParserTest {
 
 		public static void render(Ctx ctx) {
 			ctx.print(code);
-		}
-	}
-
-//	@org.junit.Test
-	public void testCmp() throws Exception {
-		Ngoy.createTemplate = (String className, Parser parser, String template, String contentType) -> {
-			try {
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				PrintStream out = new PrintStream(baos, true, "UTF-8");
-				JavaTemplate bct = new JavaTemplate(out, "", false, emptyMap());
-				parser.parse(template, bct);
-				MyTemplate.code = new String(baos.toByteArray(), "UTF-8");
-				return MyTemplate.class;
-			} catch (UnsupportedEncodingException e1) {
-				throw NgoyException.wrap(e1);
-			}
-		};
-
-		Ngoy<Cmp> ngoy = Ngoy.app(Cmp.class)
-				.build();
-		try (OutputStream out = Files.newOutputStream(ParserTest.getTestPath()
-				.resolve("X.java"))) {
-			ngoy.render(out);
 		}
 	}
 }
