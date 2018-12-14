@@ -48,14 +48,14 @@ public abstract class TemplateAwareExpressionParser implements ExpressionParser 
 
 	private Expression parseTemplate(String expressionString, ParserContext context) throws ParseException {
 		if (expressionString.isEmpty()) {
-			return new LiteralExpression("");
+			return new Expression(ExpressionType.LITERAL, "");
 		}
 
 		Expression[] expressions = parseExpressions(expressionString, context);
 		if (expressions.length == 1) {
 			return expressions[0];
 		} else {
-			return new CompositeStringExpression(expressionString, expressions);
+			return new Expression(ExpressionType.COMPOUND, expressionString, expressions);
 		}
 	}
 
@@ -90,7 +90,7 @@ public abstract class TemplateAwareExpressionParser implements ExpressionParser 
 			if (prefixIndex >= startIdx) {
 				// an inner expression was found - this is a composite
 				if (prefixIndex > startIdx) {
-					expressions.add(new LiteralExpression(expressionString.substring(startIdx, prefixIndex)));
+					expressions.add(new Expression(ExpressionType.LITERAL, expressionString.substring(startIdx, prefixIndex)));
 				}
 				int afterPrefixIndex = prefixIndex + prefix.length();
 				int suffixIndex = skipToCorrectEndSuffix(suffix, expressionString, afterPrefixIndex);
@@ -110,7 +110,7 @@ public abstract class TemplateAwareExpressionParser implements ExpressionParser 
 				startIdx = suffixIndex + suffix.length();
 			} else {
 				// no more ${expressions} found in string, add rest as static text
-				expressions.add(new LiteralExpression(expressionString.substring(startIdx)));
+				expressions.add(new Expression(ExpressionType.LITERAL, expressionString.substring(startIdx)));
 				startIdx = expressionString.length();
 			}
 		}

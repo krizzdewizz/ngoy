@@ -4,10 +4,9 @@ import static ngoy.core.Util.escape;
 
 import ngoy.internal.parser.template.JavaTemplate;
 
-public abstract class BufferedOutput implements Output {
+public abstract class BufferedOutput {
 	private final StringBuilder buf = new StringBuilder();
 
-	@Override
 	public void print(String text, boolean isExpr, boolean escape, String contentType) {
 		if (isExpr) {
 			flush();
@@ -19,7 +18,6 @@ public abstract class BufferedOutput implements Output {
 
 	protected abstract void doPrint(String text, boolean isExpr);
 
-	@Override
 	public void flush() {
 		if (buf.length() > 0) {
 			doPrint(buf.toString(), false);

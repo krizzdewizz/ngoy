@@ -12,14 +12,9 @@ import static ngoy.core.Provider.useValue;
 import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.getTemplate;
 import static ngoy.core.Util.isSet;
-import static ngoy.core.Util.newBufferedWriter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Writer;
-import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,8 +52,11 @@ import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.CoreInternalModule;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.DefaultInjector;
+import ngoy.core.internal.Output;
 import ngoy.core.internal.Resolver;
+import ngoy.core.internal.StreamOutput;
 import ngoy.core.internal.StyleUrlsDirective;
+import ngoy.core.internal.TemplateRender;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.parser.template.JavaTemplate;
 import ngoy.internal.scan.ClassScanner;
@@ -378,13 +376,15 @@ public class Ngoy<T> {
 	private final Config config;
 	private final Class<T> appRoot;
 	private T appInstance;
-	private Class<?> templateClass;
+	private TemplateRender templateRenderer;
 	private Resolver resolver;
 	private DefaultInjector injector;
 	private final Events events = new Events();
 	private final String template;
 	private final Map<String, Provider> pipeDecls = new HashMap<>();
 	private final Context<?> context;
+	private String contentType;
+	private boolean contentTypeComputed;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected Ngoy(String template, Config config, Context context) {
@@ -599,20 +599,7 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		try (Writer writer = newBufferedWriter(out)) {
-			invokeRender(createRenderContext(), writer);
-		} catch (Exception e) {
-			throw wrap(e);
-		}
-	}
-
-	/**
-	 * Renders the app to the given writer.
-	 *
-	 * @param out To where to write the app to
-	 */
-	public void render(Writer out) {
-		invokeRender(createRenderContext(), out);
+		render(createRenderContext(), new StreamOutput(out));
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -697,15 +684,20 @@ public class Ngoy<T> {
 	}
 
 	private void compile(String template) {
-		Parser parser = createParser(resolver, config);
-		templateClass = createTemplate(parser, template != null ? template : getTemplate(appRoot));
+		try {
+			Parser parser = createParser(resolver, config);
+			Class<?> templateClass = createTemplate(parser, template != null ? template : getTemplate(appRoot));
+			templateRenderer = (TemplateRender) templateClass.getMethod("createRenderer")
+					.invoke(null);
+		} catch (Exception e) {
+			throw wrap(e);
+		}
 	}
 
-	private void invokeRender(Ctx ctx, Writer out) {
+	private void render(Ctx ctx, Output out) {
 		try {
 			ctx.setOut(out, getContentType(config));
-			Method m = templateClass.getMethod("render", Ctx.class);
-			m.invoke(null, ctx);
+			templateRenderer.render(ctx);
 		} catch (Exception e) {
 			throw wrap(e);
 		} finally {
@@ -718,13 +710,13 @@ public class Ngoy<T> {
 	}
 
 	protected Class<?> createTemplate(Parser parser, String template) {
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PrintStream ps = new PrintStream(baos)) {
-			JavaTemplate tpl = new JavaTemplate(ps, getContentType(config), true, context != null ? context.getVariables() : emptyMap());
+		try {
+			JavaTemplate tpl = new JavaTemplate(getContentType(config), true, context != null ? context.getVariables() : emptyMap());
 
 			parser.parse(template, tpl);
 
-			String code = new String(baos.toByteArray(), "UTF-8");
-//			java.nio.file.Files.write(java.nio.file.Paths.get("d:/downloads/qbert.java"), baos.toByteArray());
+			String code = tpl.toString();
+			java.nio.file.Files.write(java.nio.file.Paths.get("d:/downloads/qbert.java"), code.getBytes());
 
 			ClassBodyEvaluator bodyEvaluator = new ClassBodyEvaluator();
 			bodyEvaluator.cook(code);
@@ -735,6 +727,9 @@ public class Ngoy<T> {
 	}
 
 	private String getContentType(Config config) {
+		if (contentTypeComputed) {
+			return contentType;
+		}
 		String contentType = config.contentType;
 		if ((contentType == null || contentType.isEmpty()) && appRoot != null) {
 			Component cmp = appRoot.getAnnotation(Component.class);
@@ -742,7 +737,8 @@ public class Ngoy<T> {
 				contentType = cmp.contentType();
 			}
 		}
-		return contentType;
+		contentTypeComputed = true;
+		return this.contentType = contentType;
 	}
 
 	private Parser createParser(@Nullable Resolver resolver, Config config) {

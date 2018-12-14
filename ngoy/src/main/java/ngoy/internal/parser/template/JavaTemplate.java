@@ -3,8 +3,8 @@ package ngoy.internal.parser.template;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
-import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -29,6 +29,7 @@ import ngoy.core.Variable;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.IterableWithVariables;
+import ngoy.core.internal.TemplateRender;
 import ngoy.internal.parser.ExprParser;
 import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.Inputs.CmpInput;
@@ -37,6 +38,8 @@ import ngoy.internal.parser.Inputs.ValueType;
 import ngoy.internal.parser.ParserHandler;
 
 public class JavaTemplate extends CodeBuilder implements ParserHandler {
+
+	private static final String BYTEARRAYS = "$BYTEARRAYS$";
 
 	public static String escapeJava(String text) {
 		return JavaEscape.escapeJava(text);
@@ -52,6 +55,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 	}
 
+	static final String CTX_VAR = "__";
+
 	private final TextOutput out;
 	private String textOverrideVar;
 	private boolean hadTextOverride;
@@ -61,17 +66,34 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final LinkedList<Set<String>> prefixExcludes = new LinkedList<>();
 	private final Set<String> pipeNames = new HashSet<>();
 	private final Map<String, Integer> localVars = new HashMap<>();
+	private final Map<String, Integer> byteArrayRefs = new HashMap<>();
 	private final Map<String, Variable<?>> variables;
 	private final boolean bodyOnly;
 	private final String contentType;
 	private String cmpVar;
+	private String code;
 
-	public JavaTemplate(PrintStream prn, String contentType, boolean bodyOnly, Map<String, Variable<?>> variables) {
-		super(new PrintStreamPrinter(prn));
+	private String byteArraysVar;
+	private String byteArraysLocalVar;
+
+	public JavaTemplate(String contentType, boolean bodyOnly, Map<String, Variable<?>> variables) {
+		super(new Printer());
 		this.bodyOnly = bodyOnly;
 		this.variables = variables;
 		this.contentType = contentType;
-		out = new TextOutput(printer, () -> depth);
+		out = new TextOutput(printer, () -> depth, this::createByteArrayRef);
+		byteArraysVar = createLocalVar("bytearrays", false);
+		byteArraysLocalVar = createLocalVar("bytearraysLocal", false);
+	}
+
+	private String createByteArrayRef(String text) {
+		Integer ref = byteArrayRefs.get(text);
+		if (ref == null) {
+			ref = byteArrayRefs.size();
+			byteArrayRefs.put(text, ref);
+		}
+
+		return format("%s[%s]", byteArraysLocalVar, ref);
 	}
 
 	@Override
@@ -82,10 +104,17 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			$("public class X {");
 		}
 
+		$("public static ", TemplateRender.class, " createRenderer() { return new Renderer(); }");
+
+		$("private static class Renderer implements ", TemplateRender.class, "{");
+
 		addApiHelpers();
 		addPipeMethods(pipes);
 
-		$("public static void render(", Ctx.class, " ctx) throws Exception {");
+		$("private static final byte[][] ", byteArraysVar, "= new byte[][]{", BYTEARRAYS, "};");
+
+		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws Exception {");
+		$("final byte[][] ", byteArraysLocalVar, "=", byteArraysVar, ";");
 		setPipes(pipes);
 		addVariables();
 
@@ -94,6 +123,14 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private void addApiHelpers() {
+		$("private static byte[] __bs(String s) {");
+		$("try {");
+		$("  return s.getBytes(\"UTF-8\");");
+		$("} catch (Exception e) {");
+		$("throw ", NgoyException.class, ".wrap(e);");
+		$("}");
+		$("}");
+
 		$("private static ", Map.class, " Map(Object...pairs) {");
 		$(" return ", Ctx.class, ".Map(pairs);");
 		$("}");
@@ -107,7 +144,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		for (Entry<String, Variable<?>> vars : variables.entrySet()) {
 			Variable<?> var = vars.getValue();
 			String name = vars.getKey();
-			$(var.type, " ", name, "=(", var.type, ")ctx.getVariableValue(\"", name, "\");");
+			$(var.type, " ", name, "=(", var.type, ")", CTX_VAR, ".getVariableValue(\"", name, "\");");
 		}
 	}
 
@@ -129,18 +166,49 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			String pipeName = pipe.getAnnotation(Pipe.class)
 					.value();
 			String pipeFun = format("$%s", pipeName);
-			$("_", pipeFun, " = ctx.getPipe(\"", pipeName, "\");");
+			$("_", pipeFun, "=", CTX_VAR, ".getPipe(\"", pipeName, "\");");
 		}
 	}
 
 	@Override
 	public void documentEnd() {
 		flushOut();
-		$("  }"); // render method
+		$("}"); // render method
+
+		$("}"); // class Renderer
 
 		if (!bodyOnly) {
 			$("}");
 		}
+
+		code = super.toString();
+
+		replaceByteArrays();
+	}
+
+	@Override
+	public String toString() {
+		return code;
+	}
+
+	private void replaceByteArrays() {
+		String byteArrays = new CodeBuilder(new Printer()) {
+			@Override
+			protected void doCreate() {
+				List<String> all = byteArrayRefs.entrySet()
+						.stream()
+						.sorted((a, b) -> a.getValue()
+								.compareTo(b.getValue()))
+						.map(Map.Entry::getKey)
+						.collect(toList());
+				for (String text : all) {
+					$("__bs(\"", text, "\"),");
+				}
+			}
+		}.create()
+				.toString();
+
+		code = code.replace(BYTEARRAYS, byteArrays);
 	}
 
 	@Override
@@ -194,7 +262,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		if (hadTextOverride) {
 			flushOut();
 
-			out.printEscaped(textOverrideVar, true);
+			out.printEscaped(textOverrideVar);
 			$(textOverrideVar, "=null;");
 
 			hadTextOverride = false;
@@ -223,21 +291,25 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	public void attributeExpr(String name, String expr) {
 		flushOut();
 		String evalResultVar = createLocalVar("attrExpr");
-		$("Object ", evalResultVar, ";");
-
-		$(evalResultVar, " = ", prefixName(expr, cmpVars.peek().name), ";");
+		$("Object ", evalResultVar, "=", prefixName(expr, cmpVars.peek().name), ";");
 
 		$("if (", evalResultVar, " != null) {");
 		printOut(" ", name, "=\"");
 		flushOut();
-		out.printEscaped(evalResultVar, true);
+		out.printEscaped(evalResultVar);
 		printOut("\"");
 		flushOut();
 		$("}");
 	}
 
 	private String createLocalVar(String tag) {
-		flushOut();
+		return createLocalVar(tag, true);
+	}
+
+	private String createLocalVar(String tag, boolean flush) {
+		if (flush) {
+			flushOut();
+		}
 		Integer idx = localVars.get(tag);
 		if (idx == null) {
 			idx = 0;
@@ -245,7 +317,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			idx++;
 		}
 		localVars.put(tag, idx);
-		return format("_%s%s", tag, idx == 0 ? "" : String.valueOf(idx));
+		return format("__%s%s", tag, idx == 0 ? "" : String.valueOf(idx));
 	}
 
 	@Override
@@ -264,7 +336,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String switchVar;
 		if (Util.isSet(switchFirstCase)) {
 			switchVar = createLocalVar("switchVar");
-			$("Object ", switchVar, " = ", prefixName(expr, cmpVars.peek().name), ";");
+			$("Object ", switchVar, "=", prefixName(expr, cmpVars.peek().name), ";");
 			$("if (java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase, cmpVars.peek().name), ")) {");
 			switchHadElseIf.push(true);
 		} else {
@@ -350,8 +422,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		String iterVar = createLocalVar("iter");
 		String iterClass = format("%s.%s", IterableWithVariables.class.getName(), "Iter");
-		$("for (", iterClass, " ", iterVar, " = ctx.forOfStart(", prefixName(listName, cmpVar.name), ").iterator(); ", iterVar, ".hasNext();) {");
-		$(itemType, " ", itemName, " = (", itemType, ")", iterVar, ".next();");
+		$("for (", iterClass, " ", iterVar, "=", CTX_VAR, ".forOfStart(", prefixName(listName, cmpVar.name), ").iterator(); ", iterVar, ".hasNext();) {");
+		$(itemType, " ", itemName, "=(", itemType, ")", iterVar, ".next();");
 
 		Set<Entry<ForOfVariable, String>> entries = variables.entrySet();
 		for (Map.Entry<ForOfVariable, String> e : entries) {
@@ -407,7 +479,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		cmpVar = createLocalVar(cmpRef.clazz.getSimpleName());
 		String cmpCall = appRoot ? "cmp" : "cmpNew";
-		$(cmpClass, " ", cmpVar, "=(", cmpClass, ")ctx.", cmpCall, "(", cmpClass, ".class);");
+		$(cmpClass, " ", cmpVar, "=(", cmpClass, ")", CTX_VAR, ".", cmpCall, "(", cmpClass, ".class);");
 		$("{");
 
 		// testForOfNested2
@@ -419,14 +491,14 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void componentStart(CmpRef cmpRef) {
 		cmpVars.push(new CmpVar(cmpVar, cmpRef.clazz));
-		$("ctx.cmpInit(", cmpVar, ");");
+		$("", CTX_VAR, ".cmpInit(", cmpVar, ");");
 	}
 
 	@Override
 	public void componentEnd() {
 		String cmpVar = cmpVars.pop().name;
 		flushOut();
-		$("ctx.cmpDestroy(", cmpVar, ");");
+		$("", CTX_VAR, ".cmpDestroy(", cmpVar, ");");
 		$("}");
 	}
 

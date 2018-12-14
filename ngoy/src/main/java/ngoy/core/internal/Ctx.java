@@ -4,15 +4,11 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static ngoy.core.Util.escape;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
@@ -35,7 +31,7 @@ public class Ctx {
 
 	private final Map<String, Provider> pipeDecls;
 	private final Injector injector;
-	private Writer out;
+	private Output out;
 	private String contentType;
 	private Map<String, Variable<?>> variables = new HashMap<>();
 
@@ -102,65 +98,21 @@ public class Ctx {
 		}
 	}
 
-//	public void pushParentContext() {
-//		EvaluationContext c = spelCtxs.get(1); // 1 = parent of cmp which
-//												// provides ng-content
-//		spelCtxs.push(c);
-//	}
-
 	public Injector getInjector() {
 		return injector;
 	}
 
-//	public void printEscaped(boolean obj) {
-//		out.print(obj);
-//	}
-//
-//	public void printEscaped(byte obj) {
-//		out.print(obj);
-//	}
-//
-//	public void printEscaped(char obj) {
-//		out.print(obj);
-//	}
-//
-//	public void printEscaped(short obj) {
-//		out.print(obj);
-//	}
-//
-//	public void printEscaped(int obj) {
-//		out.print(obj);
-//	}
-//
-//	public void printEscaped(long obj) {
-//		out.print(obj);
-//	}
-//
-//	public void printEscaped(float obj) {
-//		out.print(obj);
-//	}
-//
-//	public void printEscaped(double obj) {
-//		out.print(obj);
-//	}
-
-	public void printEscaped(@Nullable Object obj) {
+	public void pe(@Nullable Object obj) {
 		if (obj != null) {
-			print(escape(obj.toString(), contentType));
+			out.write(escape(obj.toString(), contentType));
 		}
 	}
 
-	public void print(@Nullable Object obj) {
-		if (obj != null) {
-			try {
-				out.write(obj.toString());
-			} catch (IOException e) {
-				throw NgoyException.wrap(e);
-			}
-		}
+	public void pb(byte[] bytes) {
+		out.write(bytes);
 	}
 
-	public void setOut(Writer out, String contentType) {
+	public void setOut(Output out, String contentType) {
 		this.out = out;
 		this.contentType = contentType;
 	}
@@ -192,14 +144,6 @@ public class Ctx {
 			throw new NgoyException("No provider for pipe '%s'", pipeName);
 		}
 		return (PipeTransform) injector.get(pipeProvider.getProvide());
-	}
-
-	public static String join(Collection<String> list, String delimiter) {
-		StringJoiner joiner = new StringJoiner(delimiter);
-		for (String it : list) {
-			joiner.add(it);
-		}
-		return joiner.toString();
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

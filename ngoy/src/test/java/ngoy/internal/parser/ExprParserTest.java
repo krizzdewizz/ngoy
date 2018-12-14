@@ -14,10 +14,7 @@ import org.junit.Test;
 
 import ngoy.internal.parser.ExprParser.ExpressionWithPipesParser;
 import ngoy.internal.parser.ExprParser.TextHandler;
-import ngoy.internal.parser.org.springframework.expression.CompositeStringExpression;
 import ngoy.internal.parser.org.springframework.expression.Expression;
-import ngoy.internal.parser.org.springframework.expression.LiteralExpression;
-import ngoy.internal.parser.org.springframework.expression.SpelExpression;
 
 public class ExprParserTest {
 
@@ -57,13 +54,13 @@ public class ExprParserTest {
 	public void testSpelParser() {
 		ExpressionWithPipesParser exprParser = new ExpressionWithPipesParser(null);
 
-		CompositeStringExpression e = (CompositeStringExpression) exprParser.parseExpression("a{{'\n'}}b", ExprParser.TEMPLATE_CONTEXT);
+		Expression e = (Expression) exprParser.parseExpression("a{{'\n'}}b", ExprParser.TEMPLATE_CONTEXT);
 
-		Expression[] exs = e.getExpressions();
+		Expression[] exs = e.expressions;
 		assertThat(exs).hasSize(3);
-		assertThat(((LiteralExpression) exs[0]).getExpressionString()).isEqualTo("a");
-		assertThat(((SpelExpression) exs[1]).getExpressionString()).isEqualTo("'\n'");
-		assertThat(((LiteralExpression) exs[2]).getExpressionString()).isEqualTo("b");
+		assertThat(exs[0].string).isEqualTo("a");
+		assertThat(exs[1].string).isEqualTo("'\n'");
+		assertThat(exs[2].string).isEqualTo("b");
 	}
 
 	@Test

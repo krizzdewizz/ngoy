@@ -28,11 +28,9 @@ import org.codehaus.janino.util.AbstractTraverser;
 import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
 import ngoy.core.internal.Resolver;
-import ngoy.internal.parser.org.springframework.expression.CompositeStringExpression;
 import ngoy.internal.parser.org.springframework.expression.Expression;
-import ngoy.internal.parser.org.springframework.expression.LiteralExpression;
+import ngoy.internal.parser.org.springframework.expression.ExpressionType;
 import ngoy.internal.parser.org.springframework.expression.ParserContext;
-import ngoy.internal.parser.org.springframework.expression.SpelExpression;
 import ngoy.internal.parser.org.springframework.expression.TemplateAwareExpressionParser;
 import ngoy.internal.parser.org.springframework.expression.TemplateParserContext;
 
@@ -173,7 +171,7 @@ public class ExprParser {
 		@Override
 		protected Expression doParseExpression(String expressionString, ParserContext context) throws ParseException {
 			String e = convertPipesToTransformCalls(expressionString, resolver);
-			return new SpelExpression(e);
+			return new Expression(ExpressionType.EXPRESSION, e);
 		}
 	}
 
@@ -186,16 +184,19 @@ public class ExprParser {
 	}
 
 	private static void acceptExpr(Expression e, TextHandler handler) {
-		if (e instanceof LiteralExpression) {
-			handler.text(e.getExpressionString(), false);
-		} else if (e instanceof SpelExpression) {
-			handler.text(e.getExpressionString(), true);
-		} else if (e instanceof CompositeStringExpression) {
-			CompositeStringExpression compositeExpr = (CompositeStringExpression) e;
-			for (Expression child : compositeExpr.getExpressions()) {
+		switch (e.type) {
+		case LITERAL:
+			handler.text(e.string, false);
+			break;
+		case EXPRESSION:
+			handler.text(e.string, true);
+			break;
+		case COMPOUND:
+			for (Expression child : e.expressions) {
 				acceptExpr(child, handler);
 			}
-		} else {
+			break;
+		default:
 			throw new NgoyException("Unknown expression type: %s", e.getClass()
 					.getName());
 		}

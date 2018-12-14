@@ -54,4 +54,9 @@ public class CodeBuilder {
 			doPrint("  ");
 		}
 	}
+
+	@Override
+	public String toString() {
+		return printer.toString();
+	}
 }

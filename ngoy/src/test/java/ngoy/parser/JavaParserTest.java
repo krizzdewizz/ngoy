@@ -15,7 +15,6 @@ import org.junit.rules.TemporaryFolder;
 import ngoy.core.Component;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
-import ngoy.core.internal.Ctx;
 import ngoy.model.Person;
 
 public class JavaParserTest {
@@ -71,13 +70,5 @@ public class JavaParserTest {
 		}
 
 		return identifier;
-	}
-
-	public static class MyTemplate {
-		static String code;
-
-		public static void render(Ctx ctx) {
-			ctx.print(code);
-		}
 	}
 }
