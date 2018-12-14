@@ -11,9 +11,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,6 +25,14 @@ import ngoy.core.Nullable;
 import ngoy.core.Provider;
 
 public class DefaultInjector implements Injector {
+
+	private interface Factory {
+		public Object create();
+	}
+
+	private interface Injection {
+		void apply(Object instance) throws Exception;
+	}
 
 	@Nullable
 	private static Annotation findAnnotation(Annotation[] anns, String name) {
@@ -39,6 +49,7 @@ public class DefaultInjector implements Injector {
 	private final Map<Class<?>, Object> providerInstances = new HashMap<>();
 	private final Injector[] moreInjectors;
 	private final Set<Class<?>> cmpDecls;
+	private final Map<Class<?>, Factory> factories = new HashMap<>();
 
 	public DefaultInjector(Provider... providers) {
 		this(emptySet(), new Injector[0], providers);
@@ -91,8 +102,7 @@ public class DefaultInjector implements Injector {
 				for (Injector inj : moreInjectors) {
 					if ((object = inj.get(clazz)) != null) {
 						providerInstances.put(clazz, object);
-						// bean injected/dev mode. find better solution
-						injectFields(clazz, object, resolving);
+						applyInjections(object, fieldInjections(clazz, resolving));
 						return (T) object;
 					}
 				}
@@ -111,35 +121,51 @@ public class DefaultInjector implements Injector {
 				return (T) useValue;
 			}
 
+			//
+
 			Class<?> useClass = requireNonNull(provider.getUseClass(), "useClass must not be null");
 
-			// System.out.println("provide: " + clazz.getName() + " -> " +
-			// useClass.getName());
+			Factory factory = factories.get(useClass);
+			if (factory != null) {
+				return (T) factory.create();
+			}
 
 			Constructor<?>[] ctors = useClass.getConstructors();
-			Object inst;
 			if (ctors.length > 1) {
 				throw new NgoyException("Only one constructor allowed: %s", useClass.getName());
 			} else if (ctors.length == 0) {
 				throw new NgoyException("No constructor found: %s", useClass.getName());
-			} else {
-				Constructor<?> ctor = ctors[0];
-				int nParams = ctor.getParameterCount();
-				Object[] arr = new Object[nParams];
+			}
+
+			Constructor<?> ctor = ctors[0];
+			int nParams = ctor.getParameterCount();
+			Object[] arr = new Object[nParams];
+			if (nParams > 0) {
 				Class<?>[] paramTypes = ctor.getParameterTypes();
 				Annotation[][] paramAnns = ctor.getParameterAnnotations();
 				for (int i = 0; i < nParams; i++) {
 					Annotation optional = findAnnotation(paramAnns[i], "Optional");
 					arr[i] = getInternal(paramTypes[i], resolving, optional != null);
 				}
-				inst = ctor.newInstance(arr);
 			}
 
-			injectFields(useClass, inst, resolving);
+			List<Injection> fieldInjections = fieldInjections(useClass, resolving);
 
-			providerInstances.put(clazz, inst);
+			factory = () -> {
+				try {
+					Object instance = ctor.newInstance(arr);
+					applyInjections(instance, fieldInjections);
+					providerInstances.put(clazz, instance);
+					return (T) instance;
+				} catch (Exception e) {
+					throw wrap(e);
+				}
+			};
 
-			return (T) inst;
+			factories.put(useClass, factory);
+
+			return (T) factory.create();
+
 		} catch (Exception e) {
 			throw wrap(e);
 		} finally {
@@ -153,9 +179,19 @@ public class DefaultInjector implements Injector {
 		return get(clazz);
 	}
 
-	public void injectFields(Class<?> clazz, Object inst, Set<Class<?>> resolving) {
-
+	public void applyInjections(Object instance, List<Injection> injections) {
 		try {
+			for (Injection f : injections) {
+				f.apply(instance);
+			}
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
+	public List<Injection> fieldInjections(Class<?> clazz, Set<Class<?>> resolving) {
+		try {
+			final List<Injection> injections = new ArrayList<>();
 			for (Field field : clazz.getFields()) {
 				int mods = field.getModifiers();
 				if (!Modifier.isPublic(mods) || Modifier.isStatic(mods) || Modifier.isFinal(mods) || findAnnotation(field.getAnnotations(), "Inject") == null) {
@@ -166,7 +202,7 @@ public class DefaultInjector implements Injector {
 
 				Object obj = getInternal(field.getType(), resolving, optional);
 				if (!optional || obj != null) {
-					field.set(inst, obj);
+					injections.add(i -> field.set(i, obj));
 				}
 			}
 
@@ -184,9 +220,11 @@ public class DefaultInjector implements Injector {
 
 				Object obj = getInternal(meth.getParameterTypes()[0], resolving, optional);
 				if (!optional || obj != null) {
-					meth.invoke(inst, obj);
+					injections.add(i -> meth.invoke(i, obj));
 				}
 			}
+
+			return injections;
 		} catch (Exception e) {
 			throw wrap(e);
 		}

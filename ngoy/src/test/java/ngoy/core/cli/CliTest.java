@@ -7,9 +7,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Writer;
 import java.nio.file.Files;
 
 import org.junit.After;
@@ -18,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import ngoy.core.NgoyException;
 import ngoy.core.Util;
 
 public class CliTest {
@@ -103,20 +106,13 @@ public class CliTest {
 	}
 
 	@Test
-	public void testExpr() {
-		assertThat(run("-e", "{}")).isEqualTo("[]");
-		assertThat(run("-e", "{:}.entrySet().iterator().hasNext()")).isEqualTo("false");
-	}
-
-	@Test
 	public void testNewLine() {
-		assertThat(run(true, "{{'\n'}}")).isEqualTo("\n");
+		assertThat(run(true, "{{\"\\n\"}}")).isEqualTo("\n");
 	}
 
 	@Test
-	public void testNewLine_spel_wrong_question_mark() {
-		// shouldn't it be .isEqualTo("a\na");
-		assertThat(run(true, "-e", "'\\n'")).isEqualTo("\\n");
+	public void testNewLineExpr() {
+		assertThat(run(true, "-e", "'\\n'")).isEqualTo("\n");
 	}
 
 	@Test
@@ -128,7 +124,7 @@ public class CliTest {
 
 	@Test
 	public void testPipe() {
-		assertThat(run("-e", "'hello' | uppercase")).isEqualTo("HELLO");
+		assertThat(run("-e", "\"hello\" | uppercase")).isEqualTo("HELLO");
 	}
 
 	@Test
@@ -136,8 +132,11 @@ public class CliTest {
 		genCli = new ngoy.core.gen.Cli() {
 			@Override
 			public void run(String[] args, OutputStream out) {
-				Util.newPrintStream(out)
-						.print(asList(args));
+				try (Writer w = Util.newBufferedWriter(out)) {
+					w.write(asList(args).toString());
+				} catch (IOException e) {
+					throw NgoyException.wrap(e);
+				}
 			}
 		};
 		assertThat(run("new", "org.myapp.Qbert")).isEqualTo("[project, org.myapp.Qbert]");
@@ -148,8 +147,11 @@ public class CliTest {
 		genCli = new ngoy.core.gen.Cli() {
 			@Override
 			public void run(String[] args, OutputStream out) {
-				Util.newPrintStream(out)
-						.print(asList(args));
+				try (Writer w = Util.newBufferedWriter(out)) {
+					w.write(asList(args).toString());
+				} catch (IOException e) {
+					throw NgoyException.wrap(e);
+				}
 			}
 		};
 		assertThat(run("g", "c", "person", "-p", "abc")).isEqualTo("[c, person, -p, abc]");

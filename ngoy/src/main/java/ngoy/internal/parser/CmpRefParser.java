@@ -18,6 +18,7 @@ import java.util.Set;
 import jodd.jerry.Jerry;
 import ngoy.core.dom.NodeVisitor;
 import ngoy.core.internal.CmpRef;
+import ngoy.internal.parser.Inputs.CmpInput;
 
 public class CmpRefParser {
 
@@ -66,8 +67,8 @@ public class CmpRefParser {
 		splitComponentsAndDirectives(cmpRefs, allCmps, allDirs);
 
 		Set<String> excludeBindings = new HashSet<>();
-		List<String> cmpInputs = allCmps.isEmpty() ? emptyList() : cmpInputs(el, allCmps.get(0).clazz, excludeBindings, parser.resolver);
-		List<List<String>> dirInputs = allDirs.stream()
+		List<CmpInput> cmpInputs = allCmps.isEmpty() ? emptyList() : cmpInputs(el, allCmps.get(0).clazz, excludeBindings, parser.resolver);
+		List<List<CmpInput>> dirInputs = allDirs.stream()
 				.map(ref -> cmpInputs(el, ref.clazz, excludeBindings, parser.resolver))
 				.collect(toList());
 
@@ -81,7 +82,7 @@ public class CmpRefParser {
 
 			int i = 0;
 			for (CmpRef ref : allDirs) {
-				parser.handler.componentStartInput(ref, dirInputs.get(i));
+				parser.handler.componentStartInput(ref, false, dirInputs.get(i));
 				parser.handler.componentStart(ref);
 
 				List<String[]> cNames = new ArrayList<>();
@@ -100,7 +101,7 @@ public class CmpRefParser {
 
 		if (!allCmps.isEmpty()) {
 			CmpRef ref = allCmps.get(0);
-			parser.handler.componentStartInput(ref, cmpInputs);
+			parser.handler.componentStartInput(ref, false, cmpInputs);
 
 			if (parser.inlineComponent(el)) {
 				parser.handler.componentStart(ref);

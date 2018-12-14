@@ -1,10 +1,7 @@
 package ngoy.core.internal;
 
 import static java.util.Arrays.asList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -12,8 +9,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import ngoy.core.internal.IterableWithVariables;
-import ngoy.core.internal.IterableWithVariables.IterVariable;
+import ngoy.core.internal.IterableWithVariables.Iter;
 import ngoy.internal.parser.ForOfVariable;
 
 public class IterableWithVariablesTest {
@@ -29,27 +25,27 @@ public class IterableWithVariablesTest {
 		vars.put(ForOfVariable.odd, "oo");
 		vars.put(ForOfVariable.even, "ee");
 
-		IterVariable target = mock(IterVariable.class);
-		IterableWithVariables iter = new IterableWithVariables(all, vars, target);
+		Iter iter = new IterableWithVariables(all).iterator();
+		assertThat(iter.index).isEqualTo(-1);
+		iter.next();
+		assertThat(iter.index).isEqualTo(0);
+		assertThat(iter.even).isEqualTo(true);
+		assertThat(iter.odd).isEqualTo(false);
+		assertThat(iter.first).isEqualTo(true);
+		assertThat(iter.last).isEqualTo(false);
 
-		for (@SuppressWarnings("unused")
-		Object it : iter) {
-		}
+		iter.next();
+		assertThat(iter.index).isEqualTo(1);
+		assertThat(iter.even).isEqualTo(false);
+		assertThat(iter.odd).isEqualTo(true);
+		assertThat(iter.first).isEqualTo(false);
+		assertThat(iter.last).isEqualTo(false);
 
-		verify(target).iterVariable("ii", 0);
-		verify(target).iterVariable("ii", 1);
-		verify(target).iterVariable("ii", 2);
-
-		verify(target).iterVariable("ff", true);
-		verify(target, times(2)).iterVariable("ff", false);
-
-		verify(target, times(2)).iterVariable("ll", false);
-		verify(target).iterVariable("ll", true);
-
-		verify(target, times(2)).iterVariable("ee", true);
-		verify(target, times(2)).iterVariable("oo", false);
-		verify(target).iterVariable("oo", true);
-		verify(target).iterVariable("ee", false);
-		verifyNoMoreInteractions(target);
+		iter.next();
+		assertThat(iter.index).isEqualTo(2);
+		assertThat(iter.even).isEqualTo(true);
+		assertThat(iter.odd).isEqualTo(false);
+		assertThat(iter.first).isEqualTo(false);
+		assertThat(iter.last).isEqualTo(true);
 	}
 }

@@ -25,7 +25,7 @@ public class TextPlainWithCmpsTest extends ANgoyTest {
 	public static class FooterCmp {
 	}
 
-	@Component(selector = "test", contentType = "text/plain", template = "<header [name]=\"person.name\"></header>\nage of {{person.name}}:\t {{person.age}}\nhobbies:\t\n<span *ngFor=\"let h of hobbies\">{{h}}\n</span><footer></footer>")
+	@Component(selector = "test", contentType = "text/plain", template = "<header [name]=\"person.getName()\"></header>\nage of {{person.getName()}}:\t {{person.getAge()}}\nhobbies:\t\n<span *ngFor=\"let h of hobbies\">{{h}}\n</span><footer></footer>")
 	@NgModule(declarations = { HeaderCmp.class, FooterCmp.class })
 	public static class Cmp {
 		public Person person = new Person("peter", 22);

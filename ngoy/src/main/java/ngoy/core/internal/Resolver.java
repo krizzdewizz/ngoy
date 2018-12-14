@@ -36,6 +36,16 @@ public interface Resolver {
 		public Set<Class<?>> getCmpClasses() {
 			return emptySet();
 		}
+
+		@Override
+		public Class<?> getAppRoot() {
+			return null;
+		}
+
+		@Override
+		public List<Class<?>> resolvePipes() {
+			return emptyList();
+		}
 	};
 
 	Injector getInjector();
@@ -47,4 +57,8 @@ public interface Resolver {
 	Class<?> resolveCmpClass(Class<?> cmpClass);
 
 	Set<Class<?>> getCmpClasses();
+
+	Class<?> getAppRoot();
+
+	List<Class<?>> resolvePipes();
 }

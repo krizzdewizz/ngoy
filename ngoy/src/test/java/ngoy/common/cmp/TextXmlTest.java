@@ -15,7 +15,7 @@ import ngoy.model.Person;
 
 public class TextXmlTest extends ANgoyTest {
 
-	@Component(selector = "test", contentType = "text/xml", template = "<xml><person *ngFor=\"let p of persons\"><name>{{p.name}}</name></person></xml>")
+	@Component(selector = "test", contentType = "text/xml", template = "<xml><person *ngFor=\"let p of persons\"><name>{{p.getName()}}</name></person></xml>")
 	public static class Cmp {
 		public List<Person> persons = asList(new Person("peter", 22), new Person("paul", 26), new Person("marü", 24));
 	}
@@ -27,7 +27,7 @@ public class TextXmlTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "person", template = "<name>{{person.name}}</name>")
+	@Component(selector = "person", template = "<name>{{person.getName()}}</name>")
 	public static class PersonCmp {
 		@Input
 		public Person person;

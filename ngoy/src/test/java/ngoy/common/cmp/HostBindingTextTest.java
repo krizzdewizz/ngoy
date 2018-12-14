@@ -26,11 +26,10 @@ public class HostBindingTextTest extends ANgoyTest {
 	public void testHello() {
 		assertThat(render(Cmp.class)).isEqualTo("<person>hello</person>");
 	}
-	
-	//
-	
 
-	@Component(selector = "test", template = "<person [ngText]=\"'hello' | uppercase\">i will be overwritten</person>")
+	//
+
+	@Component(selector = "test", template = "<person [ngText]='\"hello\" | uppercase'>i will be overwritten</person>")
 	public static class TextCmp {
 	}
 
@@ -38,7 +37,6 @@ public class HostBindingTextTest extends ANgoyTest {
 	public void testText() {
 		assertThat(render(TextCmp.class)).isEqualTo("<person>HELLO</person>");
 	}
-
 
 	//
 

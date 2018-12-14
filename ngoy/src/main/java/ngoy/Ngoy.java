@@ -3,6 +3,7 @@ package ngoy;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Provider.of;
@@ -11,12 +12,9 @@ import static ngoy.core.Provider.useValue;
 import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.getTemplate;
 import static ngoy.core.Util.isSet;
-import static ngoy.core.Util.newPrintStream;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
-import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,10 +24,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.PropertyResourceBundle;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import org.codehaus.janino.ClassBodyEvaluator;
 
 import jodd.jerry.Jerry;
 import ngoy.common.CommonModule;
@@ -45,8 +44,6 @@ import ngoy.core.ModuleWithProviders;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
-import ngoy.core.OnDestroy;
-import ngoy.core.OnInit;
 import ngoy.core.Pipe;
 import ngoy.core.Provide;
 import ngoy.core.Provider;
@@ -55,12 +52,14 @@ import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.CoreInternalModule;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.DefaultInjector;
+import ngoy.core.internal.Output;
 import ngoy.core.internal.Resolver;
+import ngoy.core.internal.StreamOutput;
 import ngoy.core.internal.StyleUrlsDirective;
-import ngoy.internal.parser.ByteCodeTemplate;
+import ngoy.core.internal.TemplateRender;
 import ngoy.internal.parser.Parser;
+import ngoy.internal.parser.template.JavaTemplate;
 import ngoy.internal.scan.ClassScanner;
-import ngoy.internal.script.NgoyScript;
 import ngoy.internal.site.SiteRenderer;
 import ngoy.router.RouterModule;
 import ngoy.translate.TranslateModule;
@@ -246,7 +245,8 @@ public class Ngoy<T> {
 					injectors, //
 					modules, //
 					packagePrefixes, //
-					providers);
+					providers, //
+					null);
 		}
 	}
 
@@ -302,9 +302,9 @@ public class Ngoy<T> {
 	 * @param out      Where the processed template is written to
 	 * @param config   Optional configuration
 	 */
-	public static void renderString(String template, Context context, OutputStream out, Config... config) {
+	public static void renderString(String template, Context<?> context, OutputStream out, Config... config) {
 		Config cfg = config.length > 0 ? config[0] : new Config();
-		new Ngoy<Void>(template, cfg).render(context, out);
+		new Ngoy<Void>(template, cfg, context).render(out);
 	}
 
 	/**
@@ -321,7 +321,7 @@ public class Ngoy<T> {
 	 * @param config       Optional configuration
 	 * @see #renderString(String, Context, OutputStream, Config...)
 	 */
-	public static void renderTemplate(String templatePath, Context context, OutputStream out, Config... config) {
+	public static void renderTemplate(String templatePath, Context<?> context, OutputStream out, Config... config) {
 		InputStream in = Ngoy.class.getResourceAsStream(templatePath);
 		if (in == null) {
 			throw new NgoyException("Template could not be found: '%s'", templatePath);
@@ -376,26 +376,31 @@ public class Ngoy<T> {
 	private final Config config;
 	private final Class<T> appRoot;
 	private T appInstance;
-	private Class<?> templateClass;
+	private TemplateRender templateRenderer;
 	private Resolver resolver;
 	private DefaultInjector injector;
 	private final Events events = new Events();
 	private final String template;
 	private final Map<String, Provider> pipeDecls = new HashMap<>();
+	private final Context<?> context;
+	private String contentType;
+	private boolean contentTypeComputed;
 
-	protected Ngoy(String template, Config config) {
-		this(Object.class, template, config, emptyList(), emptyList(), emptyList(), emptyList());
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	protected Ngoy(String template, Config config, Context context) {
+		this(context.getModel() != null ? context.getModelClass() : Object.class, template, config, emptyList(), emptyList(), emptyList(),
+				context.getModel() != null ? asList(useValue(context.getModelClass(), context.getModel())) : emptyList(), context);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Ngoy(Class<?> appRoot, String template, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
+	protected Ngoy(Class<?> appRoot, String template, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders,
+			Context<?> context) {
+		this.context = context;
 		this.template = config.templateIsExpression ? template : null;
 		this.appRoot = (Class<T>) appRoot;
 		this.config = config;
 		init(injectors, modules, packagePrefixes, rootProviders);
-		if (!config.templateIsExpression) {
-			compile(template);
-		}
+		compile(template);
 	}
 
 	private void init(List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
@@ -471,7 +476,7 @@ public class Ngoy<T> {
 		Provider appRootProvider = provides(appRoot, rootProviders);
 		if (appRootProvider != null && appRootProvider.getUseValue() != null) {
 			appInstance = (T) appRootProvider.getUseValue();
-			injector.injectFields(appRoot, appInstance, new HashSet<>());
+			injector.applyInjections(appInstance, injector.fieldInjections(appRoot, new HashSet<>()));
 		} else {
 			injector.put(of(appRoot));
 			appInstance = (T) injector.get(appRoot);
@@ -540,6 +545,19 @@ public class Ngoy<T> {
 						.forEach(all::add);
 				return all;
 			}
+
+			@Override
+			public Class<?> getAppRoot() {
+				return appRoot;
+			}
+
+			@Override
+			public List<Class<?>> resolvePipes() {
+				return pipeDecls.values()
+						.stream()
+						.map(Provider::getProvide)
+						.collect(toList());
+			}
 		};
 	}
 
@@ -564,39 +582,15 @@ public class Ngoy<T> {
 				.render(this, folder, () -> compile(template));
 	}
 
-	private void render(Context context, OutputStream out) {
-		try {
+	private Ctx createRenderContext() {
+		Ctx ctx = Ctx.of(injector, pipeDecls);
 
-			Object app = context == null ? appInstance : context.getModel();
-
-			if (app instanceof OnInit) {
-				((OnInit) app).ngOnInit();
-			}
-
-			Ctx ctx = Ctx.of(app, injector, pipeDecls);
-			if (context != null) {
-				for (Map.Entry<String, Object> v : context.getVariables()
-						.entrySet()) {
-					ctx.variable(v.getKey(), v.getValue());
-				}
-			}
-
-			events.tick();
-
-			if (config.templateIsExpression) {
-				NgoyScript script = new NgoyScript(resolver);
-				Object result = script.run(template, ctx);
-				newPrintStream(out).print(result);
-			} else {
-				invokeRender(ctx, newPrintStream(out));
-			}
-
-			if (app instanceof OnDestroy) {
-				((OnDestroy) app).ngOnDestroy();
-			}
-		} catch (Exception e) {
-			throw wrap(e);
+		if (context != null) {
+			ctx.setVariables(context.getVariables());
 		}
+
+		events.tick();
+		return ctx;
 	}
 
 	/**
@@ -605,7 +599,7 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		render(null, out);
+		render(createRenderContext(), new StreamOutput(out));
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -689,21 +683,21 @@ public class Ngoy<T> {
 		list.add(p);
 	}
 
-	private String templateClassName() {
-		return format("%s.Tpl%s", getClass().getPackage()
-				.getName(), Math.abs(Objects.hash(appRoot, this)));
-	}
-
 	private void compile(String template) {
-		Parser parser = createParser(resolver, config);
-		templateClass = createTemplate(templateClassName(), parser, template != null ? template : getTemplate(appRoot), getContentType(config));
+		try {
+			Parser parser = createParser(resolver, config);
+			Class<?> templateClass = createTemplate(parser, template != null ? template : getTemplate(appRoot));
+			templateRenderer = (TemplateRender) templateClass.getMethod("createRenderer")
+					.invoke(null);
+		} catch (Exception e) {
+			throw wrap(e);
+		}
 	}
 
-	private void invokeRender(Ctx ctx, PrintStream out) {
+	private void render(Ctx ctx, Output out) {
 		try {
 			ctx.setOut(out, getContentType(config));
-			Method m = templateClass.getMethod("render", Ctx.class);
-			m.invoke(null, ctx);
+			templateRenderer.render(ctx);
 		} catch (Exception e) {
 			throw wrap(e);
 		} finally {
@@ -711,14 +705,31 @@ public class Ngoy<T> {
 		}
 	}
 
-	private Class<?> createTemplate(String className, Parser parser, String template, String contentType) {
-		ByteCodeTemplate bct = new ByteCodeTemplate(className, contentType);
-		parser.parse(template, bct);
-		return bct.getClassFile()
-				.defineClass();
+	public interface CreateTemplate {
+		Class<?> createTemplate(Parser parser, String template, String contentType);
+	}
+
+	protected Class<?> createTemplate(Parser parser, String template) {
+		try {
+			JavaTemplate tpl = new JavaTemplate(getContentType(config), true, context != null ? context.getVariables() : emptyMap());
+
+			parser.parse(template, tpl);
+
+			String code = tpl.toString();
+//			java.nio.file.Files.write(java.nio.file.Paths.get("d:/downloads/qbert.java"), code.getBytes());
+
+			ClassBodyEvaluator bodyEvaluator = new ClassBodyEvaluator();
+			bodyEvaluator.cook(code);
+			return bodyEvaluator.getClazz();
+		} catch (Exception e) {
+			throw wrap(e);
+		}
 	}
 
 	private String getContentType(Config config) {
+		if (contentTypeComputed) {
+			return contentType;
+		}
 		String contentType = config.contentType;
 		if ((contentType == null || contentType.isEmpty()) && appRoot != null) {
 			Component cmp = appRoot.getAnnotation(Component.class);
@@ -726,7 +737,8 @@ public class Ngoy<T> {
 				contentType = cmp.contentType();
 			}
 		}
-		return contentType;
+		contentTypeComputed = true;
+		return this.contentType = contentType;
 	}
 
 	private Parser createParser(@Nullable Resolver resolver, Config config) {
@@ -734,6 +746,7 @@ public class Ngoy<T> {
 		parser.contentType = getContentType(config);
 		parser.inlineComponents = config.inlineComponents;
 		parser.inlineAll = "text/plain".equals(parser.contentType);
+		parser.templateIsExpression = config.templateIsExpression;
 		return parser;
 	}
 

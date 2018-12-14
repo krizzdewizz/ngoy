@@ -1,6 +1,7 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static jodd.lagarto.dom.Node.NodeType.ELEMENT;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.isSet;
@@ -107,6 +108,7 @@ public class Parser {
 	public boolean inlineComponents;
 	public boolean inlineAll;
 	public String contentType;
+	public boolean templateIsExpression;
 
 	final Set<Jerry> cmpElements = new HashSet<>();
 	MyHandler handler;
@@ -178,13 +180,17 @@ public class Parser {
 			acceptDocument(nodes);
 		} catch (Exception e) {
 			String message = e.getMessage();
-			throw new NgoyException(e, "Error while parsing: %s. %s", isSet(message) ? message : e, exceptionInfo());
+			throw new NgoyException(e, "Error while parsing: %s. %s", isSet(message) ? message : e, exceptionInfo(template));
 		}
 	}
 
 	private void acceptDocument(Jerry nodes) {
-		this.handler.documentStart();
+		this.handler.documentStart(resolver.resolvePipes());
+		CmpRef appRef = new CmpRef(resolver.getAppRoot(), "", false);
+		this.handler.componentStartInput(appRef, true, emptyList());
+		this.handler.componentStart(appRef);
 		accept(nodes);
+		this.handler.componentEnd();
 		this.handler.documentEnd();
 	}
 
@@ -270,7 +276,11 @@ public class Parser {
 		}
 
 		boolean escapeText = insideScriptOrStyle == 0;
-		ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText));
+		if (templateIsExpression) {
+			handler.text(ExprParser.convertPipesToTransformCalls(text, resolver), true, escapeText);
+		} else {
+			ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText));
+		}
 	}
 
 	private void elementConditionalElse(Jerry el) {
@@ -347,7 +357,7 @@ public class Parser {
 		return resolver.resolveCmpClass(peek == null ? null : peek.clazz);
 	}
 
-	String exceptionInfo() {
+	String exceptionInfo(String template) {
 		Jerry currentEl = replacingVisitor.currentEl;
 		String position = currentEl == null ? "" : getPosition(currentEl).toString();
 
@@ -360,6 +370,10 @@ public class Parser {
 			if (cmp != null) {
 				templateUrl = cmp.templateUrl();
 			}
+		}
+
+		if (!isSet(templateUrl)) {
+			templateUrl = template;
 		}
 
 		return format("\nComponent: %s\ntemplateUrl: '%s'\nposition: %s", className, templateUrl, position);

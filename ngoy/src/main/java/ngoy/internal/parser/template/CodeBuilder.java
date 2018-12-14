@@ -1,7 +1,7 @@
-package ngoy.util;
+package ngoy.internal.parser.template;
 
 public class CodeBuilder {
-	private int _depth;
+	protected int depth;
 	protected final Printer printer;
 
 	public CodeBuilder(Printer printer) {
@@ -33,7 +33,7 @@ public class CodeBuilder {
 		String last = strings.length > 0 ? strings[strings.length - 1].toString()
 				.trim() : "";
 		if (last.endsWith("}") || last.startsWith("}")) {
-			_depth--;
+			depth--;
 		}
 
 		addIndent();
@@ -43,15 +43,20 @@ public class CodeBuilder {
 		doPrint("\n");
 
 		if (last.endsWith("{")) {
-			_depth++;
+			depth++;
 		}
 
 		return this;
 	}
 
 	protected void addIndent() {
-		for (int i = 0; i < _depth; i++) {
+		for (int i = 0; i < depth; i++) {
 			doPrint("  ");
 		}
+	}
+
+	@Override
+	public String toString() {
+		return printer.toString();
 	}
 }

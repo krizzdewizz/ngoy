@@ -12,7 +12,7 @@ import ngoy.service.OkService;
 
 public class ContainerTest extends ANgoyTest {
 
-	@Component(selector = "test", template = "a<ng-container *ngIf=\"ok\">x</ng-container>b")
+	@Component(selector = "test", template = "a<ng-container *ngIf=\"isOk()\">x</ng-container>b")
 	public static class Cmp {
 		@Inject
 		public OkService okService;

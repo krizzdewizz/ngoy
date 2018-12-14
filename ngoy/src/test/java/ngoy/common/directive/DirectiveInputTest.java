@@ -35,7 +35,7 @@ public class DirectiveInputTest extends ANgoyTest {
 		public boolean upper = false;
 	}
 
-	@Component(selector = "test", template = "<a [upper]=\"ok\" [makeIt]=\"'bi'\">XX</a>")
+	@Component(selector = "test", template = "<a [upper]='isOk()' [makeIt]='\"bi\"'>XX</a>")
 	@NgModule(declarations = { SomeDirective.class })
 	public static class Cmp {
 		@Inject

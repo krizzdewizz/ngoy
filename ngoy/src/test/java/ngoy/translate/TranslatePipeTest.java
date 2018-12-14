@@ -14,7 +14,7 @@ import ngoy.core.NgModule;
 
 public class TranslatePipeTest extends ANgoyTest {
 
-	@Component(selector = "test", template = "{{ 'MSG_HELLO' | translate }}")
+	@Component(selector = "test", template = "{{ \"MSG_HELLO\" | translate }}")
 	@NgModule(imports = { TranslateModule.class })
 	public static class CmpNotFound {
 	}
@@ -26,7 +26,7 @@ public class TranslatePipeTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "test", template = "{{ 'MSG_HELLO' | translate }} {{ 'MSG_QBERT' | translate:'cool' }}")
+	@Component(selector = "test", template = "{{ \"MSG_HELLO\" | translate }} {{ \"MSG_QBERT\" | translate:\"cool\" }}")
 	@NgModule(imports = { TranslateModule.class })
 	public static class Cmp {
 		public Cmp(TranslateService service) {

@@ -27,7 +27,7 @@ public class PipeParamsTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", template = "{{ 'alfred' | myPipe:'a':age }}")
+	@Component(selector = "test", template = "{{ \"alfred\" | myPipe:\"a\":age }}")
 	@NgModule(declarations = { MyPipe.class })
 	public static class Cmp {
 		public int age = 22;
@@ -40,7 +40,7 @@ public class PipeParamsTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "test", template = "{{ ((true || false) ? 'alfred' : 'qbert') | uppercase }}")
+	@Component(selector = "test", template = "{{ ((true || false) ? \"alfred\" : \"qbert\") | uppercase }}")
 	@NgModule(declarations = { MyPipe.class })
 	public static class PipeWithOrCmp {
 	}
@@ -52,7 +52,7 @@ public class PipeParamsTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "test", template = "{{ $myPipe('alfred', 'a', age) }}")
+	@Component(selector = "test", template = "{{ $myPipe(\"alfred\", \"a\", age) }}")
 	@NgModule(declarations = { MyPipe.class })
 	public static class FuncCallCmp {
 		public int age = 22;
@@ -73,14 +73,14 @@ public class PipeParamsTest extends ANgoyTest {
 	@Test
 	public void testFuncCallMissingArg() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Missing first argument"));
-		expectedEx.expectMessage(containsString("$myPipe"));
+		expectedEx.expectMessage(containsString("No applicable constructor/method"));
+//		expectedEx.expectMessage(containsString("$myPipe"));
 		render(FuncCallMissingArgCmp.class);
 	}
 
 	//
 
-	@Component(selector = "test", template = "{{ $unknownPipe('a') }}")
+	@Component(selector = "test", template = "{{ $unknownPipe(\"a\") }}")
 	@NgModule(declarations = { MyPipe.class })
 	public static class UnknownPipeCmp {
 	}
@@ -88,8 +88,8 @@ public class PipeParamsTest extends ANgoyTest {
 	@Test
 	public void testUnknownPipe() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("No provider for pipe"));
-		expectedEx.expectMessage(containsString("unknownPipe"));
+		expectedEx.expectMessage(containsString("A method named \"$unknownPipe\" is not declared"));
+//		expectedEx.expectMessage(containsString("unknownPipe"));
 		render(UnknownPipeCmp.class);
 	}
 }

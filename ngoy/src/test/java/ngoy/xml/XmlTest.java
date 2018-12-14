@@ -15,7 +15,7 @@ import ngoy.model.Person;
 
 public class XmlTest extends ANgoyTest {
 
-	@Component(selector = "person", template = "<name>{{person.name}}</name><age>{{person.age}}</age>")
+	@Component(selector = "person", template = "<name>{{person.getName()}}</name><age>{{person.getAge()}}</age>")
 	public static class PersonCmp {
 		@Input
 		public Person person;

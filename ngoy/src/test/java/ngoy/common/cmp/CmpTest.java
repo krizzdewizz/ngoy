@@ -26,13 +26,13 @@ public class CmpTest extends ANgoyTest {
 		personService = TestService.of(asList(new Person("peter"), new Person("paul"), new Person("mary")));
 	}
 
-	@Component(selector = "person", template = "hello: {{person.name}}")
+	@Component(selector = "person", template = "hello: {{person.getName()}}")
 	public static class PersonCmp {
 		@Input()
 		public Person person;
 	}
 
-	@Component(selector = "test", template = "<person [person]=\"persons[0]\"></person><person [person]=\"persons[1]\"></person><person [person]=\"persons[2]\"></person>")
+	@Component(selector = "test", template = "<person [person]='getPersons().get(0)'></person><person [person]='getPersons().get(1)'></person><person [person]='getPersons().get(2)'></person>")
 	@NgModule(declarations = { PersonCmp.class })
 	public static class Cmp {
 

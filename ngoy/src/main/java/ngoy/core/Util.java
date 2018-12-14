@@ -2,10 +2,16 @@ package ngoy.core;
 
 import static ngoy.core.NgoyException.wrap;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+import org.unbescape.html.HtmlEscape;
+import org.unbescape.html.HtmlEscapeLevel;
+import org.unbescape.html.HtmlEscapeType;
 
 /**
  * Utils.
@@ -18,15 +24,14 @@ public class Util {
 	}
 
 	/**
-	 * Returns a new UTF-8 encoded print stream that prints to the given output
-	 * stream.
+	 * Returns a new UTF-8 encoded writer that writes to the given output stream.
 	 * 
 	 * @param out
-	 * @return PrintStream
+	 * @return Writer
 	 */
-	public static PrintStream newPrintStream(OutputStream out) {
+	public static Writer newBufferedWriter(OutputStream out) {
 		try {
-			return new PrintStream(out, true, "UTF-8");
+			return new BufferedWriter(new OutputStreamWriter(out, "UTF-8"), 4096);
 		} catch (Exception e) {
 			throw wrap(e);
 		}
@@ -79,27 +84,7 @@ public class Util {
 	 * @return Escaped text
 	 */
 	public static String escapeHtmlXml(String text) {
-		// why 20?: doubleling seems to much as those chars don't occur often
-		StringBuilder sb = new StringBuilder(text.length() + 20);
-		for (int i = 0, n = text.length(); i < n; i++) {
-			switch (text.charAt(i)) {
-			case '"':
-				sb.append("&quot;");
-				break;
-			case '&':
-				sb.append("&amp;");
-				break;
-			case '<':
-				sb.append("&lt;");
-				break;
-			case '>':
-				sb.append("&gt;");
-				break;
-			default:
-				sb.append(text.charAt(i));
-			}
-		}
-		return sb.toString();
+		return HtmlEscape.escapeHtml(text, HtmlEscapeType.HTML5_NAMED_REFERENCES_DEFAULT_TO_DECIMAL, HtmlEscapeLevel.LEVEL_0_ONLY_MARKUP_SIGNIFICANT_EXCEPT_APOS);
 	}
 
 	/**

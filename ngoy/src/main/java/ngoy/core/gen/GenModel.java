@@ -18,11 +18,12 @@ public class GenModel {
 		return sb.toString();
 	}
 
-	private final String pack;
-	private final String name;
-	private final String className;
-	private final String appPrefix;
-	private final String ngoyVersion;
+	public final String pack;
+	public final String name;
+	public final String className;
+	public final String appPrefix;
+	public final String ngoyVersion;
+	public final String prefixedName;
 
 	public GenModel(String appPrefix, String fqName, String ngoyVersion) {
 		this.appPrefix = appPrefix;
@@ -33,29 +34,7 @@ public class GenModel {
 		className = dot < 0 ? fqName : fqName.substring(dot + 1);
 		name = camelToKebap(className);
 		this.ngoyVersion = ngoyVersion;
-	}
 
-	public String getPack() {
-		return pack;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getClassName() {
-		return className;
-	}
-
-	public String getAppPrefix() {
-		return appPrefix;
-	}
-
-	public String getPrefixedName() {
-		return isSet(appPrefix) ? format("%s-%s", appPrefix, name) : name;
-	}
-
-	public String getNgoyVersion() {
-		return ngoyVersion;
+		prefixedName = isSet(appPrefix) ? format("%s-%s", appPrefix, name) : name;
 	}
 }

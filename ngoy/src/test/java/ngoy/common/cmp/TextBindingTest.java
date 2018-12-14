@@ -9,7 +9,7 @@ import ngoy.core.Component;
 
 public class TextBindingTest extends ANgoyTest {
 
-	@Component(selector = "test", template = "hello{{aNullValue}} {{'world'}} {{'x'}} {{0}} {{true}} <span>{{'s'}}</span> ")
+	@Component(selector = "test", template = "hello{{aNullValue}} {{\"world\"}} {{\"x\"}} {{0}} {{true}} <span>{{\"s\"}}</span> ")
 	public static class Text {
 		public String aNullValue = null;
 	}
@@ -21,8 +21,12 @@ public class TextBindingTest extends ANgoyTest {
 
 	//
 
+	@Component(selector = "", template = "hello {{\"world\"}} {{\"x\"}} {{0}} {{true}} <span>{{\"s\"}}</span> ")
+	public static class NullCmp {
+	}
+
 	@Test
 	public void testTextNull() {
-		assertThat(render("hello {{'world'}} {{'x'}} {{0}} {{true}} <span>{{'s'}}</span> ")).isEqualTo("hello world x 0 true <span>s</span> ");
+		assertThat(render(NullCmp.class)).isEqualTo("hello world x 0 true <span>s</span> ");
 	}
 }

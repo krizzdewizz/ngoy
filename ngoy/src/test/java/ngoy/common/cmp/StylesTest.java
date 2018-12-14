@@ -12,7 +12,15 @@ import ngoy.core.Component;
 
 public class StylesTest extends ANgoyTest {
 
-	@Component(selector = "test", template = "<a style=\"white-space:nowrap\" [style.qbert]=\"notAString\" [style.nully]=\"nully\" [style.empty]=\"empty\" [style.color]=\"col\" [style.width.px]=\"w\" [ngStyle]=\"{a:w}\"></a>")
+	@Component(selector = "test", template = "<a " //
+			+ "style='white-space:nowrap' " //
+			+ "[style.qbert]='notAString' " //
+			+ "[style.nully]='nully' " //
+			+ "[style.empty]='empty' " //
+			+ "[style.color]='col' " //
+			+ "[style.width.px]='w' " //
+			+ "[ngStyle]='Map(\"a\", w)'>" //
+			+ "</a>")
 	public static class Cmp {
 		public String col = "red";
 		public int w = 10;
@@ -28,7 +36,12 @@ public class StylesTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "test", template = "<a style=\"white-space:nowrap\" [style.color]=\"col\" [style.width.px]=\"w\" [ngStyle]=\"stylez\"></a>")
+	@Component(selector = "test", template = "<a " //
+			+ "style='white-space:nowrap' " //
+			+ "[style.color]='col' " //
+			+ "[style.width.px]='w' " //
+			+ "[ngStyle]='stylez'>" //
+			+ "</a>")
 	public static class CmpExpr {
 
 		public Map<String, String> stylez;

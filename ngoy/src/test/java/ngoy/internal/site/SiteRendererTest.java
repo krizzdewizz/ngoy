@@ -66,9 +66,13 @@ public class SiteRendererTest extends ANgoyTest {
 
 	//
 
+	@Component(selector = "", template = "the site")
+	public static class SiteCmp {
+	}
+
 	@Test
 	public void testSinglePage() throws Exception {
-		Ngoy<?> ngoy = Ngoy.app(defineCmp("the site"))
+		Ngoy<?> ngoy = Ngoy.app(SiteCmp.class)
 				.build();
 
 		Path f = folder.newFolder()

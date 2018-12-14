@@ -86,11 +86,11 @@ public class Cli {
 			return;
 		}
 
-		Context context = Context.of(new Global());
+		Context<Global> context = Context.of(Global.class, new Global());
 		String[] vars = cmd.getOptionValues('v');
 		if (vars != null) {
 			for (int i = 0, n = vars.length; i < n; i += 2) {
-				context.variable(vars[i], vars[i + 1]);
+				context.variable(vars[i], String.class, vars[i + 1]);
 			}
 		}
 
@@ -100,7 +100,7 @@ public class Cli {
 		config.templateIsExpression = expr;
 		if (cmd.hasOption("in")) {
 			eachLine(System.in, line -> {
-				context.variable("$", line);
+				context.variable("$", String.class, line);
 				renderString(template, context, out, config);
 			});
 		} else {

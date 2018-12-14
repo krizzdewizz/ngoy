@@ -79,24 +79,22 @@ public class Generator {
 	}
 
 	private void generateArtifacts(GenModel genModel, Path targetFolder, String tplRoot, String... tpls) {
-		generateArtifacts(genModel, genModel.getPack()
-				.replace('.', '/'), targetFolder, tplRoot, tpls);
+		generateArtifacts(genModel, genModel.pack.replace('.', '/'), targetFolder, tplRoot, tpls);
 	}
 
 	private void generateArtifacts(GenModel genModel, String packDir, Path targetFolder, String tplRoot, String... tpls) {
 		try {
-			Context context = Context.of(genModel);
+			Context<GenModel> context = Context.of(GenModel.class, genModel);
 
 			String genTplRoot = getGenTplRoot();
-			String name = genModel.getName();
+			String name = genModel.name;
 
 			for (String tpl : tpls) {
 
-				String className = tpl.contains(".java") ? genModel.getClassName() : name;
+				String className = tpl.contains(".java") ? genModel.className : name;
 
 				String file = tpl //
-						.replace("$pack", genModel.getPack()
-								.replace('.', '/'))
+						.replace("$pack", genModel.pack.replace('.', '/'))
 						.replace("$name", className)
 						.replace(".tpl", "");
 
