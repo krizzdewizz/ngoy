@@ -2,6 +2,11 @@ package ngoy.core.internal;
 
 import ngoy.core.NgoyException;
 
+/**
+ * Converts a single or double quoted string to a double quoted java string.
+ * 
+ * @author krizz
+ */
 public final class SmartStringParser {
 
 	private SmartStringParser() {
