@@ -476,7 +476,7 @@ public class Ngoy<T> {
 		Provider appRootProvider = provides(appRoot, rootProviders);
 		if (appRootProvider != null && appRootProvider.getUseValue() != null) {
 			appInstance = (T) appRootProvider.getUseValue();
-			injector.injectFields(appRoot, appInstance, new HashSet<>());
+			injector.applyInjections(appInstance, injector.fieldInjections(appRoot, new HashSet<>()));
 		} else {
 			injector.put(of(appRoot));
 			appInstance = (T) injector.get(appRoot);

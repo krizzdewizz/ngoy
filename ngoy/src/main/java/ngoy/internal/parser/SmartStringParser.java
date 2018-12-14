@@ -1,6 +1,4 @@
-package ngoy.core.internal;
-
-import ngoy.core.NgoyException;
+package ngoy.internal.parser;
 
 /**
  * Converts a single or double quoted string to a double quoted java string.
@@ -19,8 +17,7 @@ public final class SmartStringParser {
 	/**
 	 * Converts a single or double quoted string to a double quoted java string.
 	 * 
-	 * @param s
-	 *            single or double quoted string
+	 * @param s single or double quoted string
 	 * @return double quoted string
 	 */
 	public static String toJavaString(String s) {
@@ -82,7 +79,7 @@ public final class SmartStringParser {
 		}
 
 		if (state != State.INIT) {
-			throw new NgoyException("String literal is not properly closed with a %s-quote: ", state.name()
+			throw new ParseException("String literal is not properly closed with a %s-quote: ", state.name()
 					.toLowerCase());
 		}
 

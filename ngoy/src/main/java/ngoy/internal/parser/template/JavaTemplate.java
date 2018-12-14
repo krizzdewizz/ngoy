@@ -3,7 +3,6 @@ package ngoy.internal.parser.template;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -12,6 +11,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +66,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final LinkedList<Set<String>> prefixExcludes = new LinkedList<>();
 	private final Set<String> pipeNames = new HashSet<>();
 	private final Map<String, Integer> localVars = new HashMap<>();
-	private final Map<String, Integer> byteArrayRefs = new HashMap<>();
+	private final Map<String, Integer> byteArrayRefs = new LinkedHashMap<>();
 	private final Map<String, Variable<?>> variables;
 	private final boolean bodyOnly;
 	private final String contentType;
@@ -195,14 +195,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String byteArrays = new CodeBuilder(new Printer()) {
 			@Override
 			protected void doCreate() {
-				List<String> all = byteArrayRefs.entrySet()
-						.stream()
-						.sorted((a, b) -> a.getValue()
-								.compareTo(b.getValue()))
-						.map(Map.Entry::getKey)
-						.collect(toList());
-				for (String text : all) {
-					$("__bs(\"", text, "\"),");
+				for (Map.Entry<String, Integer> entry : byteArrayRefs.entrySet()) {
+					$("__bs(\"", entry.getKey(), "\"),");
 				}
 			}
 		}.create()
@@ -237,7 +231,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		if (more != null) {
 			ex.addAll(more);
 		}
-		return ExprParser.prefixName(expr, prefix, ex);
+
+		return ExprParser.prefixName(cmpVars.peek().cmpClass, expr, prefix, ex);
 	}
 
 	@Override

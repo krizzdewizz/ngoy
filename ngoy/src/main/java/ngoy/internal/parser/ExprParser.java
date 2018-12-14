@@ -28,7 +28,6 @@ import org.codehaus.janino.util.AbstractTraverser;
 import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
 import ngoy.core.internal.Resolver;
-import ngoy.core.internal.SmartStringParser;
 import ngoy.internal.parser.org.springframework.expression.Expression;
 import ngoy.internal.parser.org.springframework.expression.ExpressionType;
 import ngoy.internal.parser.org.springframework.expression.ParserContext;
@@ -52,8 +51,11 @@ public class ExprParser {
 		return s.replace(OR_ESCAPE, "||");
 	}
 
-	public static String prefixName(String expr, String prefix, Set<String> excludes) {
+	public static String prefixName(Class<?> clazz, String expr, String prefix, Set<String> excludes) {
 		try {
+
+			expr = FieldAccessToGetterParser.fieldAccessToGetter(clazz, expr);
+
 			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
 			Atom atom = parser.parseExpression();
 
@@ -72,7 +74,7 @@ public class ExprParser {
 	}
 
 	public static String convertPipesToTransformCalls(String expressionString, Resolver resolver) {
-		
+
 		expressionString = SmartStringParser.toJavaString(expressionString);
 
 		Matcher matcher = PIPE_PATTERN.matcher(escapeOr(expressionString));

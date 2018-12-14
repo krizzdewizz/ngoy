@@ -112,8 +112,6 @@ public class Inputs {
 
 		result.add(new CmpInput(inputType, fieldName, fieldType, valueType, isExpr ? ExprParser.convertPipesToTransformCalls(inp, resolver) : inp));
 
-//		result.add(format("%s%s%s", inputType, valueType, fieldName));
-//		result.add(isExpr ? ExprParser.convertPipesToTransformCalls(inp, resolver) : inp);
 		excludeBindings.add(input.toLowerCase());
 		excludeBindings.add(fieldName.toLowerCase());
 	}
