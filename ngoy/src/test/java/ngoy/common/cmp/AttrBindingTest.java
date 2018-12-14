@@ -31,7 +31,7 @@ public class AttrBindingTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", template = "<person name='Peter' [title]='\"Sir\"'></person>")
+	@Component(selector = "test", template = "<person name=\"Peter\" [title]=\"'Sir'\"></person>")
 	@NgModule(declarations = { PersonCmp.class })
 	public static class Attr {
 	}
@@ -58,7 +58,7 @@ public class AttrBindingTest extends ANgoyTest {
 		public String title4;
 	}
 
-	@Component(selector = "test", template = "<person title='abc' [title2]='\"def\"' q='ghi' [r]='\"jkl\"'></person>")
+	@Component(selector = "test", template = "<person title=\"abc\" [title2]=\"'def'\" q=\"ghi\" [r]=\"'jkl'\"></person>")
 	@NgModule(declarations = { Person2Cmp.class })
 	public static class Attr2 {
 	}
@@ -76,7 +76,7 @@ public class AttrBindingTest extends ANgoyTest {
 		public int number;
 	}
 
-	@Component(selector = "test", template = "<person number='0'></person>")
+	@Component(selector = "test", template = "<person number=\"0\"></person>")
 	@NgModule(declarations = { PersonNonStringCmp.class })
 	public static class AttrNonString {
 	}
@@ -97,7 +97,7 @@ public class AttrBindingTest extends ANgoyTest {
 		}
 	}
 
-	@Component(selector = "test", template = "<person number='0'></person>")
+	@Component(selector = "test", template = "<person number=\"0\"></person>")
 	@NgModule(declarations = { PersonNonStringParamCmp.class })
 	public static class AttrNonStringParam {
 	}

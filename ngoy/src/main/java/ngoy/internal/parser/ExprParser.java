@@ -28,6 +28,7 @@ import org.codehaus.janino.util.AbstractTraverser;
 import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
 import ngoy.core.internal.Resolver;
+import ngoy.core.internal.SmartStringParser;
 import ngoy.internal.parser.org.springframework.expression.Expression;
 import ngoy.internal.parser.org.springframework.expression.ExpressionType;
 import ngoy.internal.parser.org.springframework.expression.ParserContext;
@@ -71,6 +72,8 @@ public class ExprParser {
 	}
 
 	public static String convertPipesToTransformCalls(String expressionString, Resolver resolver) {
+		
+		expressionString = SmartStringParser.toJavaString(expressionString);
 
 		Matcher matcher = PIPE_PATTERN.matcher(escapeOr(expressionString));
 		matcher.find();

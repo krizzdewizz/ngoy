@@ -716,7 +716,7 @@ public class Ngoy<T> {
 			parser.parse(template, tpl);
 
 			String code = tpl.toString();
-			java.nio.file.Files.write(java.nio.file.Paths.get("d:/downloads/qbert.java"), code.getBytes());
+//			java.nio.file.Files.write(java.nio.file.Paths.get("d:/downloads/qbert.java"), code.getBytes());
 
 			ClassBodyEvaluator bodyEvaluator = new ClassBodyEvaluator();
 			bodyEvaluator.cook(code);

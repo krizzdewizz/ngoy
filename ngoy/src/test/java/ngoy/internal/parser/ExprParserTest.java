@@ -59,7 +59,7 @@ public class ExprParserTest {
 		Expression[] exs = e.expressions;
 		assertThat(exs).hasSize(3);
 		assertThat(exs[0].string).isEqualTo("a");
-		assertThat(exs[1].string).isEqualTo("'\n'");
+		assertThat(exs[1].string).isEqualTo("\"\n\"");
 		assertThat(exs[2].string).isEqualTo("b");
 	}
 
