@@ -94,13 +94,9 @@ public class Util {
 	 * <li><code>"text/plain"</code>: don't escape</li>
 	 * <li>All others: {@link #escapeHtmlXml(String)}</li>
 	 * </ul>
-	 * 
-	 * @param contentType null or empty to use default
 	 */
-	public static String escape(String text, @Nullable String contentType) {
-		if ("text/plain".equals(contentType)) {
-			return text;
-		}
+	public static String escape(String text) {
+
 		return escapeHtmlXml(text);
 	}
 

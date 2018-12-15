@@ -20,6 +20,8 @@ import ngoy.core.NgoyException;
 
 /**
  * Converts a field access to a getter call.
+ * <p>
+ * experimental.
  * 
  * @author krizz
  */

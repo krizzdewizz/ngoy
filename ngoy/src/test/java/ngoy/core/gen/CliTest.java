@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -60,7 +62,7 @@ public class CliTest {
 
 	private String run(String... args) throws Exception {
 		resetOut();
-		cli.run(args, System.out);
+		cli.run(args, new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
 		return new String(out.toByteArray());
 	}
 

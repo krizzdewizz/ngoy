@@ -3,7 +3,7 @@ package ngoy;
 import static ngoy.Ngoy.app;
 import static ngoy.core.NgoyException.wrap;
 
-import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -27,13 +27,13 @@ public abstract class ANgoyTest {
 
 	protected String render(Class<?> clazz, Function<Ngoy.Builder<?>, Ngoy.Builder<?>> onBuild, Provider... providers) {
 		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			StringWriter baos = new StringWriter();
 			Builder<?> builder = app(clazz).providers(providers);
 			Ngoy<?> app = onBuild.apply(builder)
 					.build();
 			app.render(baos);
 			app.destroy();
-			String html = new String(baos.toByteArray(), "UTF-8");
+			String html = baos.toString();
 			if (debugPrint) {
 				System.out.println(html);
 			}

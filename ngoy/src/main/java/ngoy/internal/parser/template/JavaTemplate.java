@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import org.unbescape.java.JavaEscape;
 
+import ngoy.core.Injector;
 import ngoy.core.NgoyException;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
@@ -39,7 +40,7 @@ import ngoy.internal.parser.ParserHandler;
 
 public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
-	private static final String BYTEARRAYS = "$BYTEARRAYS$";
+	private static final String STRINGS = "$STRINGS$";
 
 	public static String escapeJava(String text) {
 		return JavaEscape.escapeJava(text);
@@ -66,34 +67,34 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final LinkedList<Set<String>> prefixExcludes = new LinkedList<>();
 	private final Set<String> pipeNames = new HashSet<>();
 	private final Map<String, Integer> localVars = new HashMap<>();
-	private final Map<String, Integer> byteArrayRefs = new LinkedHashMap<>();
+	private final Map<String, Integer> stringRefs = new LinkedHashMap<>();
 	private final Map<String, Variable<?>> variables;
 	private final boolean bodyOnly;
 	private final String contentType;
 	private String cmpVar;
 	private String code;
 
-	private String byteArraysVar;
-	private String byteArraysLocalVar;
+	private String stringsVar;
+	private String stringsLocalVar;
 
 	public JavaTemplate(String contentType, boolean bodyOnly, Map<String, Variable<?>> variables) {
 		super(new Printer());
 		this.bodyOnly = bodyOnly;
 		this.variables = variables;
 		this.contentType = contentType;
-		out = new TextOutput(printer, () -> depth, this::createByteArrayRef);
-		byteArraysVar = createLocalVar("bytearrays", false);
-		byteArraysLocalVar = createLocalVar("bytearraysLocal", false);
+		out = new TextOutput(printer, () -> depth, this::createStringRef, contentType);
+		stringsVar = createLocalVar("strings", false);
+		stringsLocalVar = createLocalVar("stringsLocal", false);
 	}
 
-	private String createByteArrayRef(String text) {
-		Integer ref = byteArrayRefs.get(text);
+	private String createStringRef(String text) {
+		Integer ref = stringRefs.get(text);
 		if (ref == null) {
-			ref = byteArrayRefs.size();
-			byteArrayRefs.put(text, ref);
+			ref = stringRefs.size();
+			stringRefs.put(text, ref);
 		}
 
-		return format("%s[%s]", byteArraysLocalVar, ref);
+		return format("%s[%s]", stringsLocalVar, ref);
 	}
 
 	@Override
@@ -104,18 +105,22 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			$("public class X {");
 		}
 
-		$("public static ", TemplateRender.class, " createRenderer() { return new Renderer(); }");
+		$("public static ", TemplateRender.class, " createRenderer(", Injector.class, " injector) { return new Renderer(injector); }");
 
 		$("private static class Renderer implements ", TemplateRender.class, "{");
 
-		addApiHelpers();
 		addPipeMethods(pipes);
 
-		$("private static final byte[][] ", byteArraysVar, "= new byte[][]{", BYTEARRAYS, "};");
+		$("private Renderer(", Injector.class, " injector) {");
+		setPipes(pipes);
+		$("}");
+
+		addApiHelpers();
+
+		$("private static final String[] ", stringsVar, "= new String[]{", STRINGS, "};");
 
 		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws Exception {");
-		$("final byte[][] ", byteArraysLocalVar, "=", byteArraysVar, ";");
-		setPipes(pipes);
+		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
 		addVariables();
 
 		textOverrideVar = createLocalVar("textOverride");
@@ -123,14 +128,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private void addApiHelpers() {
-		$("private static byte[] __bs(String s) {");
-		$("try {");
-		$("  return s.getBytes(\"UTF-8\");");
-		$("} catch (Exception e) {");
-		$("throw ", NgoyException.class, ".wrap(e);");
-		$("}");
-		$("}");
-
 		$("private static ", Map.class, " Map(Object...pairs) {");
 		$(" return ", Ctx.class, ".Map(pairs);");
 		$("}");
@@ -166,7 +163,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			String pipeName = pipe.getAnnotation(Pipe.class)
 					.value();
 			String pipeFun = format("$%s", pipeName);
-			$("_", pipeFun, "=", CTX_VAR, ".getPipe(\"", pipeName, "\");");
+			$("_", pipeFun, "=(", PipeTransform.class, ")injector.get(", pipe, ".class);");
 		}
 	}
 
@@ -183,7 +180,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		code = super.toString();
 
-		replaceByteArrays();
+		replaceStrings();
 	}
 
 	@Override
@@ -191,18 +188,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		return code;
 	}
 
-	private void replaceByteArrays() {
-		String byteArrays = new CodeBuilder(new Printer()) {
-			@Override
-			protected void doCreate() {
-				for (Map.Entry<String, Integer> entry : byteArrayRefs.entrySet()) {
-					$("__bs(\"", entry.getKey(), "\"),");
-				}
-			}
-		}.create()
-				.toString();
-
-		code = code.replace(BYTEARRAYS, byteArrays);
+	private void replaceStrings() {
+		code = code.replace(STRINGS, stringRefs.keySet()
+				.stream()
+				.map(s -> format("\"%s\"", s))
+				.collect(joining(",\n")));
 	}
 
 	@Override
@@ -222,17 +212,17 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private String prefixName(String expr, String prefix) {
-		Set<String> ex = new HashSet<>(pipeNames);
-		ex.addAll(variables.keySet());
-		ex.add("java");
-		ex.add("Map");
-		ex.add("List");
+		Set<String> excludes = new HashSet<>(pipeNames);
+		excludes.addAll(variables.keySet());
+		excludes.add("java");
+		excludes.add("Map");
+		excludes.add("List");
 		Set<String> more = prefixExcludes.peek();
 		if (more != null) {
-			ex.addAll(more);
+			excludes.addAll(more);
 		}
 
-		return ExprParser.prefixName(cmpVars.peek().cmpClass, expr, prefix, ex);
+		return ExprParser.prefixName(expr, prefix, excludes);
 	}
 
 	@Override

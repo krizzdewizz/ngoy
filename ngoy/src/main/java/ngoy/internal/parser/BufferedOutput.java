@@ -1,8 +1,7 @@
 package ngoy.internal.parser;
 
 import static ngoy.core.Util.escape;
-
-import ngoy.internal.parser.template.JavaTemplate;
+import static ngoy.internal.parser.template.JavaTemplate.escapeJava;
 
 public abstract class BufferedOutput {
 	private final StringBuilder buf = new StringBuilder();
@@ -12,7 +11,7 @@ public abstract class BufferedOutput {
 			flush();
 			doPrint(text, true);
 		} else {
-			buf.append(escape ? JavaTemplate.escapeJava(escape(text, contentType)) : text);
+			buf.append(escape ? escapeJava("text/plain".equals(contentType) ? text : escape(text)) : text);
 		}
 	}
 

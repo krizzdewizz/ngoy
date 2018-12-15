@@ -7,7 +7,7 @@ import static ngoy.core.NgoyException.wrap;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class Cli {
 						.build());
 	}
 
-	public void run(String[] args, OutputStream out) {
+	public void run(String[] args, Writer out) {
 		try {
 			doRun(args, out);
 		} catch (Exception e) {
@@ -53,7 +53,7 @@ public class Cli {
 		}
 	}
 
-	private void doRun(String[] args, OutputStream out) {
+	private void doRun(String[] args, Writer out) {
 		if (isNew(args)) {
 			List<String> rest = new ArrayList<>(asList(args).subList(1, args.length));
 			rest.add(0, "project");

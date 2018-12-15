@@ -51,11 +51,8 @@ public class ExprParser {
 		return s.replace(OR_ESCAPE, "||");
 	}
 
-	public static String prefixName(Class<?> clazz, String expr, String prefix, Set<String> excludes) {
+	public static String prefixName(String expr, String prefix, Set<String> excludes) {
 		try {
-
-			expr = FieldAccessToGetterParser.fieldAccessToGetter(clazz, expr);
-
 			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
 			Atom atom = parser.parseExpression();
 

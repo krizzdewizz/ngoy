@@ -4,7 +4,8 @@ import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
@@ -108,7 +109,7 @@ public class Generator {
 					config.contentType = "text/plain";
 				}
 
-				try (OutputStream out = Files.newOutputStream(targetFile)) {
+				try (Writer out = Files.newBufferedWriter(targetFile, StandardCharsets.UTF_8)) {
 					log.accept(format("generating artifact '%s'...", targetFile));
 					Ngoy.renderTemplate(format("/%s/tpl/%s/%s", genTplRoot, tplRoot, tpl), context, out, config);
 				}

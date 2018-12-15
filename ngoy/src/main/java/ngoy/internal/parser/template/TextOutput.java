@@ -8,32 +8,34 @@ import ngoy.internal.parser.BufferedOutput;
 
 public class TextOutput extends BufferedOutput {
 
-	public interface ByteArrayRef {
+	public interface StringRef {
 		String createRef(String text);
 	}
 
 	private final Printer printer;
 	private final IntSupplier depth;
-	private final ByteArrayRef byteArrayRef;
+	private final StringRef stringRef;
+	private final String printCall;
 
-	public TextOutput(Printer printer, IntSupplier depth, ByteArrayRef byteArrayRef) {
+	public TextOutput(Printer printer, IntSupplier depth, StringRef stringRef, String contentType) {
 		this.printer = printer;
 		this.depth = depth;
-		this.byteArrayRef = byteArrayRef;
+		this.stringRef = stringRef;
+		printCall = "text/plain".equals(contentType) ? "p" : "pe";
 	}
 
 	protected void doPrint(String text, boolean isExpr) {
 		if (isExpr) {
 			printEscaped(text);
 		} else {
-			String ref = byteArrayRef.createRef(text);
-			printer.print(format("%s%s.pb(%s);\n", getDepth(), JavaTemplate.CTX_VAR, ref));
+			String ref = stringRef.createRef(text);
+			printer.print(format("%s%s.p(%s);\n", getDepth(), JavaTemplate.CTX_VAR, ref));
 		}
 	}
 
 	public void printEscaped(String expr) {
 		flush();
-		printer.print(format("%s%s.pe(%s);\n", getDepth(), JavaTemplate.CTX_VAR, expr));
+		printer.print(format("%s%s.%s(%s);\n", getDepth(), JavaTemplate.CTX_VAR, printCall, expr));
 	}
 
 	private String getDepth() {

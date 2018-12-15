@@ -1,12 +1,12 @@
 package ngoy.core.gen;
 
 import static ngoy.core.NgoyException.wrap;
-import static ngoy.core.Util.newBufferedWriter;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,7 +58,7 @@ public class Cli {
 		return Paths.get("ngoy.properties");
 	}
 
-	public void run(String[] args, OutputStream out) {
+	public void run(String[] args, Writer out) {
 		try {
 			doRun(args, out);
 		} catch (Exception e) {
@@ -66,7 +66,7 @@ public class Cli {
 		}
 	}
 
-	private void doRun(String[] args, OutputStream out) {
+	private void doRun(String[] args, Writer out) {
 
 		loadProperties();
 
@@ -80,11 +80,10 @@ public class Cli {
 				return;
 			}
 
-			Writer psOut = newBufferedWriter(out);
 			generator.setLog(s -> {
 				try {
-					psOut.write(s);
-					psOut.flush();
+					out.write(s);
+					out.flush();
 				} catch (IOException e) {
 					throw NgoyException.wrap(e);
 				}
@@ -175,8 +174,13 @@ public class Cli {
 		System.out.println(Version.getImplementationVersion());
 	}
 
-	public static void main(String[] args) {
-		new Cli().run(args, System.out);
+	public static void main(String[] args) throws Exception {
+		OutputStreamWriter out = new OutputStreamWriter(System.out, StandardCharsets.UTF_8);
+		try {
+			new Cli().run(args, out);
+		} finally {
+			out.flush();
+		}
 	}
 
 	private void ifPropSet(Properties props, String name, Consumer<String> value) {

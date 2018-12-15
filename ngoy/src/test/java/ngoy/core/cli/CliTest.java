@@ -9,9 +9,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.junit.After;
@@ -21,7 +22,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import ngoy.core.NgoyException;
-import ngoy.core.Util;
 
 public class CliTest {
 
@@ -61,11 +61,17 @@ public class CliTest {
 
 	private String run(boolean rawOutput, String... args) {
 		resetOut();
+		Writer outt = new OutputStreamWriter(out, StandardCharsets.UTF_8);
 		new Cli() {
 			protected ngoy.core.gen.Cli createGenCli() {
 				return genCli != null ? genCli : super.createGenCli();
 			}
-		}.run(args, out);
+		}.run(args, outt);
+		try {
+			outt.flush();
+		} catch (IOException e) {
+			throw NgoyException.wrap(e);
+		}
 		String result = new String(out.toByteArray());
 		if (!rawOutput) {
 			result = result.replaceAll("\\r|\\n", "");
@@ -131,9 +137,9 @@ public class CliTest {
 	public void testNew() {
 		genCli = new ngoy.core.gen.Cli() {
 			@Override
-			public void run(String[] args, OutputStream out) {
-				try (Writer w = Util.newBufferedWriter(out)) {
-					w.write(asList(args).toString());
+			public void run(String[] args, Writer out) {
+				try {
+					out.write(asList(args).toString());
 				} catch (IOException e) {
 					throw NgoyException.wrap(e);
 				}
@@ -146,9 +152,9 @@ public class CliTest {
 	public void testGen() {
 		genCli = new ngoy.core.gen.Cli() {
 			@Override
-			public void run(String[] args, OutputStream out) {
-				try (Writer w = Util.newBufferedWriter(out)) {
-					w.write(asList(args).toString());
+			public void run(String[] args, Writer out) {
+				try {
+					out.write(asList(args).toString());
 				} catch (IOException e) {
 					throw NgoyException.wrap(e);
 				}

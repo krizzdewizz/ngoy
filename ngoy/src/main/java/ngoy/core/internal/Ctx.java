@@ -1,7 +1,6 @@
 package ngoy.core.internal;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyMap;
 import static ngoy.core.Util.escape;
 
 import java.lang.reflect.Array;
@@ -15,8 +14,6 @@ import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
-import ngoy.core.PipeTransform;
-import ngoy.core.Provider;
 import ngoy.core.Variable;
 
 public class Ctx {
@@ -25,23 +22,20 @@ public class Ctx {
 		return new Ctx();
 	}
 
-	public static Ctx of(Injector injector, Map<String, Provider> pipes) {
-		return new Ctx(injector, pipes);
+	public static Ctx of(Injector injector) {
+		return new Ctx(injector);
 	}
 
-	private final Map<String, Provider> pipeDecls;
 	private final Injector injector;
 	private Output out;
-	private String contentType;
 	private Map<String, Variable<?>> variables = new HashMap<>();
 
 	private Ctx() {
-		this(null, emptyMap());
+		this(null);
 	}
 
-	private Ctx(@Nullable Injector injector, Map<String, Provider> pipeDecls) {
+	private Ctx(@Nullable Injector injector) {
 		this.injector = injector;
-		this.pipeDecls = pipeDecls;
 	}
 
 	public IterableWithVariables forOfStart(Object iterable) {
@@ -98,28 +92,24 @@ public class Ctx {
 		}
 	}
 
-	public Injector getInjector() {
-		return injector;
-	}
-
 	public void pe(@Nullable Object obj) {
 		if (obj != null) {
-			out.write(escape(obj.toString(), contentType));
+			out.write(escape(obj.toString()));
 		}
 	}
 
-	public void pb(byte[] bytes) {
-		out.write(bytes);
+	public void p(@Nullable Object obj) {
+		if (obj != null) {
+			out.write(obj.toString());
+		}
 	}
 
-	public void setOut(Output out, String contentType) {
+	public void setOut(Output out) {
 		this.out = out;
-		this.contentType = contentType;
 	}
 
 	public void resetOut() {
 		this.out = null;
-		this.contentType = null;
 	}
 
 	public Map<String, Variable<?>> getVariables() {
@@ -136,14 +126,6 @@ public class Ctx {
 
 	public void setVariables(Map<String, Variable<?>> variables) {
 		this.variables = variables;
-	}
-
-	public PipeTransform getPipe(String pipeName) {
-		Provider pipeProvider = pipeDecls.get(pipeName);
-		if (pipeProvider == null) {
-			throw new NgoyException("No provider for pipe '%s'", pipeName);
-		}
-		return (PipeTransform) injector.get(pipeProvider.getProvide());
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

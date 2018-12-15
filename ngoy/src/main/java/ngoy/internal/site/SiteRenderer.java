@@ -2,7 +2,8 @@ package ngoy.internal.site;
 
 import static java.lang.String.format;
 
-import java.io.OutputStream;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -49,7 +50,7 @@ public class SiteRenderer {
 	private void renderPage(Ngoy<?> ngoy, Path page) {
 		try {
 			ensureDirectory(page);
-			try (OutputStream out = Files.newOutputStream(page)) {
+			try (Writer out = Files.newBufferedWriter(page, StandardCharsets.UTF_8)) {
 				ngoy.render(out);
 			}
 		} catch (Exception e) {

@@ -1,12 +1,11 @@
 package ngoy;
 
 import static java.util.Arrays.asList;
-import static ngoy.core.NgoyException.wrap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.Test;
@@ -16,30 +15,12 @@ import ngoy.core.Context;
 
 public class RenderStringTest {
 
-	private static class Out extends OutputStream {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-		@Override
-		public String toString() {
-			try {
-				return new String(out.toByteArray(), "UTF-8");
-			} catch (Exception e) {
-				throw wrap(e);
-			}
-		}
-
-		@Override
-		public void write(int b) throws IOException {
-			out.write(b);
-		}
-	}
-
 	@Test
 	public void test() {
 		Config config = new Config();
 		config.contentType = "text/plain";
 		Context<?> ctx = Context.of("all", List.class, asList(11, 22, 33));
-		Out out = new Out();
+		StringWriter out = new StringWriter();
 		Ngoy.renderString("<ng-container *ngFor=\"let x of all; index as i\">hello {{x}}, {{i}}\n</ng-container>", ctx, out, config);
 		assertThat(out.toString()).isEqualTo("hello 11, 0\nhello 22, 1\nhello 33, 2\n");
 	}
@@ -49,7 +30,7 @@ public class RenderStringTest {
 		Config config = new Config();
 		config.contentType = "text/plain";
 		Context<?> ctx = Context.of("all", List.class, asList(11, 22, 33));
-		Out out = new Out();
+		StringWriter out = new StringWriter();
 		Ngoy.renderString("*ngFor let x of all; index as i:hello {{x}}, {{i}}\n", ctx, out, config);
 		assertThat(out.toString()).isEqualTo("hello 11, 0\nhello 22, 1\nhello 33, 2\n");
 	}
@@ -69,6 +50,6 @@ public class RenderStringTest {
 	@Test
 	public void some() {
 //		Ngoy.renderString("hello: {{name}}", Context.of("name", String.class, "peter"), System.out);
-		Ngoy.renderString("hello: {{getName()}}", Context.of(Person.class, new Person("sam")), System.out);
+		Ngoy.renderString("hello: {{getName()}}", Context.of(Person.class, new Person("sam")), new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
 	}
 }

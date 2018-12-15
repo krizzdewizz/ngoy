@@ -15,6 +15,9 @@ import static ngoy.core.Util.isSet;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,9 +57,9 @@ import ngoy.core.internal.Ctx;
 import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.Output;
 import ngoy.core.internal.Resolver;
-import ngoy.core.internal.StreamOutput;
 import ngoy.core.internal.StyleUrlsDirective;
 import ngoy.core.internal.TemplateRender;
+import ngoy.core.internal.WriterOutput;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.parser.template.JavaTemplate;
 import ngoy.internal.scan.ClassScanner;
@@ -68,8 +71,8 @@ import ngoy.translate.TranslateService;
 /**
  * The main entry point to ngoy.
  * <p>
- * Use {@link #renderString(String, Context, OutputStream, Config...)} or
- * {@link #renderTemplate(String, Context, OutputStream, Config...) } for simple
+ * Use {@link #renderString(String, Context, Writer, Config...)} or
+ * {@link #renderTemplate(String, Context, Writer, Config...) } for simple
  * templates.
  * <p>
  * Use {@link #app(Class)} to build an 'app' using components, directives, pipes
@@ -233,8 +236,8 @@ public class Ngoy<T> {
 		}
 
 		/**
-		 * Builds the app instance, on which then {@link Ngoy#render(OutputStream)} can
-		 * be called.
+		 * Builds the app instance, on which then {@link Ngoy#render(Writer)} can be
+		 * called.
 		 *
 		 * @return App
 		 */
@@ -302,7 +305,7 @@ public class Ngoy<T> {
 	 * @param out      Where the processed template is written to
 	 * @param config   Optional configuration
 	 */
-	public static void renderString(String template, Context<?> context, OutputStream out, Config... config) {
+	public static void renderString(String template, Context<?> context, Writer out, Config... config) {
 		Config cfg = config.length > 0 ? config[0] : new Config();
 		new Ngoy<Void>(template, cfg, context).render(out);
 	}
@@ -310,8 +313,8 @@ public class Ngoy<T> {
 	/**
 	 * Renders the given template file/resource.
 	 * <p>
-	 * Same as {@link #renderString(String, Context, OutputStream, Config...)},
-	 * except that the template is read from the given path.
+	 * Same as {@link #renderString(String, Context, Writer, Config...)}, except
+	 * that the template is read from the given path.
 	 *
 	 * @param templatePath path to the template. The template resource is loaded
 	 *                     with {@link Class#getResourceAsStream(String)}
@@ -319,9 +322,9 @@ public class Ngoy<T> {
 	 *                     'model' to the template
 	 * @param out          Where the processed template is written to
 	 * @param config       Optional configuration
-	 * @see #renderString(String, Context, OutputStream, Config...)
+	 * @see #renderString(String, Context, Writer, Config...)
 	 */
-	public static void renderTemplate(String templatePath, Context<?> context, OutputStream out, Config... config) {
+	public static void renderTemplate(String templatePath, Context<?> context, Writer out, Config... config) {
 		InputStream in = Ngoy.class.getResourceAsStream(templatePath);
 		if (in == null) {
 			throw new NgoyException("Template could not be found: '%s'", templatePath);
@@ -583,7 +586,7 @@ public class Ngoy<T> {
 	}
 
 	private Ctx createRenderContext() {
-		Ctx ctx = Ctx.of(injector, pipeDecls);
+		Ctx ctx = Ctx.of(injector);
 
 		if (context != null) {
 			ctx.setVariables(context.getVariables());
@@ -594,12 +597,30 @@ public class Ngoy<T> {
 	}
 
 	/**
-	 * Renders the app to the given ouput stream.
+	 * Renders the app to the given ouput stream using UTF-8 encoding.
 	 *
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		render(createRenderContext(), new StreamOutput(out));
+		Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+		try {
+			render(writer);
+		} finally {
+			try {
+				writer.flush();
+			} catch (Exception e) {
+				throw wrap(e);
+			}
+		}
+	}
+
+	/**
+	 * Renders the app to the given writer.
+	 *
+	 * @param out To where to write the app to
+	 */
+	public void render(Writer out) {
+		render(createRenderContext(), new WriterOutput(out));
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -687,8 +708,8 @@ public class Ngoy<T> {
 		try {
 			Parser parser = createParser(resolver, config);
 			Class<?> templateClass = createTemplate(parser, template != null ? template : getTemplate(appRoot));
-			templateRenderer = (TemplateRender) templateClass.getMethod("createRenderer")
-					.invoke(null);
+			templateRenderer = (TemplateRender) templateClass.getMethod("createRenderer", Injector.class)
+					.invoke(null, resolver.getInjector());
 		} catch (Exception e) {
 			throw wrap(e);
 		}
@@ -696,7 +717,7 @@ public class Ngoy<T> {
 
 	private void render(Ctx ctx, Output out) {
 		try {
-			ctx.setOut(out, getContentType(config));
+			ctx.setOut(out);
 			templateRenderer.render(ctx);
 		} catch (Exception e) {
 			throw wrap(e);
@@ -787,8 +808,13 @@ public class Ngoy<T> {
 	 *
 	 * @param args arguments
 	 */
-	public static void main(String[] args) {
-		new Cli().run(args, System.out);
+	public static void main(String[] args) throws Exception {
+		OutputStreamWriter out = new OutputStreamWriter(System.out, StandardCharsets.UTF_8);
+		try {
+			new Cli().run(args, out);
+		} finally {
+			out.flush();
+		}
 	}
 
 	private static boolean matchesAttributeBinding(Jerry node, String attrName) {

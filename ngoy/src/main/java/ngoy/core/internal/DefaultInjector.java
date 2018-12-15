@@ -7,6 +7,9 @@ import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Provider.useValue;
 
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,7 +34,7 @@ public class DefaultInjector implements Injector {
 	}
 
 	private interface Injection {
-		void apply(Object instance) throws Exception;
+		void apply(Object instance) throws Throwable;
 	}
 
 	@Nullable
@@ -140,8 +143,8 @@ public class DefaultInjector implements Injector {
 			Constructor<?> ctor = ctors[0];
 			int nParams = ctor.getParameterCount();
 			Object[] arr = new Object[nParams];
+			Class<?>[] paramTypes = ctor.getParameterTypes();
 			if (nParams > 0) {
-				Class<?>[] paramTypes = ctor.getParameterTypes();
 				Annotation[][] paramAnns = ctor.getParameterAnnotations();
 				for (int i = 0; i < nParams; i++) {
 					Annotation optional = findAnnotation(paramAnns[i], "Optional");
@@ -151,13 +154,16 @@ public class DefaultInjector implements Injector {
 
 			List<Injection> fieldInjections = fieldInjections(useClass, resolving);
 
+			MethodHandle constructor = MethodHandles.lookup()
+					.unreflectConstructor(ctor);
+
 			factory = () -> {
 				try {
-					Object instance = ctor.newInstance(arr);
+					Object instance = constructor.invokeWithArguments(arr);
 					applyInjections(instance, fieldInjections);
 					providerInstances.put(clazz, instance);
 					return (T) instance;
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					throw wrap(e);
 				}
 			};
@@ -184,13 +190,14 @@ public class DefaultInjector implements Injector {
 			for (Injection f : injections) {
 				f.apply(instance);
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			throw wrap(e);
 		}
 	}
 
 	public List<Injection> fieldInjections(Class<?> clazz, Set<Class<?>> resolving) {
 		try {
+			Lookup lookup = MethodHandles.lookup();
 			final List<Injection> injections = new ArrayList<>();
 			for (Field field : clazz.getFields()) {
 				int mods = field.getModifiers();
@@ -202,7 +209,8 @@ public class DefaultInjector implements Injector {
 
 				Object obj = getInternal(field.getType(), resolving, optional);
 				if (!optional || obj != null) {
-					injections.add(i -> field.set(i, obj));
+					MethodHandle setter = lookup.unreflectSetter(field);
+					injections.add(i -> setter.invoke(i, obj));
 				}
 			}
 
@@ -220,7 +228,8 @@ public class DefaultInjector implements Injector {
 
 				Object obj = getInternal(meth.getParameterTypes()[0], resolving, optional);
 				if (!optional || obj != null) {
-					injections.add(i -> meth.invoke(i, obj));
+					MethodHandle methHandle = lookup.unreflect(meth);
+					injections.add(i -> methHandle.invoke(i, obj));
 				}
 			}
 
