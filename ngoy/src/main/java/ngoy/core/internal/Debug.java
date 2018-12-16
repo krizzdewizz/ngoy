@@ -28,8 +28,8 @@ public final class Debug {
 
 //			tempFile = new File("d:/downloads/qbert.java").toPath();
 
-			System.out.println(format("ngoy.debug: template has been written to %s", tempFile));
 			Files.write(tempFile, code.getBytes(StandardCharsets.UTF_8));
+			System.out.println(format("ngoy.debug: template has been written to %s", tempFile));
 		} catch (IOException e) {
 			throw wrap(e);
 		}

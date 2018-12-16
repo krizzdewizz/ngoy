@@ -20,17 +20,4 @@ public class WriterOutput implements Output {
 			throw wrap(e);
 		}
 	}
-
-	public void flush() {
-		try {
-			out.flush();
-		} catch (Exception e) {
-			throw wrap(e);
-		}
-	}
-
-	@Override
-	public void close() throws Exception {
-		out.close();
-	}
 }

@@ -168,7 +168,7 @@ public class DefaultInjector implements Injector {
 				}
 			};
 
-			factories.put(useClass, factory);
+			factories.put(clazz, factory);
 
 			return (T) factory.create();
 

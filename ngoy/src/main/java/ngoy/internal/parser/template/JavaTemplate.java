@@ -307,7 +307,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		printExprComment(expr);
 		$("Object ", evalResultVar, "=", prefixName(expr, cmpVars.peek().name), ";");
 
-		$("if (", evalResultVar, " != null) {");
+		$("if(", evalResultVar, "!=null) {");
 		printOut(" ", name, "=\"");
 		flushOut();
 		out.printEscaped(evalResultVar);
@@ -353,7 +353,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			printExprComment(expr);
 			$("Object ", switchVar, "=", prefixName(expr, cmpVars.peek().name), ";");
 			printExprComment(switchFirstCase);
-			$("if (java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase, cmpVars.peek().name), ")) {");
+			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase, cmpVars.peek().name), ")) {");
 			switchHadElseIf.push(true);
 		} else {
 			switchVar = "";
@@ -380,7 +380,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			}
 
 			printExprComment(expr);
-			$("if (java.util.Objects.equals(", switchVar, ", ", prefixName(expr, cmpVars.peek().name), ")) {");
+			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(expr, cmpVars.peek().name), ")) {");
 		}
 	}
 
@@ -500,7 +500,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private void ifExprIsTrue(String expr) {
 		flushOut();
 		printExprComment(expr);
-		$("if (", prefixName(expr, cmpVars.peek().name), ") {");
+		$("if(", prefixName(expr, cmpVars.peek().name), ") {");
 	}
 
 	public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
@@ -563,11 +563,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			String clazz = pair[0];
 			String expr = pair[1];
 			if (expr.isEmpty()) {
-
-				$("if (", listVar, ".length() > 0) {");
-				$(listVar, ".append(\"", delimiter, "\");");
-				$("}");
-
+				$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 				$(listVar, ".append(\"", clazz, "\");");
 			} else {
 				String ex = prefixName(expr, cmpVars.peek().name);
@@ -576,12 +572,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()) {");
 						String valueVar = createLocalVar("styleValue");
 						$("Object ", valueVar, "=", "entry.getValue();");
-						$("  if (", valueVar, "!= null && !", valueVar, ".toString().isEmpty()) {");
-
-						$("if (", listVar, ".length() > 0) {");
-						$(listVar, ".append(\"", delimiter, "\");");
-						$("}");
-
+						$("  if(", valueVar, "!= null && !", valueVar, ".toString().isEmpty()) {");
+						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$(listVar, ".append(((String)entry.getKey()).concat(\":\").concat(", valueVar, ".toString()));");
 						$("  }");
 						$("}");
@@ -593,12 +585,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						String exVar = createLocalVar("expr");
 						printExprComment(ex);
 						$("Object ", exVar, "=", ex, ";");
-						$("if (", exVar, " != null && !", exVar, ".toString().isEmpty()) {");
-
-						$("if (", listVar, ".length() > 0) {");
-						$(listVar, ".append(\"", delimiter, "\");");
-						$("}");
-
+						$("if(", exVar, "!=null && !", exVar, ".toString().isEmpty()) {");
+						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$$(listVar, ".append(\"", clazz, ":\".concat(", exVar, ".toString())");
 						if (!unit.isEmpty()) {
 							$$(".concat(\"", unit, "\")");
@@ -609,23 +597,15 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 				} else {
 					if (clazz.equals("ngClass")) {
 						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()) {");
-						$("  if ((Boolean)entry.getValue()) {");
-
-						$("if (", listVar, ".length() > 0) {");
-						$(listVar, ".append(\"", delimiter, "\");");
-						$("}");
-
+						$("  if((Boolean)entry.getValue()) {");
+						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$(listVar, ".append(entry.getKey());");
 						$("  }");
 						$("}");
 					} else {
 						printExprComment(ex);
-						$("if (", ex, ") {");
-
-						$("if (", listVar, ".length() > 0) {");
-						$(listVar, ".append(\"", delimiter, "\");");
-						$("}");
-
+						$("if(", ex, ") {");
+						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$(listVar, ".append(\"", clazz, "\");");
 						$("}");
 					}
@@ -633,7 +613,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			}
 		}
 
-		$("if (", listVar, ".length() > 0) {");
+		$("if(", listVar, ".length()>0) {");
 		printOut(" ", attrName, "=\"");
 		flushOut();
 		printOutExpr(listVar);

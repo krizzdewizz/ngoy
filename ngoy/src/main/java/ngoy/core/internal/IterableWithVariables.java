@@ -5,7 +5,7 @@ import java.util.Iterator;
 @SuppressWarnings("rawtypes")
 public class IterableWithVariables implements Iterable {
 
-	public class Iter implements Iterator {
+	public static class Iter implements Iterator {
 
 		private final Iterator targetIter;
 

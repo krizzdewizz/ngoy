@@ -1,5 +1,7 @@
 package ngoy.internal.parser;
 
+import ngoy.core.Nullable;
+
 /**
  * Converts a single or double quoted string to a double quoted java string.
  * 
@@ -20,7 +22,7 @@ public final class SmartStringParser {
 	 * @param s single or double quoted string
 	 * @return double quoted string
 	 */
-	public static String toJavaString(String s) {
+	public static String toJavaString(@Nullable String s) {
 		if (s == null || s.isEmpty()) {
 			return s;
 		}

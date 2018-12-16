@@ -172,18 +172,13 @@ public class Util {
 		return tpl;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T> T findThrowable(Throwable t, Class<T> throwableClass) {
-		Throwable tmp = t;
-		while (tmp != null) {
-			if (throwableClass.isInstance(tmp)) {
-				return (T) tmp;
-			}
-			tmp = tmp.getCause();
-		}
-		return null;
-	}
-
+	/**
+	 * Returns the line at the given line number.
+	 * 
+	 * @param s          string with lines
+	 * @param lineNumber starting at 1
+	 * @return Line
+	 */
 	public static String getLine(String s, int lineNumber) {
 		try {
 			LineNumberReader lnr = new LineNumberReader(new StringReader(s));

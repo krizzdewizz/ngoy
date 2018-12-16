@@ -201,8 +201,7 @@ public class ExprParser {
 			}
 			break;
 		default:
-			throw new NgoyException("Unknown expression type: %s", e.getClass()
-					.getName());
+			throw new NgoyException("Unknown expression type: %s", e.type);
 		}
 	}
 
