@@ -18,6 +18,7 @@ public class TextOutput extends BufferedOutput {
 	private final String printCall;
 
 	public TextOutput(Printer printer, IntSupplier depth, StringRef stringRef, String contentType) {
+		super(contentType);
 		this.printer = printer;
 		this.depth = depth;
 		this.stringRef = stringRef;

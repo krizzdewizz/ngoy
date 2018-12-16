@@ -34,7 +34,6 @@ dependencies {
 	implementation 'org.codehaus.janino:janino:3.0.11'
 	implementation 'commons-cli:commons-cli:1.4'
 	implementation 'org.jodd:jodd-lagarto:5.0.6'
-    implementation 'org.unbescape:unbescape:1.1.6.RELEASE'
 
     // JUnit test framework
     testImplementation 'junit:junit:4.12'
@@ -116,5 +115,5 @@ task buildAll(type: Zip, dependsOn: ['build', 'shadowJar']) {
    from '.' include 'ngoy.cmd'
    archiveName "ngoy-$version-all.zip"
    into "ngoy-$version"
-   destinationDir(file('/build/libs'))
+   destinationDir(file('build/libs'))
 }

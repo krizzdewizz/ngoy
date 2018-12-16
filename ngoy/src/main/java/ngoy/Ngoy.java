@@ -10,8 +10,10 @@ import static ngoy.core.Provider.of;
 import static ngoy.core.Provider.useClass;
 import static ngoy.core.Provider.useValue;
 import static ngoy.core.Util.copyToString;
+import static ngoy.core.Util.getCompileExceptionMessageWithoutLocation;
 import static ngoy.core.Util.getTemplate;
 import static ngoy.core.Util.isSet;
+import static ngoy.internal.parser.template.JavaTemplate.getExprComment;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,6 +33,7 @@ import java.util.PropertyResourceBundle;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.ClassBodyEvaluator;
 
 import jodd.jerry.Jerry;
@@ -54,6 +57,7 @@ import ngoy.core.cli.Cli;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.CoreInternalModule;
 import ngoy.core.internal.Ctx;
+import ngoy.core.internal.Debug;
 import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.Output;
 import ngoy.core.internal.Resolver;
@@ -62,6 +66,7 @@ import ngoy.core.internal.TemplateRender;
 import ngoy.core.internal.WriterOutput;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.parser.template.JavaTemplate;
+import ngoy.internal.parser.template.JavaTemplate.ExprComment;
 import ngoy.internal.scan.ClassScanner;
 import ngoy.internal.site.SiteRenderer;
 import ngoy.router.RouterModule;
@@ -707,7 +712,7 @@ public class Ngoy<T> {
 	private void compile(String template) {
 		try {
 			Parser parser = createParser(resolver, config);
-			Class<?> templateClass = createTemplate(parser, template != null ? template : getTemplate(appRoot));
+			Class<?> templateClass = compileTemplate(parser, template != null ? template : getTemplate(appRoot));
 			templateRenderer = (TemplateRender) templateClass.getMethod("createRenderer", Injector.class)
 					.invoke(null, resolver.getInjector());
 		} catch (Exception e) {
@@ -730,21 +735,24 @@ public class Ngoy<T> {
 		Class<?> createTemplate(Parser parser, String template, String contentType);
 	}
 
-	protected Class<?> createTemplate(Parser parser, String template) {
+	protected Class<?> compileTemplate(Parser parser, String template) {
+		JavaTemplate tpl = new JavaTemplate(getContentType(config), true, context != null ? context.getVariables() : emptyMap());
+		parser.parse(template, tpl);
+		String code = tpl.toString();
+
+		Debug.writeTemplate(code);
+
+		ClassBodyEvaluator bodyEvaluator = new ClassBodyEvaluator();
 		try {
-			JavaTemplate tpl = new JavaTemplate(getContentType(config), true, context != null ? context.getVariables() : emptyMap());
-
-			parser.parse(template, tpl);
-
-			String code = tpl.toString();
-//			java.nio.file.Files.write(java.nio.file.Paths.get("d:/downloads/qbert.java"), code.getBytes());
-
-			ClassBodyEvaluator bodyEvaluator = new ClassBodyEvaluator();
 			bodyEvaluator.cook(code);
-			return bodyEvaluator.getClazz();
-		} catch (Exception e) {
-			throw wrap(e);
+		} catch (CompileException e) {
+			ExprComment exprComment = getExprComment(code, e.getLocation()
+					.getLineNumber());
+
+			String msg = getCompileExceptionMessageWithoutLocation(e);
+			throw new NgoyException("Compile error in \"%s\": %s\nsource: %s", exprComment.comment, msg, exprComment.sourcePosition);
 		}
+		return bodyEvaluator.getClazz();
 	}
 
 	private String getContentType(Config config) {

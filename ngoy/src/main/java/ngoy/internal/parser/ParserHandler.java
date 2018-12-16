@@ -15,17 +15,17 @@ public interface ParserHandler {
 
 	void attributeStart(String name, boolean hasValue);
 
-	void attributeClasses(List<String[]> classExprPairs);
+	void attributeClasses(List<String[]> classExprPairs, String sourcePosition);
 
-	void attributeStyles(List<String[]> styleExprPairs);
+	void attributeStyles(List<String[]> styleExprPairs, String sourcePosition);
 
-	void attributeExpr(String name, String expr);
+	void attributeExpr(String name, String expr, String sourcePosition);
 
 	void attributeEnd();
 
 	void elementHeadEnd();
 
-	void text(String text, boolean textIsExpr, boolean escape);
+	void text(String text, boolean textIsExpr, boolean escape, String sourcePosition);
 
 	void elementEnd(String name);
 
@@ -72,11 +72,11 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void attributeClasses(List<String[]> classExprPairs) {
+		public void attributeClasses(List<String[]> classExprPairs, String sourcePosition) {
 		}
 
 		@Override
-		public void attributeExpr(String name, String expr) {
+		public void attributeExpr(String name, String expr, String sourcePosition) {
 		}
 
 		@Override
@@ -88,7 +88,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void text(String text, boolean textIsExpr, boolean escape) {
+		public void text(String text, boolean textIsExpr, boolean escape, String sourcePosition) {
 		}
 
 		@Override
@@ -140,7 +140,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void attributeStyles(List<String[]> styleExprPairs) {
+		public void attributeStyles(List<String[]> styleExprPairs, String sourcePosition) {
 		}
 
 		@Override
@@ -171,12 +171,12 @@ public interface ParserHandler {
 			target.attributeStart(name, hasValue);
 		}
 
-		public void attributeClasses(List<String[]> classExprPairs) {
-			target.attributeClasses(classExprPairs);
+		public void attributeClasses(List<String[]> classExprPairs, String sourcePosition) {
+			target.attributeClasses(classExprPairs, sourcePosition);
 		}
 
-		public void attributeExpr(String name, String expr) {
-			target.attributeExpr(name, expr);
+		public void attributeExpr(String name, String expr, String sourcePosition) {
+			target.attributeExpr(name, expr, sourcePosition);
 		}
 
 		public void attributeEnd() {
@@ -187,8 +187,8 @@ public interface ParserHandler {
 			target.elementHeadEnd();
 		}
 
-		public void text(String text, boolean textIsExpr, boolean escape) {
-			target.text(text, textIsExpr, escape);
+		public void text(String text, boolean textIsExpr, boolean escape, String sourcePosition) {
+			target.text(text, textIsExpr, escape, sourcePosition);
 		}
 
 		public void elementEnd(String name) {
@@ -246,8 +246,8 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void attributeStyles(List<String[]> styleExprPairs) {
-			target.attributeStyles(styleExprPairs);
+		public void attributeStyles(List<String[]> styleExprPairs, String sourcePosition) {
+			target.attributeStyles(styleExprPairs, sourcePosition);
 		}
 	}
 }

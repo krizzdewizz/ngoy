@@ -1,17 +1,22 @@
 package ngoy.internal.parser;
 
-import static ngoy.core.Util.escape;
-import static ngoy.internal.parser.template.JavaTemplate.escapeJava;
+import static ngoy.core.Util.escapeHtmlXml;
+import static ngoy.core.Util.escapeJava;
 
 public abstract class BufferedOutput {
 	private final StringBuilder buf = new StringBuilder();
+	private final boolean escapeText;
 
-	public void print(String text, boolean isExpr, boolean escape, String contentType) {
+	public BufferedOutput(String contentType) {
+		escapeText = !"text/plain".equals(contentType);
+	}
+
+	public void print(String text, boolean isExpr, boolean escape) {
 		if (isExpr) {
 			flush();
 			doPrint(text, true);
 		} else {
-			buf.append(escape ? escapeJava("text/plain".equals(contentType) ? text : escape(text)) : text);
+			buf.append(escape ? escapeJava(escapeText ? escapeHtmlXml(text) : text) : text);
 		}
 	}
 

@@ -1,17 +1,17 @@
 package ngoy.core;
 
+import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.LineNumberReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.StringReader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.unbescape.html.HtmlEscape;
-import org.unbescape.html.HtmlEscapeLevel;
-import org.unbescape.html.HtmlEscapeType;
+import org.codehaus.commons.compiler.CompileException;
 
 /**
  * Utils.
@@ -21,20 +21,6 @@ import org.unbescape.html.HtmlEscapeType;
 public class Util {
 
 	private Util() {
-	}
-
-	/**
-	 * Returns a new UTF-8 encoded writer that writes to the given output stream.
-	 * 
-	 * @param out
-	 * @return Writer
-	 */
-	public static Writer newBufferedWriter(OutputStream out) {
-		try {
-			return new BufferedWriter(new OutputStreamWriter(out, "UTF-8"), 4096);
-		} catch (Exception e) {
-			throw wrap(e);
-		}
 	}
 
 	/**
@@ -77,6 +63,49 @@ public class Util {
 		return s != null && !s.isEmpty();
 	}
 
+	public static String escapeJava(String text) {
+		StringBuilder sb = null;
+		for (int i = 0, n = text.length(); i < n; i++) {
+			String repl = null;
+			char c = text.charAt(i);
+			switch (c) {
+			case '"':
+				repl = "\\\"";
+				break;
+			case '\\':
+				repl = "\\\\";
+				break;
+			case '\t':
+				repl = "\\t";
+				break;
+			case '\n':
+				repl = "\\n";
+				break;
+			case '\r':
+				repl = "\\r";
+				break;
+			case '\b':
+				repl = "\\b";
+				break;
+			case '\f':
+				repl = "\\f";
+				break;
+			default:
+				if (sb != null) {
+					sb.append(c);
+				}
+			}
+
+			if (repl != null) {
+				if (sb == null) {
+					sb = new StringBuilder(text.substring(0, i));
+				}
+				sb.append(repl);
+			}
+		}
+		return sb != null ? sb.toString() : text;
+	}
+
 	/**
 	 * HTML/XML escape's the given text.
 	 * 
@@ -84,20 +113,37 @@ public class Util {
 	 * @return Escaped text
 	 */
 	public static String escapeHtmlXml(String text) {
-		return HtmlEscape.escapeHtml(text, HtmlEscapeType.HTML5_NAMED_REFERENCES_DEFAULT_TO_DECIMAL, HtmlEscapeLevel.LEVEL_0_ONLY_MARKUP_SIGNIFICANT_EXCEPT_APOS);
-	}
+		StringBuilder sb = null;
+		for (int i = 0, n = text.length(); i < n; i++) {
+			String repl = null;
+			char c = text.charAt(i);
+			switch (c) {
+			case '"':
+				repl = "&quot;";
+				break;
+			case '&':
+				repl = "&amp;";
+				break;
+			case '<':
+				repl = "&lt;";
+				break;
+			case '>':
+				repl = "&gt;";
+				break;
+			default:
+				if (sb != null) {
+					sb.append(c);
+				}
+			}
 
-	/**
-	 * Escapes based on the given contentType.
-	 * <p>
-	 * <ul>
-	 * <li><code>"text/plain"</code>: don't escape</li>
-	 * <li>All others: {@link #escapeHtmlXml(String)}</li>
-	 * </ul>
-	 */
-	public static String escape(String text) {
-
-		return escapeHtmlXml(text);
+			if (repl != null) {
+				if (sb == null) {
+					sb = new StringBuilder(text.substring(0, i));
+				}
+				sb.append(repl);
+			}
+		}
+		return sb != null ? sb.toString() : text;
 	}
 
 	/**
@@ -124,6 +170,48 @@ public class Util {
 			tpl = cmp.template();
 		}
 		return tpl;
+	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> T findThrowable(Throwable t, Class<T> throwableClass) {
+		Throwable tmp = t;
+		while (tmp != null) {
+			if (throwableClass.isInstance(tmp)) {
+				return (T) tmp;
+			}
+			tmp = tmp.getCause();
+		}
+		return null;
+	}
+
+	public static String getLine(String s, int lineNumber) {
+		try {
+			LineNumberReader lnr = new LineNumberReader(new StringReader(s));
+			int i = 1;
+			String line;
+			while ((line = lnr.readLine()) != null) {
+				if (i == lineNumber) {
+					return line;
+				}
+				i++;
+			}
+			return format("<line %s not found>", lineNumber);
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
+	public static String getCompileExceptionMessageWithoutLocation(CompileException compileException) {
+		String message = compileException.getMessage();
+		if (compileException.getLocation() != null) {
+			Matcher matcher = Pattern.compile(".*Column \\d*:(.*)")
+					.matcher(message);
+			if (matcher.find()) {
+				return matcher.group(1)
+						.trim();
+			}
+		}
+
+		return message;
 	}
 }

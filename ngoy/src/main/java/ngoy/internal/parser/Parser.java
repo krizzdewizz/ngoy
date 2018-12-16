@@ -27,6 +27,7 @@ import ngoy.core.Injector;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnCompile;
+import ngoy.core.dom.NgoyElement.Position;
 import ngoy.core.dom.NodeVisitor;
 import ngoy.core.dom.XDom;
 import ngoy.core.internal.CmpRef;
@@ -180,7 +181,7 @@ public class Parser {
 			acceptDocument(nodes);
 		} catch (Exception e) {
 			String message = e.getMessage();
-			throw new NgoyException(e, "Error while parsing: %s. %s", isSet(message) ? message : e, exceptionInfo(template));
+			throw new NgoyException(e, "Error while parsing: %s. %s", isSet(message) ? message : e, exceptionInfo(template, true));
 		}
 	}
 
@@ -215,7 +216,7 @@ public class Parser {
 			return;
 		}
 
-		cmpRefParser.acceptCmpRefs(el, cmpRefs);
+		cmpRefParser.acceptCmpRefs(el, cmpRefs, exceptionInfo("", false));
 
 		if (isSet(handler.textOverrideExpr)) {
 			skipSubTreeVisitor.skipSubTree(el);
@@ -277,9 +278,9 @@ public class Parser {
 
 		boolean escapeText = insideScriptOrStyle == 0;
 		if (templateIsExpression) {
-			handler.text(ExprParser.convertPipesToTransformCalls(text, resolver), true, escapeText);
+			handler.text(ExprParser.convertPipesToTransformCalls(text, resolver), true, escapeText, exceptionInfo("", false));
 		} else {
-			ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText));
+			ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText, exceptionInfo("", false)));
 		}
 	}
 
@@ -357,9 +358,9 @@ public class Parser {
 		return resolver.resolveCmpClass(peek == null ? null : peek.clazz);
 	}
 
-	String exceptionInfo(String template) {
-		Jerry currentEl = replacingVisitor.currentEl;
-		String position = currentEl == null ? "" : getPosition(currentEl).toString();
+	private String exceptionInfo(String template, boolean newLine) {
+		Position pos = getCurrentPosition();
+		String position = pos == null ? "" : pos.toString();
 
 		String templateUrl = "";
 		String className = "";
@@ -376,7 +377,14 @@ public class Parser {
 			templateUrl = template;
 		}
 
-		return format("\nComponent: %s\ntemplateUrl: '%s'\nposition: %s", className, templateUrl, position);
+		String nlStart = newLine ? "\n" : "";
+		String nl = newLine ? "\n" : ", ";
+		return format("%sComponent: %s%stemplateUrl: '%s'%sposition: %s", nlStart, className, nl, templateUrl, nl, position);
+	}
+
+	private Position getCurrentPosition() {
+		Jerry currentEl = replacingVisitor.currentEl;
+		return currentEl == null ? null : getPosition(currentEl);
 	}
 
 	private void replaceCommentLikeNodes(Jerry node) {
@@ -386,7 +394,7 @@ public class Parser {
 				|| nodeType == NodeType.COMMENT //
 				|| nodeType == NodeType.CDATA //
 				|| nodeType == NodeType.XML_DECLARATION) {
-			handler.text(n.getHtml(), false, false);
+			handler.text(n.getHtml(), false, false, exceptionInfo("", false));
 		}
 	}
 }

@@ -88,17 +88,14 @@ public class DefaultInjector implements Injector {
 	private <T> T getInternal(Class<T> clazz, Set<Class<?>> resolving, boolean nullIfNone) {
 		try {
 
-			if (resolving.contains(clazz)) {
-				throw new NgoyException("Dependency cycle detected. Classes involved: %s", resolving.stream()
-						.map(Class::getName)
-						.collect(joining(", ")));
-			}
-
-			resolving.add(clazz);
-
 			Object object = providerInstances.get(clazz);
 			if (object != null) {
 				return (T) object;
+			}
+
+			Factory factory = factories.get(clazz);
+			if (factory != null) {
+				return (T) factory.create();
 			}
 
 			if (!cmpDecls.contains(clazz)) {
@@ -126,12 +123,15 @@ public class DefaultInjector implements Injector {
 
 			//
 
-			Class<?> useClass = requireNonNull(provider.getUseClass(), "useClass must not be null");
-
-			Factory factory = factories.get(useClass);
-			if (factory != null) {
-				return (T) factory.create();
+			if (resolving.contains(clazz)) {
+				throw new NgoyException("Dependency cycle detected. Classes involved: %s", resolving.stream()
+						.map(Class::getName)
+						.collect(joining(", ")));
 			}
+
+			resolving.add(clazz);
+
+			Class<?> useClass = requireNonNull(provider.getUseClass(), "useClass must not be null");
 
 			Constructor<?>[] ctors = useClass.getConstructors();
 			if (ctors.length > 1) {

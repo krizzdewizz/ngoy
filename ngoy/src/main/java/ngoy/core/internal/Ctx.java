@@ -1,7 +1,7 @@
 package ngoy.core.internal;
 
 import static java.util.Arrays.asList;
-import static ngoy.core.Util.escape;
+import static ngoy.core.Util.escapeHtmlXml;
 
 import java.lang.reflect.Array;
 import java.util.AbstractList;
@@ -94,7 +94,7 @@ public class Ctx {
 
 	public void pe(@Nullable Object obj) {
 		if (obj != null) {
-			out.write(escape(obj.toString()));
+			out.write(escapeHtmlXml(obj.toString()));
 		}
 	}
 

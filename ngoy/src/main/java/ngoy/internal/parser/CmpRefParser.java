@@ -38,7 +38,7 @@ public class CmpRefParser {
 		this.parser = parser;
 	}
 
-	void acceptCmpRefs(Jerry el, List<CmpRef> cmpRefs) {
+	void acceptCmpRefs(Jerry el, List<CmpRef> cmpRefs, String sourcePosition) {
 
 		List<String[]> classNames = getClassList(el).stream()
 				.map(it -> new String[] { it, "" })
@@ -55,8 +55,8 @@ public class CmpRefParser {
 				parser.cmpElements.add(el);
 			} else {
 				parser.handler.elementHead(getNodeName(el));
-				AttributeBinding.replaceAttrs(parser, el, emptySet(), classNames, attrNames, styleNames);
-				AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
+				AttributeBinding.replaceAttrs(parser, el, emptySet(), classNames, attrNames, styleNames, sourcePosition);
+				AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames, sourcePosition);
 				parser.handler.elementHeadEnd();
 			}
 			return;
@@ -76,8 +76,8 @@ public class CmpRefParser {
 
 		if (!allDirs.isEmpty()) {
 			parser.handler.elementHead(getNodeName(el));
-			AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames);
-			AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
+			AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames, sourcePosition);
+			AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames, sourcePosition);
 			hadElementHead = true;
 
 			int i = 0;
@@ -88,8 +88,8 @@ public class CmpRefParser {
 				List<String[]> cNames = new ArrayList<>();
 				List<String[]> aNames = new ArrayList<>();
 				List<String[]> sNames = new ArrayList<>();
-				AttributeBinding.addHostAttributeBindings(parser, ref.clazz, excludeBindings, cNames, aNames, sNames);
-				AttributeBinding.replaceAttrExpr(parser, cNames, aNames, sNames);
+				AttributeBinding.addHostAttributeBindings(parser, ref.clazz, excludeBindings, cNames, aNames, sNames, sourcePosition);
+				AttributeBinding.replaceAttrExpr(parser, cNames, aNames, sNames, sourcePosition);
 				parser.handler.componentEnd();
 				i++;
 			}
@@ -109,8 +109,8 @@ public class CmpRefParser {
 			} else {
 				if (!hadElementHead) {
 					parser.handler.elementHead(getNodeName(el));
-					AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames);
-					AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
+					AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames, sourcePosition);
+					AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames, sourcePosition);
 				}
 
 				parser.handler.componentStart(ref);
@@ -118,8 +118,8 @@ public class CmpRefParser {
 				List<String[]> cNames = new ArrayList<>();
 				List<String[]> aNames = new ArrayList<>();
 				List<String[]> sNames = new ArrayList<>();
-				AttributeBinding.addHostAttributeBindings(parser, ref.clazz, excludeBindings, cNames, aNames, sNames);
-				AttributeBinding.replaceAttrExpr(parser, cNames, aNames, sNames);
+				AttributeBinding.addHostAttributeBindings(parser, ref.clazz, excludeBindings, cNames, aNames, sNames, sourcePosition);
+				AttributeBinding.replaceAttrExpr(parser, cNames, aNames, sNames, sourcePosition);
 				parser.handler.elementHeadEnd();
 			}
 
