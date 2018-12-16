@@ -74,6 +74,7 @@ public class Parser {
 				break;
 			case ELEMENT:
 				currentEl = node;
+				handler.setSourcePosition(exceptionInfo("", false));
 				replaceElement(node);
 				break;
 			default:
@@ -216,7 +217,7 @@ public class Parser {
 			return;
 		}
 
-		cmpRefParser.acceptCmpRefs(el, cmpRefs, exceptionInfo("", false));
+		cmpRefParser.acceptCmpRefs(el, cmpRefs);
 
 		if (isSet(handler.textOverrideExpr)) {
 			skipSubTreeVisitor.skipSubTree(el);
@@ -278,9 +279,9 @@ public class Parser {
 
 		boolean escapeText = insideScriptOrStyle == 0;
 		if (templateIsExpression) {
-			handler.text(ExprParser.convertPipesToTransformCalls(text, resolver), true, escapeText, exceptionInfo("", false));
+			handler.text(ExprParser.convertPipesToTransformCalls(text, resolver), true, escapeText);
 		} else {
-			ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText, exceptionInfo("", false)));
+			ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText));
 		}
 	}
 
@@ -394,7 +395,7 @@ public class Parser {
 				|| nodeType == NodeType.COMMENT //
 				|| nodeType == NodeType.CDATA //
 				|| nodeType == NodeType.XML_DECLARATION) {
-			handler.text(n.getHtml(), false, false, exceptionInfo("", false));
+			handler.text(n.getHtml(), false, false);
 		}
 	}
 }

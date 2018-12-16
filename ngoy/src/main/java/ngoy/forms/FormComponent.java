@@ -21,7 +21,7 @@ import ngoy.core.NgoyException;
 import ngoy.core.OnInit;
 import ngoy.core.Util;
 
-@Component(selector = "form", template = "<ng-content></ng-content><input *ngFor=\"let input of formInputs\" type=\"hidden\" [name]=\"input.key\" [value]=\"input.value\">")
+@Component(selector = "form", template = "<ng-content></ng-content><input *ngFor=\"let input of formInputs\" type=\"hidden\" [name]=\"input.getKey()\" [value]=\"input.getValue()\">")
 public class FormComponent implements OnInit {
 
 	@Input

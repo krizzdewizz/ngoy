@@ -19,8 +19,7 @@ public class AttributeBinding {
 	private static final String BINDING_TEXT = "ngText";
 	private static final String BINDING_STYLE = "style.";
 
-	static void addAttributeBinding(Parser parser, String name, String expr, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames, List<String[]> targetStyleNames,
-			String sourcePosition) {
+	static void addAttributeBinding(Parser parser, String name, String expr, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames, List<String[]> targetStyleNames) {
 
 		String rawName = name.substring(1, name.length() - 1);
 
@@ -46,12 +45,11 @@ public class AttributeBinding {
 		} else if (rawName.equals(BINDING_TEXT)) {
 			parser.handler.textOverride(expr);
 		} else {
-			parser.handler.attributeExpr(rawName, expr, sourcePosition);
+			parser.handler.attributeExpr(rawName, expr);
 		}
 	}
 
-	static void replaceAttrs(Parser parser, Jerry el, Set<String> excludeBindings, List<String[]> targetClassNames, List<String[]> targetAttrNames, List<String[]> targetStyleNames,
-			String sourcePosition) {
+	static void replaceAttrs(Parser parser, Jerry el, Set<String> excludeBindings, List<String[]> targetClassNames, List<String[]> targetAttrNames, List<String[]> targetStyleNames) {
 		for (Attribute attr : getAttributes(el)) {
 			String name = attr.getName();
 			if (name.equals("class") || name.equals("style") || name.startsWith("*")) {
@@ -62,7 +60,7 @@ public class AttributeBinding {
 				if (!name.endsWith("]")) {
 					throw new ParseException("Attribute binding malformed: missing ].", el);
 				}
-				addAttributeBinding(parser, name, attr.getValue(), excludeBindings, targetClassNames, targetAttrNames, targetStyleNames, sourcePosition);
+				addAttributeBinding(parser, name, attr.getValue(), excludeBindings, targetClassNames, targetAttrNames, targetStyleNames);
 			} else if (!excludeBindings.contains(name)) {
 				boolean hasValue = attr.getValue() != null;
 				parser.handler.attributeStart(name, hasValue);
@@ -74,15 +72,14 @@ public class AttributeBinding {
 		}
 	}
 
-	static void addHostAttributeBindings(Parser parser, Class<?> cmpClass, Set<String> excludeBindings, List<String[]> classNames, List<String[]> attrNames, List<String[]> styleNames,
-			String sourcePosition) {
+	static void addHostAttributeBindings(Parser parser, Class<?> cmpClass, Set<String> excludeBindings, List<String[]> classNames, List<String[]> attrNames, List<String[]> styleNames) {
 		for (Field f : cmpClass.getFields()) {
 			HostBinding hb = f.getAnnotation(HostBinding.class);
 			if (hb == null) {
 				continue;
 			}
 
-			addAttributeBinding(parser, format("[%s]", hb.value()), f.getName(), excludeBindings, classNames, attrNames, styleNames, sourcePosition);
+			addAttributeBinding(parser, format("[%s]", hb.value()), f.getName(), excludeBindings, classNames, attrNames, styleNames);
 		}
 
 		for (Method m : cmpClass.getMethods()) {
@@ -95,21 +92,21 @@ public class AttributeBinding {
 				throw new ParseException("Host binding method must not have parameters: %s.%s", cmpClass.getName(), m.getName());
 			}
 
-			addAttributeBinding(parser, format("[%s]", hb.value()), format("%s()", m.getName()), excludeBindings, classNames, attrNames, styleNames, sourcePosition);
+			addAttributeBinding(parser, format("[%s]", hb.value()), format("%s()", m.getName()), excludeBindings, classNames, attrNames, styleNames);
 		}
 	}
 
-	static void replaceAttrExpr(Parser parser, List<String[]> classNames, List<String[]> attrNames, List<String[]> styleNames, String sourcePosition) {
+	static void replaceAttrExpr(Parser parser, List<String[]> classNames, List<String[]> attrNames, List<String[]> styleNames) {
 		if (!classNames.isEmpty()) {
-			parser.handler.attributeClasses(classNames, sourcePosition);
+			parser.handler.attributeClasses(classNames);
 		}
 
 		if (!styleNames.isEmpty()) {
-			parser.handler.attributeStyles(styleNames, sourcePosition);
+			parser.handler.attributeStyles(styleNames);
 		}
 
 		if (!attrNames.isEmpty()) {
-			attrNames.forEach(it -> parser.handler.attributeExpr(it[0], it[1], sourcePosition));
+			attrNames.forEach(it -> parser.handler.attributeExpr(it[0], it[1]));
 		}
 	}
 }

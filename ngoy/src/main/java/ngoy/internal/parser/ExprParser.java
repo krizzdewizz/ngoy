@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Atom;
@@ -64,7 +65,8 @@ public class ExprParser {
 			unparser.close();
 
 			return sw.toString();
-
+		} catch (CompileException e) {
+			throw new NgoyException("Compile error: %s", e);
 		} catch (Exception e) {
 			throw NgoyException.wrap(e);
 		}

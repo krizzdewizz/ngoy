@@ -26,7 +26,7 @@ public final class Debug {
 			Path tempFile = File.createTempFile("ngoy-template", ".java")
 					.toPath();
 
-//			tempFile = Paths.get("d:/downloads/qbert.java");
+//			tempFile = new File("d:/downloads/qbert.java").toPath();
 
 			System.out.println(format("ngoy.debug: template has been written to %s", tempFile));
 			Files.write(tempFile, code.getBytes(StandardCharsets.UTF_8));

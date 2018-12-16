@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import ngoy.core.Injector;
@@ -69,6 +70,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private static final String STRINGS = "$STRINGS$";
 
+	private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\r|\\n");
+
 	private static class CmpVar {
 		private String name;
 		private Class<?> cmpClass;
@@ -99,6 +102,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private String stringsVar;
 	private String stringsLocalVar;
 
+	private String sourcePosition;
+
 	public JavaTemplate(String contentType, boolean bodyOnly, Map<String, Variable<?>> variables) {
 		super(new Printer());
 		this.bodyOnly = bodyOnly;
@@ -128,6 +133,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		$("public static ", TemplateRender.class, " createRenderer(", Injector.class, " injector) { return new Renderer(injector); }");
 
+		addApiHelpers();
+
 		$("private static class Renderer implements ", TemplateRender.class, "{");
 
 		addPipeMethods(pipes);
@@ -136,12 +143,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		setPipes(pipes);
 		$("}");
 
-		addApiHelpers();
-
 		$("private static final String[] ", stringsVar, "= new String[]{", STRINGS, "};");
 
 		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws Exception {");
-		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
+		$("String[] ", stringsLocalVar, "=", stringsVar, ";");
 		addVariables();
 
 		textOverrideVar = createLocalVar("textOverride");
@@ -217,12 +222,12 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
-	public void text(String text, boolean textIsExpr, boolean escape, String sourcePosition) {
+	public void text(String text, boolean textIsExpr, boolean escape) {
 		if (text.isEmpty()) {
 			return;
 		}
 		if (textIsExpr) {
-			printExprComment(text, sourcePosition);
+			printExprComment(text);
 			printOutExpr(prefixName(text, cmpVars.peek().name));
 		} else {
 			if (escape) {
@@ -258,6 +263,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	@Override
 	public void textOverride(String expr) {
+		printExprComment(expr);
 		$(textOverrideVar, "=(String)", prefixName(expr, cmpVars.peek().name), ";");
 		hadTextOverride = true;
 	}
@@ -277,13 +283,13 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
-	public void attributeClasses(List<String[]> classExprPairs, String sourcePosition) {
-		attributeEval("class", false, classExprPairs, sourcePosition);
+	public void attributeClasses(List<String[]> classExprPairs) {
+		attributeEval("class", false, classExprPairs);
 	}
 
 	@Override
-	public void attributeStyles(List<String[]> styleExprPairs, String sourcePosition) {
-		attributeEval("style", true, styleExprPairs, sourcePosition);
+	public void attributeStyles(List<String[]> styleExprPairs) {
+		attributeEval("style", true, styleExprPairs);
 	}
 
 	@Override
@@ -295,10 +301,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	@Override
-	public void attributeExpr(String name, String expr, String sourcePosition) {
+	public void attributeExpr(String name, String expr) {
 		flushOut();
 		String evalResultVar = createLocalVar("attrExpr");
-		printExprComment(expr, sourcePosition);
+		printExprComment(expr);
 		$("Object ", evalResultVar, "=", prefixName(expr, cmpVars.peek().name), ";");
 
 		$("if (", evalResultVar, " != null) {");
@@ -344,7 +350,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String switchVar;
 		if (Util.isSet(switchFirstCase)) {
 			switchVar = createLocalVar("switchVar");
+			printExprComment(expr);
 			$("Object ", switchVar, "=", prefixName(expr, cmpVars.peek().name), ";");
+			printExprComment(switchFirstCase);
 			$("if (java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase, cmpVars.peek().name), ")) {");
 			switchHadElseIf.push(true);
 		} else {
@@ -371,6 +379,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 				switchHadElseIf.push(true);
 			}
 
+			printExprComment(expr);
 			$("if (java.util.Objects.equals(", switchVar, ", ", prefixName(expr, cmpVars.peek().name), ")) {");
 		}
 	}
@@ -430,6 +439,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		String iterVar = createLocalVar("iter");
 		String iterClass = format("%s.%s", IterableWithVariables.class.getName(), "Iter");
+		printExprComment(listName);
 		$("for (", iterClass, " ", iterVar, "=", CTX_VAR, ".forOfStart(", prefixName(listName, cmpVar.name), ").iterator(); ", iterVar, ".hasNext();) {");
 		$(itemType, " ", itemName, "=(", itemType, ")", iterVar, ".next();");
 
@@ -452,9 +462,16 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			if (genericType instanceof ParameterizedType) {
 				ParameterizedType pt = (ParameterizedType) genericType;
 				itemType = pt.getActualTypeArguments()[0].getTypeName();
+
+				itemType = fixGenericTypeName(itemType);
 			}
 		}
 		return itemType;
+	}
+
+	private String fixGenericTypeName(String itemType) {
+		// see GenericTypeWrongTest
+		return itemType.replace("java.util.Map.java.util.Map", "java.util.Map");
 	}
 
 	private void flushOut() {
@@ -465,9 +482,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		out.print(s, true, false);
 	}
 
-	private void printExprComment(String s, String sourcePosition) {
+	private void printExprComment(String expr) {
 		out.flush();
-		$(EXPR_COMMENT_TAG, sourcePosition, ":::", s.replaceAll("\\s", ""));
+		$(EXPR_COMMENT_TAG, sourcePosition, ":::", NEWLINE_PATTERN.matcher(expr)
+				.replaceAll(""));
 	}
 
 	private void printOut(Object... s) {
@@ -481,6 +499,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private void ifExprIsTrue(String expr) {
 		flushOut();
+		printExprComment(expr);
 		$("if (", prefixName(expr, cmpVars.peek().name), ") {");
 	}
 
@@ -536,7 +555,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		return new String[] { style, unit };
 	}
 
-	private void attributeEval(String attrName, boolean forStyles, List<String[]> exprPairs, String sourcePosition) {
+	private void attributeEval(String attrName, boolean forStyles, List<String[]> exprPairs) {
 		String delimiter = forStyles ? ";" : " ";
 		String listVar = createLocalVar(format("%slist", forStyles ? "style" : "class"));
 		$(StringBuilder.class, " ", listVar, "=new ", StringBuilder.class, "();");
@@ -572,7 +591,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						clazz = classAndUnit[0];
 
 						String exVar = createLocalVar("expr");
-						printExprComment(ex, sourcePosition);
+						printExprComment(ex);
 						$("Object ", exVar, "=", ex, ";");
 						$("if (", exVar, " != null && !", exVar, ".toString().isEmpty()) {");
 
@@ -600,7 +619,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						$("  }");
 						$("}");
 					} else {
-						printExprComment(ex, sourcePosition);
+						printExprComment(ex);
 						$("if (", ex, ") {");
 
 						$("if (", listVar, ".length() > 0) {");
@@ -628,6 +647,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			InputType inputType = input.type;
 			ValueType inputValueType = input.valueType;
 
+			printExprComment(input.value);
 			String value = inputValueType == ValueType.EXPR ? prefixName(input.value, cmpVars.get(1).name) : format("\"%s\"", Util.escapeJava(input.value));
 			switch (inputType) {
 			case FIELD:
@@ -640,5 +660,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 				throw new NgoyException("Unknown input type: %s", inputType);
 			}
 		}
+	}
+
+	@Override
+	public void setSourcePosition(String sourcePosition) {
+		this.sourcePosition = sourcePosition;
 	}
 }

@@ -15,17 +15,17 @@ public interface ParserHandler {
 
 	void attributeStart(String name, boolean hasValue);
 
-	void attributeClasses(List<String[]> classExprPairs, String sourcePosition);
+	void attributeClasses(List<String[]> classExprPairs);
 
-	void attributeStyles(List<String[]> styleExprPairs, String sourcePosition);
+	void attributeStyles(List<String[]> styleExprPairs);
 
-	void attributeExpr(String name, String expr, String sourcePosition);
+	void attributeExpr(String name, String expr);
 
 	void attributeEnd();
 
 	void elementHeadEnd();
 
-	void text(String text, boolean textIsExpr, boolean escape, String sourcePosition);
+	void text(String text, boolean textIsExpr, boolean escape);
 
 	void elementEnd(String name);
 
@@ -53,6 +53,8 @@ public interface ParserHandler {
 
 	void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params);
 
+	void setSourcePosition(String sourcePosition);
+
 	class Default implements ParserHandler {
 
 		@Override
@@ -72,11 +74,11 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void attributeClasses(List<String[]> classExprPairs, String sourcePosition) {
+		public void attributeClasses(List<String[]> classExprPairs) {
 		}
 
 		@Override
-		public void attributeExpr(String name, String expr, String sourcePosition) {
+		public void attributeExpr(String name, String expr) {
 		}
 
 		@Override
@@ -88,7 +90,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void text(String text, boolean textIsExpr, boolean escape, String sourcePosition) {
+		public void text(String text, boolean textIsExpr, boolean escape) {
 		}
 
 		@Override
@@ -140,11 +142,15 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void attributeStyles(List<String[]> styleExprPairs, String sourcePosition) {
+		public void attributeStyles(List<String[]> styleExprPairs) {
 		}
 
 		@Override
 		public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
+		}
+
+		@Override
+		public void setSourcePosition(String sourcePosition) {
 		}
 	}
 
@@ -171,12 +177,12 @@ public interface ParserHandler {
 			target.attributeStart(name, hasValue);
 		}
 
-		public void attributeClasses(List<String[]> classExprPairs, String sourcePosition) {
-			target.attributeClasses(classExprPairs, sourcePosition);
+		public void attributeClasses(List<String[]> classExprPairs) {
+			target.attributeClasses(classExprPairs);
 		}
 
-		public void attributeExpr(String name, String expr, String sourcePosition) {
-			target.attributeExpr(name, expr, sourcePosition);
+		public void attributeExpr(String name, String expr) {
+			target.attributeExpr(name, expr);
 		}
 
 		public void attributeEnd() {
@@ -187,8 +193,8 @@ public interface ParserHandler {
 			target.elementHeadEnd();
 		}
 
-		public void text(String text, boolean textIsExpr, boolean escape, String sourcePosition) {
-			target.text(text, textIsExpr, escape, sourcePosition);
+		public void text(String text, boolean textIsExpr, boolean escape) {
+			target.text(text, textIsExpr, escape);
 		}
 
 		public void elementEnd(String name) {
@@ -246,8 +252,13 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void attributeStyles(List<String[]> styleExprPairs, String sourcePosition) {
-			target.attributeStyles(styleExprPairs, sourcePosition);
+		public void attributeStyles(List<String[]> styleExprPairs) {
+			target.attributeStyles(styleExprPairs);
+		}
+
+		@Override
+		public void setSourcePosition(String sourcePosition) {
+			target.setSourcePosition(sourcePosition);
 		}
 	}
 }
