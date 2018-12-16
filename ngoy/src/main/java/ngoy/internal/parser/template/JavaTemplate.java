@@ -90,6 +90,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final LinkedList<String> switchVars = new LinkedList<>();
 	private final LinkedList<Boolean> switchHadElseIf = new LinkedList<>();
 	private final LinkedList<CmpVar> cmpVars = new LinkedList<>();
+	private final LinkedList<Map<String, Class<?>>> localVarDefs = new LinkedList<>();
 	private final LinkedList<Set<String>> prefixExcludes = new LinkedList<>();
 	private final Set<String> pipeNames = new HashSet<>();
 	private final Map<String, Integer> localVars = new HashMap<>();
@@ -249,7 +250,12 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			excludes.addAll(more);
 		}
 
-		return ExprParser.prefixName(expr, prefix, excludes);
+		Map<String, Class<?>> vars = new HashMap<>();
+		for (Map<String, Class<?>> it : localVarDefs) {
+			vars.putAll(it);
+		}
+
+		return ExprParser.prefixName(cmpVars.peek().cmpClass, vars, expr, prefix, excludes);
 	}
 
 	@Override
@@ -404,6 +410,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("}");
 
 		prefixExcludes.pop();
+		localVarDefs.pop();
 	}
 
 	public void elementRepeatedStart(String[] itemAndListName, Map<ForOfVariable, String> variables) {
@@ -413,7 +420,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String itemName = itemAndListName[0];
 		String listName = itemAndListName[1];
 
-		String itemType = "Object";
+		Class<?> itemType = Object.class;
 		CmpVar cmpVar = cmpVars.peek();
 		boolean found = false;
 		for (Field f : cmpVar.cmpClass.getFields()) {
@@ -427,8 +434,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 
 		if (!found) {
+			String getter = Util.toGetter(listName);
 			for (Method m : cmpVar.cmpClass.getMethods()) {
-				if (format("%s()", m.getName()).equals(listName)) {
+				if (m.getName()
+						.equals(getter) || format("%s()", m.getName()).equals(listName)) {
 					itemType = getItemType(m.getGenericReturnType(), m.getReturnType());
 					break;
 				}
@@ -451,19 +460,25 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 
 		prefixExcludes.push(ex);
+
+		Map<String, Class<?>> iterVarDef = new HashMap<>();
+		iterVarDef.put(itemName, itemType);
+		localVarDefs.push(iterVarDef);
 	}
 
-	private String getItemType(Type genericType, Class<?> type) {
-		String itemType = "Object";
+	private Class<?> getItemType(Type genericType, Class<?> type) {
+		Class<?> itemType = Object.class;
 		if (type.isArray()) {
-			itemType = type.getComponentType()
-					.getName();
+			itemType = type.getComponentType();
 		} else if (Collection.class.isAssignableFrom(type)) {
 			if (genericType instanceof ParameterizedType) {
-				ParameterizedType pt = (ParameterizedType) genericType;
-				itemType = pt.getActualTypeArguments()[0].getTypeName();
-
-				itemType = fixGenericTypeName(itemType);
+				String pt = ((ParameterizedType) genericType).getActualTypeArguments()[0].getTypeName();
+				try {
+					itemType = getClass().getClassLoader()
+							.loadClass(fixGenericTypeName(pt));
+				} catch (ClassNotFoundException e) {
+					throw NgoyException.wrap(e);
+				}
 			}
 		}
 		return itemType;

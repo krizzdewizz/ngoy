@@ -209,4 +209,10 @@ public class Util {
 
 		return message;
 	}
+
+	public static String toGetter(String name) {
+		return "get" + name.substring(0, 1)
+				.toUpperCase() + name.substring(1);
+	}
+
 }

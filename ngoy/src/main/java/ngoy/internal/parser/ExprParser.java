@@ -3,6 +3,7 @@ package ngoy.internal.parser;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
+import static ngoy.internal.parser.FieldAccessToGetterParser.fieldAccessToGetter;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -10,6 +11,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -52,8 +54,10 @@ public class ExprParser {
 		return s.replace(OR_ESCAPE, "||");
 	}
 
-	public static String prefixName(String expr, String prefix, Set<String> excludes) {
+	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes) {
 		try {
+			expr = fieldAccessToGetter(clazz, prefixes, expr);
+
 			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
 			Atom atom = parser.parseExpression();
 
