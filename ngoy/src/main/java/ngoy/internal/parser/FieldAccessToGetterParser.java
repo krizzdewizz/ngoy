@@ -251,11 +251,15 @@ public final class FieldAccessToGetterParser {
 		@Nullable
 		private Method findMethod(Class<?> c, String methodName, int nArgs) {
 			return Stream.of(c.getMethods())
-					.filter(it -> it.getName()
-							.equals(methodName) && it.getParameterCount() == nArgs)
+					.filter(meth -> {
+						int mods = meth.getModifiers();
+						return meth.getName()
+								.equals(methodName) && meth.getParameterCount() == nArgs && Modifier.isPublic(mods) && !Modifier.isStatic(mods);
+					})
 					.findFirst()
 					.orElse(null);
 		}
+
 	}
 
 	private FieldAccessToGetterParser() {
