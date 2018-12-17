@@ -5,11 +5,6 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.Util.getLine;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -29,9 +24,11 @@ import ngoy.core.Util;
 import ngoy.core.Variable;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.Ctx;
-import ngoy.core.internal.IterableWithVariables;
+import ngoy.core.internal.IteratorWithVariables;
 import ngoy.core.internal.TemplateRender;
 import ngoy.internal.parser.ExprParser;
+import ngoy.internal.parser.FieldAccessToGetterParser.ClassDef;
+import ngoy.internal.parser.FieldAccessToGetterParser.ListItemDef;
 import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.Inputs.CmpInput;
 import ngoy.internal.parser.Inputs.InputType;
@@ -240,6 +237,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private String prefixName(String expr, String prefix) {
+		return prefixName(expr, prefix, null);
+	}
+
+	private String prefixName(String expr, String prefix, ClassDef[] outLastClassDef) {
 		Set<String> excludes = new HashSet<>(pipeNames);
 		excludes.addAll(variables.keySet());
 		excludes.add("java");
@@ -255,7 +256,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			vars.putAll(it);
 		}
 
-		return ExprParser.prefixName(cmpVars.peek().cmpClass, vars, expr, prefix, excludes);
+		return ExprParser.prefixName(cmpVars.peek().cmpClass, vars, expr, prefix, excludes, variables, outLastClassDef);
 	}
 
 	@Override
@@ -420,37 +421,26 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String itemName = itemAndListName[0];
 		String listName = itemAndListName[1];
 
-		Class<?> itemType = Object.class;
-		CmpVar cmpVar = cmpVars.peek();
-		boolean found = false;
-		for (Field f : cmpVar.cmpClass.getFields()) {
-			if (f.getName()
-					.equals(listName)) {
-				Class<?> type = f.getType();
-				itemType = getItemType(f.getGenericType(), type);
-				found = true;
-				break;
-			}
+		ClassDef[] outLastClassDef = new ClassDef[1];
+		listName = prefixName(listName, "", outLastClassDef);
+
+		ClassDef listClass = outLastClassDef[0];
+		if (!listClass.valid()) {
+			throw new NgoyException("'%s' is not iterable. Must be an instance of %s or an array", listName, Iterable.class.getName());
 		}
 
-		if (!found) {
-			String getter = Util.toGetter(listName);
-			for (Method m : cmpVar.cmpClass.getMethods()) {
-				if (m.getName()
-						.equals(getter) || format("%s()", m.getName()).equals(listName)) {
-					itemType = getItemType(m.getGenericReturnType(), m.getReturnType());
-					break;
-				}
-			}
-		}
+		ListItemDef itemDef = listClass.getListItemType(listClass);
 
 		Set<String> ex = new HashSet<>(asList(itemName));
 
+		CmpVar cmpVar = cmpVars.peek();
+
+		String itemClazz = Util.primitiveToRefType(itemDef.clazz);
+
 		String iterVar = createLocalVar("iter");
-		String iterClass = format("%s.%s", IterableWithVariables.class.getName(), "Iter");
 		printExprComment(listName);
-		$("for (", iterClass, " ", iterVar, "=", CTX_VAR, ".forOfStart(", prefixName(listName, cmpVar.name), ").iterator(); ", iterVar, ".hasNext();) {");
-		$(itemType, " ", itemName, "=(", itemType, ")", iterVar, ".next();");
+		$("for (", IteratorWithVariables.class, " ", iterVar, "= new ", IteratorWithVariables.class, "(", prefixName(listName, cmpVar.name), "); ", iterVar, ".hasNext();) {");
+		$(itemDef.typeName, " ", itemName, "=(", itemClazz, ")", iterVar, ".next();");
 
 		Set<Entry<ForOfVariable, String>> entries = variables.entrySet();
 		for (Map.Entry<ForOfVariable, String> e : entries) {
@@ -462,31 +452,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		prefixExcludes.push(ex);
 
 		Map<String, Class<?>> iterVarDef = new HashMap<>();
-		iterVarDef.put(itemName, itemType);
+		iterVarDef.put(itemName, itemDef.clazz);
 		localVarDefs.push(iterVarDef);
-	}
-
-	private Class<?> getItemType(Type genericType, Class<?> type) {
-		Class<?> itemType = Object.class;
-		if (type.isArray()) {
-			itemType = type.getComponentType();
-		} else if (Collection.class.isAssignableFrom(type)) {
-			if (genericType instanceof ParameterizedType) {
-				String pt = ((ParameterizedType) genericType).getActualTypeArguments()[0].getTypeName();
-				try {
-					itemType = getClass().getClassLoader()
-							.loadClass(fixGenericTypeName(pt));
-				} catch (ClassNotFoundException e) {
-					throw NgoyException.wrap(e);
-				}
-			}
-		}
-		return itemType;
-	}
-
-	private String fixGenericTypeName(String itemType) {
-		// see GenericTypeWrongTest
-		return itemType.replace("java.util.Map.java.util.Map", "java.util.Map");
 	}
 
 	private void flushOut() {

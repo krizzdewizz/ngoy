@@ -9,10 +9,9 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import ngoy.core.internal.IterableWithVariables.Iter;
 import ngoy.internal.parser.ForOfVariable;
 
-public class IterableWithVariablesTest {
+public class IteratorWithVariablesTest {
 	@Test
 	public void test() {
 
@@ -25,7 +24,7 @@ public class IterableWithVariablesTest {
 		vars.put(ForOfVariable.odd, "oo");
 		vars.put(ForOfVariable.even, "ee");
 
-		Iter iter = new IterableWithVariables(all).iterator();
+		IteratorWithVariables iter = new IteratorWithVariables(all);
 		assertThat(iter.index).isEqualTo(-1);
 		iter.next();
 		assertThat(iter.index).isEqualTo(0);

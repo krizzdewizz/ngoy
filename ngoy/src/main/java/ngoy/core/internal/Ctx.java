@@ -3,8 +3,6 @@ package ngoy.core.internal;
 import static java.util.Arrays.asList;
 import static ngoy.core.Util.escapeHtmlXml;
 
-import java.lang.reflect.Array;
-import java.util.AbstractList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,40 +34,6 @@ public class Ctx {
 
 	private Ctx(@Nullable Injector injector) {
 		this.injector = injector;
-	}
-
-	public IterableWithVariables forOfStart(Object iterable) {
-		return new IterableWithVariables(evalIterable(iterable));
-	}
-
-	@SuppressWarnings({ "rawtypes" })
-	private Iterable evalIterable(Object obj) {
-
-		if (obj == null) {
-			throw new NgoyException("Cannot repeat with a null iterable");
-		}
-
-		if (obj instanceof Iterable) {
-			return (Iterable) obj;
-		}
-
-		if (obj.getClass()
-				.isArray()) {
-			return new AbstractList() {
-				@Override
-				public Object get(int index) {
-					return Array.get(obj, index);
-				}
-
-				@Override
-				public int size() {
-					return Array.getLength(obj);
-				}
-			};
-		}
-
-		throw new NgoyException("Cannot repeat with an iterable of type %s", obj.getClass()
-				.getName());
 	}
 
 	public void cmpDestroy(Object cmp) {

@@ -66,49 +66,49 @@ public class ExprParserTest {
 
 	@Test
 	public void prefixField() throws Exception {
-		String code = ExprParser.prefixName(Void.class, emptyMap(), "name.qbert", "_cmp", emptySet());
+		String code = ExprParser.prefixName(Void.class, emptyMap(), "name.qbert", "_cmp", emptySet(), emptyMap(), null);
 		assertThat(code).isEqualTo("_cmp.name.qbert");
 	}
 
 	@Test
 	public void prefixMethodOnly() throws Exception {
-		String code = ExprParser.prefixName(Void.class, emptyMap(), "getName()", "_cmp", emptySet());
+		String code = ExprParser.prefixName(Void.class, emptyMap(), "getName()", "_cmp", emptySet(), emptyMap(), null);
 		assertThat(code).isEqualTo("_cmp.getName()");
 	}
 
 	@Test
 	public void prefixMethodNested() throws Exception {
-		String code = ExprParser.prefixName(Void.class, emptyMap(), "getName(getX(), getY(getQ()))", "_cmp", emptySet());
+		String code = ExprParser.prefixName(Void.class, emptyMap(), "getName(getX(), getY(getQ()))", "_cmp", emptySet(), emptyMap(), null);
 		assertThat(code).isEqualTo("_cmp.getName(_cmp.getX(), _cmp.getY(_cmp.getQ()))");
 	}
 
 	@Test
 	public void prefixMethodChain() throws Exception {
-		String code = ExprParser.prefixName(Void.class, emptyMap(), "getName().getX()", "_cmp", emptySet());
+		String code = ExprParser.prefixName(Void.class, emptyMap(), "getName().getX()", "_cmp", emptySet(), emptyMap(), null);
 		assertThat(code).isEqualTo("_cmp.getName().getX()");
 	}
 
 	@Test
 	public void prefixMethodQualified() throws Exception {
-		String code = ExprParser.prefixName(Void.class, emptyMap(), "name.qbert.toLowerCase()", "_cmp", emptySet());
+		String code = ExprParser.prefixName(Void.class, emptyMap(), "name.qbert.toLowerCase()", "_cmp", emptySet(), emptyMap(), null);
 		assertThat(code).isEqualTo("_cmp.name.qbert.toLowerCase()");
 	}
 
 	@Test
 	public void prefixMethod() throws Exception {
-		String code = ExprParser.prefixName(Void.class, emptyMap(), "name.qbert.toLowerCase(locale == null ? defaultLocale : locale)", "_cmp", emptySet());
+		String code = ExprParser.prefixName(Void.class, emptyMap(), "name.qbert.toLowerCase(locale == null ? defaultLocale : locale)", "_cmp", emptySet(), emptyMap(), null);
 		assertThat(code).isEqualTo("_cmp.name.qbert.toLowerCase(_cmp.locale == null ? _cmp.defaultLocale : _cmp.locale)");
 	}
 
 	@Test
 	public void prefixExcludes() throws Exception {
-		String code = ExprParser.prefixName(Void.class, emptyMap(), "java.util.Locale.getDefault()", "_cmp", new HashSet<>(asList("java")));
+		String code = ExprParser.prefixName(Void.class, emptyMap(), "java.util.Locale.getDefault()", "_cmp", new HashSet<>(asList("java")), emptyMap(), null);
 		assertThat(code).isEqualTo("java.util.Locale.getDefault()");
 	}
 
 	@Test
 	public void prefixExcludesMethod() throws Exception {
-		String code = ExprParser.prefixName(Void.class, emptyMap(), "$pipe()", "_cmp", new HashSet<>(asList("$pipe")));
+		String code = ExprParser.prefixName(Void.class, emptyMap(), "$pipe()", "_cmp", new HashSet<>(asList("$pipe")), emptyMap(), null);
 		assertThat(code).isEqualTo("$pipe()");
 	}
 }

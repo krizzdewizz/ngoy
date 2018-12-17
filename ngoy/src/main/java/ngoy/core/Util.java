@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.lang.reflect.Method;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -210,9 +212,45 @@ public class Util {
 		return message;
 	}
 
-	public static String toGetter(String name) {
-		return "get" + name.substring(0, 1)
+	public static Method toGetter(String name, Function<String, Method> getters) {
+		String right = name.substring(0, 1)
 				.toUpperCase() + name.substring(1);
+		Method meth;
+		if ((meth = getters.apply("get" + right)) != null) {
+			return meth;
+		}
+		if ((meth = getters.apply("is" + right)) != null) {
+			return meth;
+		}
+
+		return null;
 	}
 
+	public static String primitiveToRefType(Class<?> clazz) {
+		boolean primitive = isPrimitive(clazz);
+		if (!primitive) {
+			return clazz.getName();
+		}
+
+		if (clazz == char.class) {
+			return Character.class.getSimpleName();
+		} else if (clazz == int.class) {
+			return Integer.class.getSimpleName();
+		}
+
+		String clazzName = clazz.getName();
+		return clazzName.substring(0, 1)
+				.toUpperCase() + clazzName.substring(1);
+	}
+
+	public static boolean isPrimitive(Class<?> clazz) {
+		return clazz == boolean.class //
+				|| clazz == byte.class //
+				|| clazz == char.class //
+				|| clazz == short.class //
+				|| clazz == int.class //
+				|| clazz == long.class //
+				|| clazz == float.class //
+				|| clazz == double.class;
+	}
 }

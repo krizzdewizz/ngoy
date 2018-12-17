@@ -30,7 +30,9 @@ import org.codehaus.janino.util.AbstractTraverser;
 
 import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
+import ngoy.core.Variable;
 import ngoy.core.internal.Resolver;
+import ngoy.internal.parser.FieldAccessToGetterParser.ClassDef;
 import ngoy.internal.parser.org.springframework.expression.Expression;
 import ngoy.internal.parser.org.springframework.expression.ExpressionType;
 import ngoy.internal.parser.org.springframework.expression.ParserContext;
@@ -54,9 +56,9 @@ public class ExprParser {
 		return s.replace(OR_ESCAPE, "||");
 	}
 
-	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes) {
+	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes, Map<String, Variable<?>> variables, ClassDef[] outLastClassDef) {
 		try {
-			expr = fieldAccessToGetter(clazz, prefixes, expr);
+			expr = fieldAccessToGetter(clazz, prefixes, expr, variables, outLastClassDef);
 
 			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
 			Atom atom = parser.parseExpression();
@@ -139,7 +141,7 @@ public class ExprParser {
 		}
 
 		private void insertPrefix(String prefix, AmbiguousName ambiguousName) {
-			if (excludes.contains(ambiguousName.identifiers[0])) {
+			if (excludes.contains(ambiguousName.identifiers[0]) || prefix.isEmpty()) {
 				return;
 			}
 			List<String> more = new ArrayList<>(asList(ambiguousName.identifiers));
@@ -157,7 +159,7 @@ public class ExprParser {
 				insertPrefix(prefix, (AmbiguousName) rv);
 			} else if (rv instanceof MethodInvocation) {
 				MethodInvocation mi = (MethodInvocation) rv;
-				if (mi.optionalTarget == null && !excludes.contains(mi.methodName)) {
+				if (mi.optionalTarget == null && !excludes.contains(mi.methodName) && !prefix.isEmpty()) {
 					try {
 						OPTIONAL_TARGET_FIELD.set(mi, new AmbiguousName(Location.NOWHERE, new String[] { prefix }));
 					} catch (Exception e) {

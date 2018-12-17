@@ -30,7 +30,7 @@ public class ForOfTest extends ANgoyTest {
 		personService = TestService.of(asList(new Person("peter"), new Person("paul"), new Person("mary")));
 	}
 
-	@Component(selector = "test", template = "<person *ngFor=\"let it of getPersons(); index as i; first  as f; last as l; even as e; odd as o\" [person]=\"it\" [pi]=\"i\" [pf]=\"f\" [pl]=\"l\" [pe]=\"e\" [po]=\"o\"></person>")
+	@Component(selector = "test", template = "<person *ngFor=\"let it of getPersonsArray(); index as i; first  as f; last as l; even as e; odd as o\" [person]=\"it\" [pi]=\"i\" [pf]=\"f\" [pl]=\"l\" [pe]=\"e\" [po]=\"o\"></person>")
 	@NgModule(declarations = { PersonCmp.class })
 	public static class CmpForOf {
 		@Inject
@@ -39,12 +39,28 @@ public class ForOfTest extends ANgoyTest {
 		public List<Person> getPersons() {
 			return service.value;
 		}
+
+		public Person[] getPersonsArray() {
+			return getPersons().toArray(new Person[0]);
+		}
 	}
 
 	@Test
 	public void testForOf() {
 		assertThat(render(CmpForOf.class, useValue(TestService.class, personService))).isEqualTo(
 				"<person pi=\"0\" pf=\"true\" pl=\"false\" pe=\"true\" po=\"false\">hello: peter</person><person pi=\"1\" pf=\"false\" pl=\"false\" pe=\"false\" po=\"true\">hello: paul</person><person pi=\"2\" pf=\"false\" pl=\"true\" pe=\"true\" po=\"false\">hello: mary</person>");
+	}
+
+	//
+
+	@Component(selector = "test", template = "<b *ngFor=\"let it of numbers\">{{it}}</b>")
+	public static class CmpPrimitive {
+		public double[] numbers = new double[] { 1.1, 1.2 };
+	}
+
+	@Test
+	public void testForOfPrimitive() {
+		assertThat(render(CmpPrimitive.class)).isEqualTo("<b>1.1</b><b>1.2</b>");
 	}
 
 	//
@@ -65,22 +81,5 @@ public class ForOfTest extends ANgoyTest {
 		expectedEx.expect(NgoyException.class);
 		expectedEx.expectMessage(containsString("Cannot repeat with a null iterable"));
 		render(CmpForOfNull.class);
-	}
-
-	//
-
-	@Component(selector = "test", template = "<person *ngFor=\"let it of getPersons()\"></person>")
-	@NgModule(declarations = { PersonCmp.class })
-	public static class CmpForOfNotIterable {
-		public Object getPersons() {
-			return "";
-		}
-	}
-
-	@Test
-	public void testCmpNotIterable() {
-		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Cannot repeat with an iterable of type java.lang.String"));
-		render(CmpForOfNotIterable.class);
 	}
 }

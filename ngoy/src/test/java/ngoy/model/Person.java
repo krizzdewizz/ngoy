@@ -20,4 +20,8 @@ public class Person {
 	public int getAge() {
 		return age;
 	}
+
+	public boolean isTeenager() {
+		return age < 20;
+	}
 }
