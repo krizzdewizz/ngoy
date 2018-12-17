@@ -10,7 +10,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -72,7 +71,7 @@ public final class FieldAccessToGetterParser {
 			if (classDef.clazz.isArray()) {
 				itemType = classDef.clazz.getComponentType();
 				itemTypeName = itemType.getName();
-			} else if (Collection.class.isAssignableFrom(classDef.clazz)) {
+			} else if (Iterable.class.isAssignableFrom(classDef.clazz)) {
 				if (classDef.genericType instanceof ParameterizedType) {
 					String pt = ((ParameterizedType) classDef.genericType).getActualTypeArguments()[0].getTypeName();
 
