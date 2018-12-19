@@ -155,14 +155,14 @@ public final class FieldAccessToGetterParser {
 				}
 			}
 
-			Atom lhs;
+			Atom lhs = fae.lhs;
 			if (cd.needsCast) {
 				Class<?> typeArg = cd.getTypeArgument();
-				Cast cast = new Cast(fae.getLocation(), new ReferenceType(fae.getLocation(), new String[] { typeArg.getName() }, null), (Rvalue) fae.lhs);
-				lhs = new ParenthesizedExpression(fae.getLocation(), cast);
-				cd = ClassDef.of(typeArg);
-			} else {
-				lhs = fae.lhs;
+				if (typeArg != Object.class) {
+					Cast cast = new Cast(fae.getLocation(), new ReferenceType(fae.getLocation(), new String[] { typeArg.getName() }, null), (Rvalue) fae.lhs);
+					lhs = new ParenthesizedExpression(fae.getLocation(), cast);
+					cd = ClassDef.of(typeArg);
+				}
 			}
 
 			try {
@@ -204,7 +204,7 @@ public final class FieldAccessToGetterParser {
 				Class<?> typeArg = cd.getTypeArgument();
 				Method meth = findMethod(typeArg, mi.methodName, mi.arguments.length);
 				if (meth != null) {
-					if (cd.needsCast) {
+					if (cd.needsCast && typeArg != Object.class) {
 						Cast cast = new Cast(mi.getLocation(), new ReferenceType(mi.getLocation(), new String[] { typeArg.getName() }, null), target);
 						target = new ParenthesizedExpression(mi.getLocation(), cast);
 					}

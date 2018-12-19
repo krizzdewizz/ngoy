@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import ngoy.model.Person;
@@ -28,6 +27,10 @@ public class FieldAccessToGetterParser2Test {
 		public Between between;
 
 		public Map<String, Person> personMap;
+
+		public List<?> persons3;
+
+		public List<? extends Person> persons4;
 	}
 
 	@Test
@@ -53,5 +56,15 @@ public class FieldAccessToGetterParser2Test {
 	@Test
 	public void mapValues() {
 		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "personMap.values().next().name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) personMap.values().next()).getName()");
+	}
+
+	@Test
+	public void wildcard() {
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "persons3.get(0).toString()", emptyMap(), null)).isEqualTo("persons3.get(0).toString()");
+	}
+
+	@Test
+	public void wildcard2() {
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "persons4.get(0).name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) persons4.get(0)).getName()");
 	}
 }

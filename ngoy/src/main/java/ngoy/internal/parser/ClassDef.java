@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 
 public class ClassDef {
 	public static ClassDef of(Class<?> clazz) {
@@ -56,7 +57,22 @@ public class ClassDef {
 	}
 
 	public Class<?> getTypeArgument() {
-		return needsCast ? (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[typeParamIndex] : clazz;
+		if (!needsCast) {
+			return clazz;
+		}
+
+		Type type = ((ParameterizedType) genericType).getActualTypeArguments()[typeParamIndex];
+		if (type instanceof Class) {
+			return (Class<?>) type;
+		} else if (type instanceof WildcardType) {
+			WildcardType wct = (WildcardType) type;
+			Type[] upperBounds = wct.getUpperBounds();
+			if (upperBounds.length > 0 && upperBounds[0] instanceof Class) {
+				return (Class<?>) upperBounds[0];
+			}
+
+		}
+		return Object.class;
 	}
 
 	@Override
