@@ -237,4 +237,20 @@ public class Util {
 				|| clazz == float.class //
 				|| clazz == double.class;
 	}
+
+	public static String sourceClassName(Class<?> clazz) {
+		String name = clazz.getName();
+		Class<?> enclosingClass = clazz.getEnclosingClass();
+		while (enclosingClass != null) {
+			String enclosingName = enclosingClass.getName();
+			String right = name.substring(enclosingName.length());
+			if (right.charAt(0) == '$') {
+				right = right.substring(1);
+			}
+			name = format("%s.%s", enclosingName, right);
+			enclosingClass = enclosingClass.getEnclosingClass();
+		}
+
+		return name;
+	}
 }

@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.Util.getLine;
+import static ngoy.core.Util.sourceClassName;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -485,8 +486,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
-		String cmpClass = cmpRef.clazz.getName()
-				.replace('$', '.');
+		String cmpClass = sourceClassName(cmpRef.clazz);
 
 		cmpVar = createLocalVar(cmpRef.clazz.getSimpleName());
 		String cmpCall = appRoot ? "cmp" : "cmpNew";

@@ -1,6 +1,8 @@
 package ngoy.core;
 
 import static java.lang.String.format;
+import static ngoy.core.Util.primitiveToRefType;
+import static ngoy.core.Util.sourceClassName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
@@ -9,6 +11,9 @@ import java.util.Locale;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import ngoy.core.UtilTest.Inner.Sub$Inner;
+import ngoy.core.UtilTest.Inner.SubInner;
 
 public class UtilTest {
 
@@ -45,15 +50,31 @@ public class UtilTest {
 	}
 
 	@Test
-	public void primitiveToRefType() {
-		assertThat(Util.primitiveToRefType(boolean.class)).isEqualTo("Boolean");
-		assertThat(Util.primitiveToRefType(byte.class)).isEqualTo("Byte");
-		assertThat(Util.primitiveToRefType(char.class)).isEqualTo("Character");
-		assertThat(Util.primitiveToRefType(short.class)).isEqualTo("Short");
-		assertThat(Util.primitiveToRefType(int.class)).isEqualTo("Integer");
-		assertThat(Util.primitiveToRefType(long.class)).isEqualTo("Long");
-		assertThat(Util.primitiveToRefType(float.class)).isEqualTo("Float");
-		assertThat(Util.primitiveToRefType(String.class)).isEqualTo(String.class.getName());
-		assertThat(Util.primitiveToRefType(Locale.class)).isEqualTo(Locale.class.getName());
+	public void testPrimitiveToRefType() {
+		assertThat(primitiveToRefType(boolean.class)).isEqualTo("Boolean");
+		assertThat(primitiveToRefType(byte.class)).isEqualTo("Byte");
+		assertThat(primitiveToRefType(char.class)).isEqualTo("Character");
+		assertThat(primitiveToRefType(short.class)).isEqualTo("Short");
+		assertThat(primitiveToRefType(int.class)).isEqualTo("Integer");
+		assertThat(primitiveToRefType(long.class)).isEqualTo("Long");
+		assertThat(primitiveToRefType(float.class)).isEqualTo("Float");
+		assertThat(primitiveToRefType(String.class)).isEqualTo(String.class.getName());
+		assertThat(primitiveToRefType(Locale.class)).isEqualTo(Locale.class.getName());
+	}
+
+	public static class Inner {
+		public class SubInner {
+		}
+
+		public class Sub$Inner {
+		}
+	}
+
+	@Test
+	public void testSourceClassName() {
+		assertThat(sourceClassName(String.class)).isEqualTo("java.lang.String");
+		assertThat(sourceClassName(Inner.class)).isEqualTo("ngoy.core.UtilTest.Inner");
+		assertThat(sourceClassName(SubInner.class)).isEqualTo("ngoy.core.UtilTest.Inner.SubInner");
+		assertThat(sourceClassName(Sub$Inner.class)).isEqualTo("ngoy.core.UtilTest.Inner.Sub$Inner");
 	}
 }

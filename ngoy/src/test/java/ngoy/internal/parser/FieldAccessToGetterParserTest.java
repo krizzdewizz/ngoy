@@ -52,7 +52,7 @@ public class FieldAccessToGetterParserTest {
 
 	@Test
 	public void getX() {
-		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "getBetween().persons.get(0).name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) getBetween().persons.get(0)).getName()");
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "getBetween().persons.get(0).name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) (getBetween().getPersons()).get(0)).getName()");
 	}
 
 	@Test

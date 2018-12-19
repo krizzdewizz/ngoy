@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.getCompileExceptionMessageWithoutLocation;
 import static ngoy.core.Util.isSet;
+import static ngoy.core.Util.sourceClassName;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -147,7 +148,6 @@ public final class FieldAccessToGetterParser {
 		}
 
 		private AtomDef<Lvalue> toGetter(Class<?> clazz, FieldAccessExpression fae) throws CompileException {
-
 			ClassDef cd = ClassDef.of(clazz);
 			Atom target = fae.lhs;
 			if (target != null) {
@@ -160,19 +160,18 @@ public final class FieldAccessToGetterParser {
 				}
 			}
 
-			Atom lhs = fae.lhs;
 			if (cd.needsCast) {
 				Class<?> typeArg = cd.getTypeArgument();
 				if (typeArg != Object.class) {
-					Cast cast = new Cast(fae.getLocation(), new ReferenceType(fae.getLocation(), new String[] { typeArg.getName() }, null), (Rvalue) fae.lhs);
-					lhs = new ParenthesizedExpression(fae.getLocation(), cast);
+					Cast cast = new Cast(fae.getLocation(), new ReferenceType(fae.getLocation(), new String[] { sourceClassName(typeArg) }, null), (Rvalue) target);
+					target = new ParenthesizedExpression(fae.getLocation(), cast);
 					cd = ClassDef.of(typeArg);
 				}
 			}
 
 			try {
 				Field field = cd.clazz.getField(fae.fieldName);
-				return new AtomDef<>(new FieldAccessExpression(fae.getLocation(), lhs, fae.fieldName), ClassDef.of(field));
+				return new AtomDef<>(new FieldAccessExpression(fae.getLocation(), target, fae.fieldName), ClassDef.of(field));
 			} catch (NoSuchFieldException e) {
 				// ignore, try getter
 			}
@@ -180,17 +179,15 @@ public final class FieldAccessToGetterParser {
 			Method getter = findGetter(cd.clazz, fae.fieldName);
 
 			if (getter != null) {
-				MethodInvocation mi = new MethodInvocation(fae.getLocation(), lhs, getter.getName(), new Rvalue[0]);
+				MethodInvocation mi = new MethodInvocation(fae.getLocation(), target, getter.getName(), new Rvalue[0]);
 				return new AtomDef<>(new ParenthesizedExpression(fae.getLocation(), mi), ClassDef.of(getter));
 			} else {
-				return new AtomDef<>(new FieldAccessExpression(fae.getLocation(), lhs, fae.fieldName), cd);
+				return new AtomDef<>(new FieldAccessExpression(fae.getLocation(), target, fae.fieldName), cd);
 			}
 		}
 
 		public AtomDef<MethodInvocation> toGetter(Class<?> clazz, MethodInvocation mi) throws CompileException {
-
 			ClassDef cd = ClassDef.of(clazz);
-
 			Rvalue target = (Rvalue) mi.optionalTarget;
 			if (target != null) {
 				AtomDef<?> ad = toAtomDef(clazz, target);
@@ -207,7 +204,7 @@ public final class FieldAccessToGetterParser {
 				Method meth = findMethod(typeArg, mi.methodName, mi.arguments.length);
 				if (meth != null) {
 					if (cd.needsCast && typeArg != Object.class) {
-						Cast cast = new Cast(mi.getLocation(), new ReferenceType(mi.getLocation(), new String[] { typeArg.getName() }, null), target);
+						Cast cast = new Cast(mi.getLocation(), new ReferenceType(mi.getLocation(), new String[] { sourceClassName(typeArg) }, null), target);
 						target = new ParenthesizedExpression(mi.getLocation(), cast);
 					}
 					cd = ClassDef.of(meth);

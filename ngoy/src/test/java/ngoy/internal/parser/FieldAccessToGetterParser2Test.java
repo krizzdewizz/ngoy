@@ -25,17 +25,21 @@ public class FieldAccessToGetterParser2Test {
 
 		public List<Person> persons2;
 		public Between between;
-
 		public Map<String, Person> personMap;
-
 		public List<?> persons3;
-
 		public List<? extends Person> persons4;
+		public List<Between> betweens;
+		public Map<Between, Person> betweenMap;
+	}
+
+	@Test
+	public void simple() {
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "persons", emptyMap(), null)).isEqualTo("getPersons()");
 	}
 
 	@Test
 	public void getter() {
-		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "persons.get(0).name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) persons.get(0)).getName()");
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "persons.get(0).name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) getPersons().get(0)).getName()");
 	}
 
 	@Test
@@ -66,5 +70,28 @@ public class FieldAccessToGetterParser2Test {
 	@Test
 	public void wildcard2() {
 		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "persons4.get(0).name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) persons4.get(0)).getName()");
+	}
+
+	@Test
+	public void betweens() {
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "betweens.get(0).persons.get(0)", emptyMap(), null))
+				.isEqualTo("((ngoy.internal.parser.FieldAccessToGetterParser2Test.Between) betweens.get(0)).persons.get(0)");
+	}
+
+	@Test
+	public void betweensWithFieldAccess() {
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "betweens.get(0).persons.get(0).name", emptyMap(), null))
+				.isEqualTo("((ngoy.model.Person) ((ngoy.internal.parser.FieldAccessToGetterParser2Test.Between) betweens.get(0)).persons.get(0)).getName()");
+	}
+
+	@Test
+	public void betweenMap() {
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "betweenMap.get('a').name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) betweenMap.get('a')).getName()");
+	}
+
+	@Test
+	public void betweenKeySet() {
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "betweenMap.keySet().iterator().next().persons.get(0).name", emptyMap(), null))
+				.isEqualTo("((ngoy.model.Person) ((ngoy.internal.parser.FieldAccessToGetterParser2Test.Between) betweenMap.keySet().iterator().next()).persons.get(0)).getName()");
 	}
 }
