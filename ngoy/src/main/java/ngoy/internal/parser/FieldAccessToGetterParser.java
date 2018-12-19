@@ -2,6 +2,8 @@ package ngoy.internal.parser;
 
 import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
+import static ngoy.core.Util.getCompileExceptionMessageWithoutLocation;
+import static ngoy.core.Util.isSet;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -16,19 +18,25 @@ import java.util.stream.Stream;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.Java.AmbiguousName;
+import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.Cast;
+import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.FieldAccessExpression;
 import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MethodInvocation;
+import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.ParenthesizedExpression;
+import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.ReferenceType;
 import org.codehaus.janino.Java.Rvalue;
+import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Unparser;
 import org.codehaus.janino.util.DeepCopier;
 
+import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.Variable;
 
@@ -51,7 +59,7 @@ public final class FieldAccessToGetterParser {
 		}
 	}
 
-	private static Atom unwrapParenthesizedExpression(Atom atom) {
+	private static Rvalue unwrapParenthesizedExpression(Rvalue atom) {
 		return atom instanceof ParenthesizedExpression ? ((ParenthesizedExpression) atom).value : atom;
 	}
 
@@ -148,10 +156,7 @@ public final class FieldAccessToGetterParser {
 					target = (Atom) ad.atom;
 					cd = ad.classDef;
 				} else {
-					cd = resolveClass(clazz, target);
-					if (cd == null) {
-						return new AtomDef<>(fae, cd);
-					}
+					return new AtomDef<>(fae, cd);
 				}
 			}
 
@@ -193,10 +198,7 @@ public final class FieldAccessToGetterParser {
 					target = (Rvalue) ad.atom;
 					cd = ad.classDef;
 				} else {
-					cd = resolveClass(clazz, target);
-					if (cd == null) {
-						return new AtomDef<>(mi, cd);
-					}
+					return new AtomDef<>(mi, cd);
 				}
 
 				setTypeParamIndex(cd, target instanceof MethodInvocation ? (MethodInvocation) target : mi);
@@ -218,54 +220,6 @@ public final class FieldAccessToGetterParser {
 			}
 
 			return new AtomDef<>(new MethodInvocation(mi.getLocation(), target, mi.methodName, copyRvalues(mi.arguments)), cd);
-		}
-
-		private ClassDef resolveClass(Class<?> clazz, Atom atom) {
-
-			atom = unwrapParenthesizedExpression(atom);
-
-			if (atom instanceof MethodInvocation) {
-				MethodInvocation mi = (MethodInvocation) atom;
-				if (mi.optionalTarget == null) {
-					Method meth = findMethod(clazz, mi.methodName, mi.arguments.length);
-					if (meth != null) {
-						return ClassDef.of(meth);
-					} else {
-						return null;
-					}
-				}
-
-				ClassDef cd = resolveClass(clazz, mi.optionalTarget);
-				if (cd == null) {
-					return null;
-				}
-
-				Method meth = findMethod(cd.clazz, mi.methodName, mi.arguments.length);
-				if (meth != null) {
-					return ClassDef.of(meth);
-				}
-			} else if (atom instanceof FieldAccessExpression) {
-				FieldAccessExpression fae = (FieldAccessExpression) atom;
-				ClassDef cd = resolveClass(clazz, fae.lhs);
-				if (cd == null) {
-					return null;
-				}
-				try {
-					return ClassDef.of(cd.clazz.getField(fae.fieldName));
-				} catch (NoSuchFieldException e) {
-					// ignore, try getter
-				}
-
-				Method getter = findGetter(cd.clazz, fae.fieldName);
-
-				if (getter != null) {
-					return ClassDef.of(getter);
-				}
-
-				return null;
-			}
-
-			return null;
 		}
 
 		private AtomDef<?> toAtomDef(Class<?> clazz, Atom target) throws CompileException {
@@ -306,23 +260,23 @@ public final class FieldAccessToGetterParser {
 		}
 
 		public Lvalue copyAmbiguousName(AmbiguousName subject) throws CompileException {
-			AtomDef<AmbiguousName> getter = toGetter(lastClassDef.clazz, subject);
-			lastClassDef = getter.classDef;
-			return getter.atom;
+			AtomDef<AmbiguousName> an = toGetter(lastClassDef.clazz, subject);
+			lastClassDef = an.classDef;
+			return an.atom;
 		};
 
 		@Override
 		public Rvalue copyMethodInvocation(MethodInvocation subject) throws CompileException {
-			AtomDef<MethodInvocation> getter = toGetter(lastClassDef.clazz, subject);
-			lastClassDef = getter.classDef;
-			return getter.atom;
+			AtomDef<MethodInvocation> mi = toGetter(lastClassDef.clazz, subject);
+			lastClassDef = mi.classDef;
+			return mi.atom;
 		}
 
 		@Override
-		public Lvalue copyFieldAccessExpression(FieldAccessExpression fae) throws CompileException {
-			AtomDef<Lvalue> getter = toGetter(lastClassDef.clazz, fae);
-			lastClassDef = getter.classDef;
-			return getter.atom;
+		public Lvalue copyFieldAccessExpression(FieldAccessExpression subject) throws CompileException {
+			AtomDef<Lvalue> fae = toGetter(lastClassDef.clazz, subject);
+			lastClassDef = fae.classDef;
+			return fae.atom;
 		}
 	}
 
@@ -330,13 +284,37 @@ public final class FieldAccessToGetterParser {
 	}
 
 	public static String fieldAccessToGetter(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, Map<String, Variable<?>> variables, @Nullable ClassDef[] outLastClassDef) {
+		if (!isSet(expr)) {
+			throw new NgoyException("Expression must not be empty");
+		}
+
 		try {
 			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
-			Atom atom = parser.parseExpression();
+			Rvalue rvalue;
+			try {
+				Rvalue[] rvalues = parser.parseExpressionList();
+				if (rvalues.length != 1) {
+					throw new NgoyException("Error while compiling expression '%s'. The expression must be a single rvalue.", expr);
+				}
+				rvalue = rvalues[0];
+
+				if (rvalue instanceof Assignment) {
+					throw new NgoyException("Error while compiling expression '%s'. Assignment is not allowed.", expr);
+				} else if (rvalue instanceof Crement) {
+					throw new NgoyException("Error while compiling expression '%s'. Increment/decrement is not allowed.", expr);
+				} else if (rvalue instanceof ThisReference || rvalue instanceof QualifiedThisReference) {
+					throw new NgoyException("Error while compiling expression '%s'. Reference to 'this' is not allowed.", expr);
+				} else if (rvalue instanceof NewAnonymousClassInstance) {
+					throw new NgoyException("Error while compiling expression '%s'. Anonymous class is not allowed.", expr);
+				}
+
+			} catch (CompileException e) {
+				throw new NgoyException("Error while compiling expression '%s': %s. The expression must be a single rvalue.", expr, getCompileExceptionMessageWithoutLocation(e));
+			}
 
 			ToGetter toGetter = new ToGetter(clazz, prefixes, variables);
 
-			Atom copyAtom = unwrapParenthesizedExpression(toGetter.copyAtom(atom));
+			Rvalue copyAtom = unwrapParenthesizedExpression(toGetter.copyRvalue(rvalue));
 
 			StringWriter sw = new StringWriter();
 			Unparser unparser = new Unparser(sw);
