@@ -23,6 +23,20 @@ public class FieldAccessTest extends ANgoyTest {
 		}
 	}
 
+	@Component(selector = "", template = "hello {{getBetween(1).persons.get(0).getName()}}")
+	public static class ListGetCmp {
+		public Between getBetween(@SuppressWarnings("unused") int i) {
+			return new Between();
+		}
+	}
+
+	@Test
+	public void testListGet() {
+		assertThat(render(ListGetCmp.class)).isEqualTo("hello Paul");
+	}
+
+	//
+
 	@Component(selector = "", template = "hello {{person.name}} <b *ngFor='let p of getBetween(1).persons'>{{p.name}},{{p.teenager}}</b>")
 	public static class TestCmp {
 		private Person person = new Person("Peter", 22);

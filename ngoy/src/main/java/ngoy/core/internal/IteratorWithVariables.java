@@ -8,6 +8,13 @@ import ngoy.core.NgoyException;
 @SuppressWarnings("rawtypes")
 public class IteratorWithVariables implements Iterator {
 
+	private static Iterable checkNonNull(Object obj, Iterable iter) {
+		if (obj == null) {
+			throw new NgoyException("Cannot repeat with a null iterable");
+		}
+		return iter;
+	}
+
 	private final Iterator target;
 
 	public int index;
@@ -18,56 +25,54 @@ public class IteratorWithVariables implements Iterator {
 
 	/* @formatter:off */
 	public IteratorWithVariables(boolean[] arr) {
-		this(new AbstractList() {
+		this(checkNonNull(arr, new AbstractList() {
 			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } });
+			public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(byte[] arr) {
-		this(new AbstractList() {
+		this(checkNonNull(arr,new AbstractList() {
 			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } });
+			public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(char[] arr) {
-		this(new AbstractList() {
+		this(checkNonNull(arr, new AbstractList() {
 			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } });
+			public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(short[] arr) {
-		this(new AbstractList() {
+		this(checkNonNull(arr,new AbstractList() {
 			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } });
+			public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(int[] arr) {
-		this(new AbstractList() {
+		this(checkNonNull(arr,new AbstractList() {
 			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } });
+			public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(long[] arr) {
-		this(new AbstractList() {
+		this(checkNonNull(arr, new AbstractList() {
 			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } });
+			public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(float[] arr) {
-		this(new AbstractList() {
+		this(checkNonNull(arr,new AbstractList() {
 			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } });
+			public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(double[] arr) {
-		this(new AbstractList() {
+		this(checkNonNull(arr,new AbstractList() {
 			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } });
+			public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(Object[] arr) {
-		this(new AbstractList() {
+		this(checkNonNull(arr,new AbstractList() {
 			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } });
+			public int size() { return arr.length; } }));
 	}
 	/* @formatter:on */
 
 	public IteratorWithVariables(Iterable iterable) {
-		if (iterable == null) {
-			throw new NgoyException("Cannot repeat with a null iterable");
-		}
+		checkNonNull(iterable, null);
 		this.target = iterable.iterator();
 		index = -1;
 	}

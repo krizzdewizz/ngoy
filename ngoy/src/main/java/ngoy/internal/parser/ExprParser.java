@@ -32,7 +32,6 @@ import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
 import ngoy.core.Variable;
 import ngoy.core.internal.Resolver;
-import ngoy.internal.parser.FieldAccessToGetterParser.ClassDef;
 import ngoy.internal.parser.org.springframework.expression.Expression;
 import ngoy.internal.parser.org.springframework.expression.ExpressionType;
 import ngoy.internal.parser.org.springframework.expression.ParserContext;

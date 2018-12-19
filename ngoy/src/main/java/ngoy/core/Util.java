@@ -8,8 +8,6 @@ import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.lang.reflect.Method;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -210,20 +208,6 @@ public class Util {
 		}
 
 		return message;
-	}
-
-	public static Method toGetter(String name, Function<String, Method> getters) {
-		String right = name.substring(0, 1)
-				.toUpperCase() + name.substring(1);
-		Method meth;
-		if ((meth = getters.apply("get" + right)) != null) {
-			return meth;
-		}
-		if ((meth = getters.apply("is" + right)) != null) {
-			return meth;
-		}
-
-		return null;
 	}
 
 	public static String primitiveToRefType(Class<?> clazz) {
