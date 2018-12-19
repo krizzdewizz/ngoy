@@ -14,11 +14,13 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.Java.AmbiguousName;
+import org.codehaus.janino.Java.ArrayAccessExpression;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.Cast;
@@ -147,6 +149,30 @@ public final class FieldAccessToGetterParser {
 			return new AtomDef<>(new AmbiguousName(ambiguousName.getLocation(), idsCopy, ambiguousName.n), cd[0]);
 		}
 
+		private AtomDef<?> toGetter(Class<?> clazz, ArrayAccessExpression aae) throws CompileException {
+			ClassDef cd = ClassDef.of(clazz);
+			Atom target = aae.lhs;
+			if (target != null) {
+				AtomDef<?> ad = toAtomDef(clazz, target);
+				if (ad != null) {
+					target = (Atom) ad.atom;
+					cd = ad.classDef;
+				} else {
+					return new AtomDef<>(aae, cd);
+				}
+			}
+
+			boolean mapClass = Map.class.isAssignableFrom(cd.clazz);
+			if (List.class.isAssignableFrom(cd.clazz) || mapClass) {
+				if (mapClass) {
+					cd.typeParamIndex = 1;
+				}
+				return new AtomDef<>(new MethodInvocation(aae.getLocation(), target, "get", new Rvalue[] { aae.index }), cd);
+			}
+
+			return new AtomDef<>(aae, cd);
+		}
+
 		private AtomDef<Lvalue> toGetter(Class<?> clazz, FieldAccessExpression fae) throws CompileException {
 			ClassDef cd = ClassDef.of(clazz);
 			Atom target = fae.lhs;
@@ -227,6 +253,8 @@ public final class FieldAccessToGetterParser {
 				ad = toGetter(clazz, (FieldAccessExpression) target);
 			} else if (target instanceof AmbiguousName) {
 				ad = toGetter(clazz, (AmbiguousName) target);
+			} else if (target instanceof ArrayAccessExpression) {
+				ad = toGetter(clazz, (ArrayAccessExpression) target);
 			}
 			return ad;
 		}
