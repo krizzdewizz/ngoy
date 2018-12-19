@@ -13,7 +13,7 @@ import ngoy.core.LocaleProvider;
 
 public class DatePipeTest extends ANgoyTest {
 
-	@Component(selector = "", template = "{{ java.time.LocalDateTime.of(2018, 10, 28, 12, 44) | date:\"MMMM\" }}")
+	@Component(selector = "", template = "{{ java.time.LocalDateTime.of(2018, 10, 28, 12, 44) | date:'MMMM' }}")
 	public static class DateCmp {
 	}
 

@@ -49,7 +49,7 @@ public class FieldAccessToGetterParser2Test {
 
 	@Test
 	public void arrayIndexForMap() {
-		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "personMap['a'].name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) personMap.get('a')).getName()");
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "personMap['a'].name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) personMap.get(\"a\")).getName()");
 	}
 
 	@Test
@@ -64,7 +64,7 @@ public class FieldAccessToGetterParser2Test {
 
 	@Test
 	public void map() {
-		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "personMap.get('x').name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) personMap.get('x')).getName()");
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "personMap.get('x').name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) personMap.get(\"x\")).getName()");
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class FieldAccessToGetterParser2Test {
 
 	@Test
 	public void betweenMap() {
-		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "betweenMap.get('a').name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) betweenMap.get('a')).getName()");
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "betweenMap.get('a').name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) betweenMap.get(\"a\")).getName()");
 	}
 
 	@Test

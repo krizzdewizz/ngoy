@@ -21,17 +21,18 @@ public enum ForOfVariable {
 	}
 
 	public interface ParseElement {
-		void run(String[] itemAndListName, Map<ForOfVariable, String> variables);
+		void run(ForOfDef forOfDef, Map<ForOfVariable, String> variables);
 	}
 
 	public static boolean parse(Jerry el, ParseElement onParse) {
-		String ngForOf = el.attr("[ngForOf]");
-		if (ngForOf == null) {
+		String listName = el.attr("[ngForOf]");
+		if (listName == null) {
 			return false;
 		}
 
 		Map<ForOfVariable, String> map = new EnumMap<>(ForOfVariable.class);
 		String itemName = null;
+		String itemType = "let";
 		for (Attribute attr : getAttributes(el)) {
 			String name = attr.getName();
 			if (!name.startsWith("let-")) {
@@ -41,6 +42,8 @@ public enum ForOfVariable {
 			String value = attr.getValue();
 			if (value == null) {
 				itemName = varName;
+			} else if (varName.equals("item-type")) {
+				itemType = value;
 			} else {
 				ForOfVariable fv;
 				try {
@@ -52,7 +55,7 @@ public enum ForOfVariable {
 			}
 		}
 
-		onParse.run(new String[] { itemName, ngForOf }, map);
+		onParse.run(new ForOfDef(itemType, itemName, listName), map);
 		return true;
 	}
 }

@@ -210,32 +210,31 @@ public class Util {
 		return message;
 	}
 
-	public static String primitiveToRefType(Class<?> clazz) {
+	public static String primitiveToRefType(String clazz) {
 		boolean primitive = isPrimitive(clazz);
 		if (!primitive) {
-			return clazz.getName();
+			return clazz;
 		}
 
-		if (clazz == char.class) {
+		if ("char".equals(clazz)) {
 			return Character.class.getSimpleName();
-		} else if (clazz == int.class) {
+		} else if ("int".equals(clazz)) {
 			return Integer.class.getSimpleName();
 		}
 
-		String clazzName = clazz.getName();
-		return clazzName.substring(0, 1)
-				.toUpperCase() + clazzName.substring(1);
+		return clazz.substring(0, 1)
+				.toUpperCase() + clazz.substring(1);
 	}
 
-	public static boolean isPrimitive(Class<?> clazz) {
-		return clazz == boolean.class //
-				|| clazz == byte.class //
-				|| clazz == char.class //
-				|| clazz == short.class //
-				|| clazz == int.class //
-				|| clazz == long.class //
-				|| clazz == float.class //
-				|| clazz == double.class;
+	public static boolean isPrimitive(String clazz) {
+		return "boolean".equals(clazz) //
+				|| "byte".equals(clazz) //
+				|| "char".equals(clazz) //
+				|| "short".equals(clazz) //
+				|| "int".equals(clazz) //
+				|| "long".equals(clazz) //
+				|| "float".equals(clazz) //
+				|| "double".equals(clazz);
 	}
 
 	public static String sourceClassName(Class<?> clazz) {
@@ -252,5 +251,28 @@ public class Util {
 		}
 
 		return name;
+	}
+
+	public static String getArrayClass(String type) {
+		switch (type) {
+		case "byte":
+			return "[B";
+		case "boolean":
+			return "[Z";
+		case "char":
+			return "[C";
+		case "short":
+			return "[S";
+		case "int":
+			return "[I";
+		case "long":
+			return "[J";
+		case "float":
+			return "[F";
+		case "double":
+			return "[D";
+		default:
+			return format("[L%s;", type);
+		}
 	}
 }

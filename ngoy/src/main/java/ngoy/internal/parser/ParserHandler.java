@@ -37,7 +37,7 @@ public interface ParserHandler {
 
 	void elementConditionalEnd();
 
-	void elementRepeatedStart(String[] itemAndListName, Map<ForOfVariable, String> variables);
+	void elementRepeatedStart(ForOfDef forOfDef, Map<ForOfVariable, String> variables);
 
 	void elementRepeatedEnd();
 
@@ -114,7 +114,7 @@ public interface ParserHandler {
 		}
 
 		@Override
-		public void elementRepeatedStart(String[] itemAndListName, Map<ForOfVariable, String> variables) {
+		public void elementRepeatedStart(ForOfDef forOfDef, Map<ForOfVariable, String> variables) {
 		}
 
 		@Override
@@ -218,8 +218,8 @@ public interface ParserHandler {
 			target.elementConditionalEnd();
 		}
 
-		public void elementRepeatedStart(String[] itemAndListName, Map<ForOfVariable, String> variables) {
-			target.elementRepeatedStart(itemAndListName, variables);
+		public void elementRepeatedStart(ForOfDef forOfDef, Map<ForOfVariable, String> variables) {
+			target.elementRepeatedStart(forOfDef, variables);
 		}
 
 		public void elementRepeatedEnd() {

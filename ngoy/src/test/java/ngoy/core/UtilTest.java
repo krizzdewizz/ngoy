@@ -51,15 +51,15 @@ public class UtilTest {
 
 	@Test
 	public void testPrimitiveToRefType() {
-		assertThat(primitiveToRefType(boolean.class)).isEqualTo("Boolean");
-		assertThat(primitiveToRefType(byte.class)).isEqualTo("Byte");
-		assertThat(primitiveToRefType(char.class)).isEqualTo("Character");
-		assertThat(primitiveToRefType(short.class)).isEqualTo("Short");
-		assertThat(primitiveToRefType(int.class)).isEqualTo("Integer");
-		assertThat(primitiveToRefType(long.class)).isEqualTo("Long");
-		assertThat(primitiveToRefType(float.class)).isEqualTo("Float");
-		assertThat(primitiveToRefType(String.class)).isEqualTo(String.class.getName());
-		assertThat(primitiveToRefType(Locale.class)).isEqualTo(Locale.class.getName());
+		assertThat(primitiveToRefType(boolean.class.getName())).isEqualTo("Boolean");
+		assertThat(primitiveToRefType(byte.class.getName())).isEqualTo("Byte");
+		assertThat(primitiveToRefType(char.class.getName())).isEqualTo("Character");
+		assertThat(primitiveToRefType(short.class.getName())).isEqualTo("Short");
+		assertThat(primitiveToRefType(int.class.getName())).isEqualTo("Integer");
+		assertThat(primitiveToRefType(long.class.getName())).isEqualTo("Long");
+		assertThat(primitiveToRefType(float.class.getName())).isEqualTo("Float");
+		assertThat(primitiveToRefType(String.class.getName())).isEqualTo(String.class.getName());
+		assertThat(primitiveToRefType(Locale.class.getName())).isEqualTo(Locale.class.getName());
 	}
 
 	public static class Inner {

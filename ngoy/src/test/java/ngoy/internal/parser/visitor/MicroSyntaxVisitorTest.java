@@ -80,7 +80,18 @@ public class MicroSyntaxVisitorTest {
 
 		accept(nodes, visitor);
 		assertThat(nodes.get(0)
-				.getHtml()).isEqualTo("<ng-template ngFor let-p [ngForOf]=\"persons\" let-i=\"index\" let-f=\"first\" let-l=\"last\" let-e=\"even\" let-o=\"odd\"><div>xx</div></ng-template>");
+				.getHtml()).isEqualTo(
+						"<ng-template ngFor let-p let-item-type=\"let\" [ngForOf]=\"persons\" let-i=\"index\" let-f=\"first\" let-l=\"last\" let-e=\"even\" let-o=\"odd\"><div>xx</div></ng-template>");
+	}
+
+	@Test
+	public void testForJava11Like() {
+		Jerry nodes = parser.parse("<div *ngFor=\"var p : persons; index as i; first as f; last as l; even as e; odd as o\">xx</div>");
+
+		accept(nodes, visitor);
+		assertThat(nodes.get(0)
+				.getHtml()).isEqualTo(
+						"<ng-template ngFor let-p let-item-type=\"var\" [ngForOf]=\"persons\" let-i=\"index\" let-f=\"first\" let-l=\"last\" let-e=\"even\" let-o=\"odd\"><div>xx</div></ng-template>");
 	}
 
 	@Test

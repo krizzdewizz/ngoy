@@ -19,12 +19,12 @@ import java.util.stream.Stream;
 import jodd.jerry.Jerry;
 import ngoy.core.NgoyException;
 import ngoy.core.dom.NodeVisitor;
+import ngoy.internal.parser.ForOfDef;
 import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.ParseException;
 
 public class MicroSyntaxVisitor extends NodeVisitor.Default {
 
-	private static final Pattern FOR_OF_PATTERN = Pattern.compile("let\\s*(.*)\\s*of\\s*(.*)");
 	private static final Pattern VAR_DECL_PATTERN = Pattern.compile("(.*)\\s*as\\s*(.*)");
 
 	private final NodeVisitor target;
@@ -67,15 +67,16 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 			return;
 		}
 		el.removeAttr("*ngFor");
-		String[] itemAndListName = parseNgFor(ngFor);
+		ForOfDef forOfDef = parseNgFor(ngFor);
 
 		Jerry elClone = cloneNode(el);
 
 		removeContents(el);
 		setNodeName(el, NG_TEMPLATE);
 		el.attr("ngFor", null);
-		el.attr(format("let-%s", itemAndListName[0]), null);
-		el.attr("[ngForOf]", itemAndListName[1]);
+		el.attr(format("let-%s", forOfDef.itemName), null);
+		el.attr(format("let-item-type"), forOfDef.itemType);
+		el.attr("[ngForOf]", forOfDef.listName);
 
 		Map<ForOfVariable, String> vars = parseVariables(ngFor);
 		for (Map.Entry<ForOfVariable, String> v : vars.entrySet()) {
@@ -126,23 +127,32 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 		target.end(node);
 	}
 
-	static String[] parseNgFor(String expr) {
-		Matcher matcher = FOR_OF_PATTERN.matcher(expr);
-		if (!matcher.find()) {
+	static ForOfDef parseNgFor(String expr) {
+		int delimLen = 1;
+		int pos = expr.indexOf(":");
+		if (pos < 0) {
+			delimLen = 2;
+			pos = expr.indexOf("of");
+		}
+
+		if (pos < 0) {
 			throw new ParseException("*ngFor expression malformed: %s", expr);
 		}
 
-		String itemName = matcher.group(1)
-				.trim();
-		String listName = matcher.group(2)
-				.trim();
+		String left = expr.substring(0, pos);
+		String[] leftSplits = left.split("\\s");
+		String itemName = leftSplits[1].trim();
 
-		int semi = listName.indexOf(';');
-		if (semi > -1) {
-			listName = listName.substring(0, semi);
+		String right = expr.substring(pos + delimLen);
+
+		int semiPos = right.indexOf(';');
+		if (semiPos >= 0) {
+			right = right.substring(0, semiPos);
 		}
 
-		return new String[] { itemName, listName };
+		String listName = right.trim();
+		String itemType = leftSplits[0].trim();
+		return new ForOfDef(itemType, itemName, listName);
 	}
 
 	static Map<ForOfVariable, String> parseVariables(String ngFor) {

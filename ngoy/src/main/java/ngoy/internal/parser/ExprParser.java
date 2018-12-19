@@ -55,7 +55,7 @@ public class ExprParser {
 		return s.replace(OR_ESCAPE, "||");
 	}
 
-	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes, Map<String, Variable<?>> variables, ClassDef[] outLastClassDef) {
+	public static String prefixName(Class<?> clazz, Map<String, String> prefixes, String expr, String prefix, Set<String> excludes, Map<String, Variable<?>> variables, ClassDef[] outLastClassDef) {
 		try {
 			expr = fieldAccessToGetter(clazz, prefixes, expr, variables, outLastClassDef);
 
@@ -78,9 +78,6 @@ public class ExprParser {
 	}
 
 	public static String convertPipesToTransformCalls(String expressionString, Resolver resolver) {
-
-		expressionString = SmartStringParser.toJavaString(expressionString);
-
 		Matcher matcher = PIPE_PATTERN.matcher(escapeOr(expressionString));
 		matcher.find();
 		String exprHead = matcher.group(1)

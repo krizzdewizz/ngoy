@@ -88,8 +88,8 @@ public class FieldAccessToGetterParserTest {
 
 	@Test
 	public void otherVariable() {
-		Map<String, Class<?>> vars = new HashMap<>();
-		vars.put("x", Person.class);
+		Map<String, String> vars = new HashMap<>();
+		vars.put("x", Person.class.getName());
 		assertThat(fieldAccessToGetter(MyCmp.class, vars, "qbert.foo(x.name)", emptyMap(), null)).isEqualTo("getQbert().foo(x.getName())");
 	}
 }
