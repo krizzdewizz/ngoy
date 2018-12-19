@@ -8,17 +8,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 public class ClassDef {
-
-	public static class ListItemDef {
-		public final Class<?> clazz;
-		public final String typeName;
-
-		public ListItemDef(Class<?> clazz, String typeName) {
-			this.clazz = clazz;
-			this.typeName = typeName;
-		}
-	}
-
 	public static ClassDef of(Class<?> clazz) {
 		return new ClassDef(clazz, null);
 	}
@@ -54,17 +43,16 @@ public class ClassDef {
 		return clazz.isArray() || Iterable.class.isAssignableFrom(clazz);
 	}
 
-	public ListItemDef getListItemType(ClassDef cd) {
-		Class<?> itemType = Object.class;
-		String itemTypeName = "Object";
+	public Class<?> getListItemType(ClassDef cd) {
+		Class<?> itemType;
 		if (cd.clazz.isArray()) {
 			itemType = cd.clazz.getComponentType();
-			itemTypeName = itemType.getName();
 		} else if (Iterable.class.isAssignableFrom(cd.clazz) && cd.needsCast) {
 			itemType = cd.getTypeArgument();
-			itemTypeName = itemType.getName();
+		} else {
+			itemType = Object.class;
 		}
-		return new ListItemDef(itemType, itemTypeName);
+		return itemType;
 	}
 
 	public Class<?> getTypeArgument() {

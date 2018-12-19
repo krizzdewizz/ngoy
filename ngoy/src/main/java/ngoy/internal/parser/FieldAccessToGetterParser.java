@@ -41,10 +41,6 @@ import ngoy.core.Variable;
  */
 public final class FieldAccessToGetterParser {
 
-	private static Atom unwrapParenthesizedExpression(Atom atom) {
-		return atom instanceof ParenthesizedExpression ? ((ParenthesizedExpression) atom).value : atom;
-	}
-
 	private static class AtomDef<T> {
 		private T atom;
 		private ClassDef classDef;
@@ -53,6 +49,10 @@ public final class FieldAccessToGetterParser {
 			this.atom = atom;
 			this.classDef = classDef;
 		}
+	}
+
+	private static Atom unwrapParenthesizedExpression(Atom atom) {
+		return atom instanceof ParenthesizedExpression ? ((ParenthesizedExpression) atom).value : atom;
 	}
 
 	@Nullable
@@ -71,10 +71,10 @@ public final class FieldAccessToGetterParser {
 		String right = fieldName.substring(0, 1)
 				.toUpperCase() + fieldName.substring(1);
 		Method meth;
-		if ((meth = findMethod(clazz, "get" + right, 0)) != null) {
+		if ((meth = findMethod(clazz, format("get%s", right), 0)) != null) {
 			return meth;
 		}
-		if ((meth = findMethod(clazz, "is" + right, 0)) != null) {
+		if ((meth = findMethod(clazz, format("is%s", right), 0)) != null) {
 			return meth;
 		}
 
@@ -142,16 +142,8 @@ public final class FieldAccessToGetterParser {
 
 			ClassDef cd = ClassDef.of(clazz);
 			Atom target = fae.lhs;
-			AtomDef<?> ad = null;
 			if (target != null) {
-				if (target instanceof MethodInvocation) {
-					ad = toGetter(clazz, (MethodInvocation) target);
-				} else if (target instanceof FieldAccessExpression) {
-					ad = toGetter(clazz, (FieldAccessExpression) target);
-				} else if (target instanceof AmbiguousName) {
-					ad = toGetter(clazz, (AmbiguousName) target);
-				}
-
+				AtomDef<?> ad = toAtomDef(clazz, target);
 				if (ad != null) {
 					target = (Atom) ad.atom;
 					cd = ad.classDef;
@@ -196,16 +188,7 @@ public final class FieldAccessToGetterParser {
 
 			Rvalue target = (Rvalue) mi.optionalTarget;
 			if (target != null) {
-
-				AtomDef<?> ad = null;
-				if (target instanceof MethodInvocation) {
-					ad = toGetter(clazz, (MethodInvocation) target);
-				} else if (target instanceof FieldAccessExpression) {
-					ad = toGetter(clazz, (FieldAccessExpression) target);
-				} else if (target instanceof AmbiguousName) {
-					ad = toGetter(clazz, (AmbiguousName) target);
-				}
-
+				AtomDef<?> ad = toAtomDef(clazz, target);
 				if (ad != null) {
 					target = (Rvalue) ad.atom;
 					cd = ad.classDef;
@@ -235,31 +218,6 @@ public final class FieldAccessToGetterParser {
 			}
 
 			return new AtomDef<>(new MethodInvocation(mi.getLocation(), target, mi.methodName, copyRvalues(mi.arguments)), cd);
-		}
-
-		private void setTypeParamIndex(ClassDef cd, MethodInvocation mi) {
-			int typeParamIndex = 0;
-			if (cd.needsCast) {
-				Method meth = findMethod(cd.clazz, mi.methodName, mi.arguments.length);
-				if (meth != null) {
-					Type tt = meth.getGenericReturnType();
-					String typeName = tt.getTypeName();
-					if (tt instanceof ParameterizedType) {
-						ParameterizedType pt = (ParameterizedType) tt;
-						typeName = pt.getActualTypeArguments()[0].getTypeName();
-					}
-
-					TypeVariable<?>[] typeParameters = cd.clazz.getTypeParameters();
-					for (int i = 0, n = typeParameters.length; i < n; i++) {
-						if (typeParameters[i].getName()
-								.equals(typeName)) {
-							typeParamIndex = i;
-							break;
-						}
-					}
-				}
-			}
-			cd.typeParamIndex = typeParamIndex;
 		}
 
 		private ClassDef resolveClass(Class<?> clazz, Atom atom) {
@@ -308,6 +266,43 @@ public final class FieldAccessToGetterParser {
 			}
 
 			return null;
+		}
+
+		private AtomDef<?> toAtomDef(Class<?> clazz, Atom target) throws CompileException {
+			AtomDef<?> ad = null;
+			if (target instanceof MethodInvocation) {
+				ad = toGetter(clazz, (MethodInvocation) target);
+			} else if (target instanceof FieldAccessExpression) {
+				ad = toGetter(clazz, (FieldAccessExpression) target);
+			} else if (target instanceof AmbiguousName) {
+				ad = toGetter(clazz, (AmbiguousName) target);
+			}
+			return ad;
+		}
+
+		private void setTypeParamIndex(ClassDef cd, MethodInvocation mi) {
+			int typeParamIndex = 0;
+			if (cd.needsCast) {
+				Method meth = findMethod(cd.clazz, mi.methodName, mi.arguments.length);
+				if (meth != null) {
+					Type tt = meth.getGenericReturnType();
+					String typeName = tt.getTypeName();
+					if (tt instanceof ParameterizedType) {
+						ParameterizedType pt = (ParameterizedType) tt;
+						typeName = pt.getActualTypeArguments()[0].getTypeName();
+					}
+
+					TypeVariable<?>[] typeParameters = cd.clazz.getTypeParameters();
+					for (int i = 0, n = typeParameters.length; i < n; i++) {
+						if (typeParameters[i].getName()
+								.equals(typeName)) {
+							typeParamIndex = i;
+							break;
+						}
+					}
+				}
+			}
+			cd.typeParamIndex = typeParamIndex;
 		}
 
 		public Lvalue copyAmbiguousName(AmbiguousName subject) throws CompileException {

@@ -27,7 +27,6 @@ import ngoy.core.internal.Ctx;
 import ngoy.core.internal.IteratorWithVariables;
 import ngoy.core.internal.TemplateRender;
 import ngoy.internal.parser.ClassDef;
-import ngoy.internal.parser.ClassDef.ListItemDef;
 import ngoy.internal.parser.ExprParser;
 import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.Inputs.CmpInput;
@@ -429,18 +428,18 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			throw new NgoyException("'%s' is not iterable. Must be an instance of %s or an array", listName, Iterable.class.getName());
 		}
 
-		ListItemDef itemDef = listClass.getListItemType(listClass);
+		Class<?> itemType = listClass.getListItemType(listClass);
 
 		Set<String> ex = new HashSet<>(asList(itemName));
 
 		CmpVar cmpVar = cmpVars.peek();
 
-		String itemClazz = Util.primitiveToRefType(itemDef.clazz);
+		String itemClazz = Util.primitiveToRefType(itemType);
 
 		String iterVar = createLocalVar("iter");
 		printExprComment(listName);
 		$("for (", IteratorWithVariables.class, " ", iterVar, "= new ", IteratorWithVariables.class, "(", prefixName(listName, cmpVar.name), "); ", iterVar, ".hasNext();) {");
-		$(itemDef.typeName, " ", itemName, "=(", itemClazz, ")", iterVar, ".next();");
+		$(itemType, " ", itemName, "=(", itemClazz, ")", iterVar, ".next();");
 
 		Set<Entry<ForOfVariable, String>> entries = variables.entrySet();
 		for (Map.Entry<ForOfVariable, String> e : entries) {
@@ -452,7 +451,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		prefixExcludes.push(ex);
 
 		Map<String, Class<?>> iterVarDef = new HashMap<>();
-		iterVarDef.put(itemName, itemDef.clazz);
+		iterVarDef.put(itemName, itemType);
 		localVarDefs.push(iterVarDef);
 	}
 
