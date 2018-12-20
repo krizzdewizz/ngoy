@@ -7,8 +7,6 @@ import static ngoy.internal.parser.FieldAccessToGetterParser.fieldAccessToGetter
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,15 +16,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Atom;
+import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Unparser;
-import org.codehaus.janino.util.AbstractTraverser;
+import org.codehaus.janino.util.DeepCopier;
 
 import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
@@ -62,11 +60,11 @@ public class ExprParser {
 			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
 			Atom atom = parser.parseExpression();
 
-			new PrefixAdder(prefix, excludes).visitAtom(atom);
+			Atom copyAtom = new PrefixAdder(prefix, excludes).copyAtom(atom);
 
 			StringWriter sw = new StringWriter();
 			Unparser unparser = new Unparser(sw);
-			unparser.unparseAtom(atom);
+			unparser.unparseAtom(copyAtom);
 			unparser.close();
 
 			return sw.toString();
@@ -104,30 +102,7 @@ public class ExprParser {
 		return e;
 	}
 
-	private static class PrefixAdder extends AbstractTraverser<RuntimeException> {
-
-		private static final Field MODIFIERS_FIELD;
-		private static final Field IDENTIFIERS_FIELD;
-		private static final Field N_FIELD;
-		private static final Field OPTIONAL_TARGET_FIELD;
-
-		static {
-			try {
-				IDENTIFIERS_FIELD = AmbiguousName.class.getField("identifiers");
-				N_FIELD = AmbiguousName.class.getField("n");
-				OPTIONAL_TARGET_FIELD = MethodInvocation.class.getField("optionalTarget");
-
-				MODIFIERS_FIELD = Field.class.getDeclaredField("modifiers");
-				MODIFIERS_FIELD.setAccessible(true);
-
-				MODIFIERS_FIELD.setInt(OPTIONAL_TARGET_FIELD, OPTIONAL_TARGET_FIELD.getModifiers() & ~Modifier.FINAL);
-				MODIFIERS_FIELD.setInt(IDENTIFIERS_FIELD, IDENTIFIERS_FIELD.getModifiers() & ~Modifier.FINAL);
-				MODIFIERS_FIELD.setInt(N_FIELD, IDENTIFIERS_FIELD.getModifiers() & ~Modifier.FINAL);
-			} catch (Exception e) {
-				throw NgoyException.wrap(e);
-			}
-		}
-
+	private static class PrefixAdder extends DeepCopier {
 		private final String prefix;
 		private final Set<String> excludes;
 
@@ -136,33 +111,25 @@ public class ExprParser {
 			this.excludes = excludes;
 		}
 
-		private void insertPrefix(String prefix, AmbiguousName ambiguousName) {
-			if (excludes.contains(ambiguousName.identifiers[0]) || prefix.isEmpty()) {
-				return;
+		@Override
+		public Lvalue copyAmbiguousName(AmbiguousName subject) throws CompileException {
+			if (excludes.contains(subject.identifiers[0]) || prefix.isEmpty()) {
+				return super.copyAmbiguousName(subject);
 			}
-			List<String> more = new ArrayList<>(asList(ambiguousName.identifiers));
+
+			List<String> more = new ArrayList<>(asList(subject.identifiers));
 			more.add(0, prefix);
-			try {
-				IDENTIFIERS_FIELD.set(ambiguousName, more.toArray(new String[more.size()]));
-				N_FIELD.set(ambiguousName, ambiguousName.n + 1);
-			} catch (Exception e) {
-				throw NgoyException.wrap(e);
-			}
+
+			return new AmbiguousName(subject.getLocation(), more.toArray(new String[more.size()]), subject.n + 1);
 		}
 
-		public void traverseRvalue(Rvalue rv) {
-			if (rv instanceof AmbiguousName) {
-				insertPrefix(prefix, (AmbiguousName) rv);
-			} else if (rv instanceof MethodInvocation) {
-				MethodInvocation mi = (MethodInvocation) rv;
-				if (mi.optionalTarget == null && !excludes.contains(mi.methodName) && !prefix.isEmpty()) {
-					try {
-						OPTIONAL_TARGET_FIELD.set(mi, new AmbiguousName(Location.NOWHERE, new String[] { prefix }));
-					} catch (Exception e) {
-						throw NgoyException.wrap(e);
-					}
-				}
+		@Override
+		public Rvalue copyMethodInvocation(MethodInvocation subject) throws CompileException {
+			if (subject.optionalTarget == null && !excludes.contains(subject.methodName) && !prefix.isEmpty()) {
+				return new MethodInvocation(subject.getLocation(), new AmbiguousName(subject.getLocation(), new String[] { prefix }), subject.methodName, copyRvalues(subject.arguments));
 			}
+
+			return super.copyMethodInvocation(subject);
 		}
 	}
 
