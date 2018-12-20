@@ -1,5 +1,7 @@
 package ngoy.internal.parser.template;
 
+import static ngoy.core.Util.sourceClassName;
+
 public class CodeBuilder {
 	protected int depth;
 	protected final Printer printer;
@@ -19,7 +21,7 @@ public class CodeBuilder {
 
 	public CodeBuilder $$(Object... all) {
 		for (Object s : all) {
-			doPrint(s instanceof Class ? ((Class<?>) s).getName() : s);
+			doPrint(s instanceof Class ? sourceClassName(((Class<?>) s)) : s);
 		}
 		return this;
 	}

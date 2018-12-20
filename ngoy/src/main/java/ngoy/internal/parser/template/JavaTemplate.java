@@ -492,7 +492,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
-		String cmpClass = sourceClassName(cmpRef.clazz);
+		Class<?> cmpClass = cmpRef.clazz;
 
 		cmpVar = createLocalVar(cmpRef.clazz.getSimpleName());
 		String cmpCall = appRoot ? "cmp" : "cmpNew";
