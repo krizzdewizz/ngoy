@@ -9,7 +9,7 @@ import ngoy.core.NgModule;
  * 
  * @author krizz
  */
-@NgModule(declarations = { UpperCasePipe.class, LowerCasePipe.class, DatePipe.class, CapitalizePipe.class })
+@NgModule(declarations = { UpperCasePipe.class, LowerCasePipe.class, DatePipe.class, CapitalizePipe.class, RawPipe.class })
 public final class CommonModule {
 	private CommonModule() {
 	}

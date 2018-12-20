@@ -28,6 +28,7 @@ import ngoy.core.Variable;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.IteratorWithVariables;
+import ngoy.core.internal.WithCtx;
 import ngoy.core.internal.TemplateRender;
 import ngoy.internal.parser.ClassDef;
 import ngoy.internal.parser.ExprParser;
@@ -147,6 +148,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("private static final String[] ", stringsVar, "= new String[]{", STRINGS, "};");
 
 		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws Exception {");
+		setPipesCtx(pipes);
 		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
 		addVariables();
 
@@ -185,12 +187,26 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 	}
 
+	private void setPipesCtx(List<Class<?>> pipes) {
+		for (Class<?> pipe : pipes) {
+			if (!WithCtx.class.isAssignableFrom(pipe)) {
+				continue;
+			}
+
+			String pipeName = pipe.getAnnotation(Pipe.class)
+					.value();
+			String pipeFun = format("$%s", pipeName);
+			$("((", WithCtx.class, ")_", pipeFun, ").setCtx(", CTX_VAR, ");");
+		}
+	}
+
 	private void setPipes(List<Class<?>> pipes) {
 		for (Class<?> pipe : pipes) {
 			String pipeName = pipe.getAnnotation(Pipe.class)
 					.value();
 			String pipeFun = format("$%s", pipeName);
 			$("_", pipeFun, "=(", PipeTransform.class, ")injector.get(", pipe, ".class);");
+
 		}
 	}
 

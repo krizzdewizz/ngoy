@@ -3,14 +3,8 @@ package ngoy.internal.parser;
 import static java.util.Collections.emptyMap;
 import static ngoy.internal.parser.FieldAccessToGetterParser.fieldAccessToGetter;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
 
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.core.NgoyException;
 import ngoy.model.Person;
@@ -69,6 +63,11 @@ public class FieldAccessToGetterParserInTheWildTest {
 	@Test(expected = NgoyException.class)
 	public void thiss() {
 		fieldAccessToGetter(MyCmp.class, emptyMap(), "this", emptyMap(), null);
+	}
+
+	@Test(expected = NgoyException.class)
+	public void thiss2() {
+		fieldAccessToGetter(MyCmp.class, emptyMap(), "person.getName(this)", emptyMap(), null);
 	}
 
 	@Test(expected = NgoyException.class)

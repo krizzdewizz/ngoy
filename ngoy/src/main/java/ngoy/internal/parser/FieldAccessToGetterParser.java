@@ -449,6 +449,31 @@ public final class FieldAccessToGetterParser {
 
 			return super.copyNewInitializedArray(subject);
 		}
+
+		@Override
+		public Rvalue copyAssignment(Assignment subject) throws CompileException {
+			throw new CompileException("Assignment is not allowed", subject.getLocation());
+		}
+
+		@Override
+		public Rvalue copyCrement(Crement subject) throws CompileException {
+			throw new CompileException("Increment/decrement is not allowed", subject.getLocation());
+		}
+
+		@Override
+		public Rvalue copyThisReference(ThisReference subject) throws CompileException {
+			throw new CompileException("Reference to 'this' is not allowed", subject.getLocation());
+		}
+
+		@Override
+		public Rvalue copyQualifiedThisReference(QualifiedThisReference subject) throws CompileException {
+			throw new CompileException("Reference to 'this' is not allowed", subject.getLocation());
+		}
+
+		@Override
+		public Rvalue copyNewAnonymousClassInstance(NewAnonymousClassInstance subject) throws CompileException {
+			throw new CompileException("Anonymous class is not allowed", subject.getLocation());
+		}
 	}
 
 	private FieldAccessToGetterParser() {
@@ -463,34 +488,17 @@ public final class FieldAccessToGetterParser {
 
 		try {
 			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
-			Rvalue rvalue;
-			try {
-				Rvalue[] rvalues = parser.parseExpressionList();
-				if (rvalues.length != 1) {
-					throw new NgoyException("Error while compiling expression '%s'. The expression must be a single rvalue.", expr);
-				}
-				rvalue = rvalues[0];
-
-				if (rvalue instanceof Assignment) {
-					throw new NgoyException("Error while compiling expression '%s'. Assignment is not allowed.", expr);
-				} else if (rvalue instanceof Crement) {
-					throw new NgoyException("Error while compiling expression '%s'. Increment/decrement is not allowed.", expr);
-				} else if (rvalue instanceof ThisReference || rvalue instanceof QualifiedThisReference) {
-					throw new NgoyException("Error while compiling expression '%s'. Reference to 'this' is not allowed.", expr);
-				} else if (rvalue instanceof NewAnonymousClassInstance) {
-					throw new NgoyException("Error while compiling expression '%s'. Anonymous class is not allowed.", expr);
-				}
-			} catch (CompileException e) {
-				throw new NgoyException("Error while compiling expression '%s': %s. The expression must be a single rvalue.", expr, getCompileExceptionMessageWithoutLocation(e));
+			Rvalue[] rvalues = parser.parseExpressionList();
+			if (rvalues.length != 1) {
+				throw new NgoyException("The expression must be a single rvalue", expr);
 			}
 
 			ToGetter toGetter = new ToGetter(clazz, prefixes, variables);
-
-			Rvalue copyAtom = unwrapParenthesizedExpression(toGetter.copyRvalue(rvalue));
+			Rvalue copy = unwrapParenthesizedExpression(toGetter.copyRvalue(rvalues[0]));
 
 			StringWriter sw = new StringWriter();
 			Unparser unparser = new Unparser(sw);
-			unparser.unparseAtom(copyAtom);
+			unparser.unparseAtom(copy);
 			unparser.close();
 
 			if (outLastClassDef != null) {
@@ -499,7 +507,8 @@ public final class FieldAccessToGetterParser {
 
 			return sw.toString();
 		} catch (Exception e) {
-			throw wrap(e);
+			throw new NgoyException("Error while compiling expression '%s': %s. The expression must be a single rvalue", expr,
+					e instanceof CompileException ? getCompileExceptionMessageWithoutLocation((CompileException) e) : e.getMessage());
 		}
 	}
 }
