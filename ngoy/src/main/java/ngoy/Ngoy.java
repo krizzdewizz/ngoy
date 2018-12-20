@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.ClassBodyEvaluator;
 
 import jodd.jerry.Jerry;
@@ -776,8 +777,8 @@ public class Ngoy<T> {
 		try {
 			bodyEvaluator.cook(code);
 		} catch (CompileException e) {
-			ExprComment exprComment = getExprComment(code, e.getLocation()
-					.getLineNumber());
+			Location location = e.getLocation();
+			ExprComment exprComment = location == null ? new ExprComment("<unknown>", "") : getExprComment(code, location.getLineNumber());
 
 			String msg = getCompileExceptionMessageWithoutLocation(e);
 			throw new NgoyException("Compile error in \"%s\": %s\nsource: %s", exprComment.comment, msg, exprComment.sourcePosition);

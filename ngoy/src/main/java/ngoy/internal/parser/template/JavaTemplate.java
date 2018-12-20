@@ -147,7 +147,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("private static final String[] ", stringsVar, "= new String[]{", STRINGS, "};");
 
 		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws Exception {");
-		$("String[] ", stringsLocalVar, "=", stringsVar, ";");
+		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
 		addVariables();
 
 		textOverrideVar = createLocalVar("textOverride");
@@ -315,7 +315,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		flushOut();
 		String evalResultVar = createLocalVar("attrExpr");
 		printExprComment(expr);
-		$("Object ", evalResultVar, "=", prefixName(expr, cmpVars.peek().name), ";");
+		$("final Object ", evalResultVar, "=", prefixName(expr, cmpVars.peek().name), ";");
 
 		$("if(", evalResultVar, "!=null) {");
 		printOut(" ", name, "=\"");
@@ -361,7 +361,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		if (Util.isSet(switchFirstCase)) {
 			switchVar = createLocalVar("switchVar");
 			printExprComment(expr);
-			$("Object ", switchVar, "=", prefixName(expr, cmpVars.peek().name), ";");
+			$("final Object ", switchVar, "=", prefixName(expr, cmpVars.peek().name), ";");
 			printExprComment(switchFirstCase);
 			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase, cmpVars.peek().name), ")) {");
 			switchHadElseIf.push(true);
@@ -445,7 +445,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		String iterVar = createLocalVar("iter");
 		printExprComment(origListName);
-		$("for (", IteratorWithVariables.class, " ", iterVar, "= new ", IteratorWithVariables.class, "(", listName, "); ", iterVar, ".hasNext();) {");
+		$("for (final ", IteratorWithVariables.class, " ", iterVar, "= new ", IteratorWithVariables.class, "(", listName, "); ", iterVar, ".hasNext();) {");
 		$(itemTypeClazz, " ", itemName, "=(", itemTypeClazz, ")", iterVar, ".next();");
 
 		Set<Entry<ForOfVariable, String>> entries = variables.entrySet();
@@ -496,7 +496,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		cmpVar = createLocalVar(cmpRef.clazz.getSimpleName());
 		String cmpCall = appRoot ? "cmp" : "cmpNew";
-		$(cmpClass, " ", cmpVar, "=(", cmpClass, ")", CTX_VAR, ".", cmpCall, "(", cmpClass, ".class);");
+		$("final ", cmpClass, " ", cmpVar, "=(", cmpClass, ")", CTX_VAR, ".", cmpCall, "(", cmpClass, ".class);");
 		$("{");
 
 		// testForOfNested2
@@ -545,7 +545,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private void attributeEval(String attrName, boolean forStyles, List<String[]> exprPairs) {
 		String delimiter = forStyles ? ";" : " ";
 		String listVar = createLocalVar(format("%slist", forStyles ? "style" : "class"));
-		$(StringBuilder.class, " ", listVar, "=new ", StringBuilder.class, "();");
+		$("final ", StringBuilder.class, " ", listVar, "=new ", StringBuilder.class, "();");
 		for (String[] pair : exprPairs) {
 			String clazz = pair[0];
 			String expr = pair[1];
@@ -558,7 +558,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 					if (clazz.equals("ngStyle")) {
 						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()) {");
 						String valueVar = createLocalVar("styleValue");
-						$("Object ", valueVar, "=", "entry.getValue();");
+						$("final Object ", valueVar, "=", "entry.getValue();");
 						$("  if(", valueVar, "!= null && !", valueVar, ".toString().isEmpty()) {");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$(listVar, ".append(((String)entry.getKey()).concat(\":\").concat(", valueVar, ".toString()));");
@@ -571,7 +571,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 						String exVar = createLocalVar("expr");
 						printExprComment(ex);
-						$("Object ", exVar, "=", ex, ";");
+						$("final Object ", exVar, "=", ex, ";");
 						$("if(", exVar, "!=null && !", exVar, ".toString().isEmpty()) {");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$$(listVar, ".append(\"", clazz, ":\".concat(", exVar, ".toString())");
