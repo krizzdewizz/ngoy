@@ -31,7 +31,9 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.codehaus.janino:janino:3.0.11'
+	compile group: 'org.eclipse.jdt.core.compiler', name: 'ecj', version: '4.6.1'
+	implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.8.3'
+	
 	implementation 'commons-cli:commons-cli:1.4'
 	implementation 'org.jodd:jodd-lagarto:5.0.6'
 

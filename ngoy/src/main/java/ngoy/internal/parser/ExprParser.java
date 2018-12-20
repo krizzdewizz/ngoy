@@ -1,14 +1,8 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
-import static ngoy.internal.parser.FieldAccessToGetterParser.fieldAccessToGetter;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,19 +11,24 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.Location;
-import org.codehaus.janino.Java.AmbiguousName;
-import org.codehaus.janino.Java.Atom;
-import org.codehaus.janino.Java.MethodInvocation;
-import org.codehaus.janino.Java.Rvalue;
-import org.codehaus.janino.Parser;
-import org.codehaus.janino.Scanner;
-import org.codehaus.janino.Unparser;
-import org.codehaus.janino.util.AbstractTraverser;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
+import com.github.javaparser.resolution.types.ResolvedArrayType;
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
 import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
+import ngoy.core.Util;
 import ngoy.core.Variable;
 import ngoy.core.internal.Resolver;
 import ngoy.internal.parser.org.springframework.expression.Expression;
@@ -39,6 +38,16 @@ import ngoy.internal.parser.org.springframework.expression.TemplateAwareExpressi
 import ngoy.internal.parser.org.springframework.expression.TemplateParserContext;
 
 public class ExprParser {
+
+	static {
+		CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
+		combinedTypeSolver.add(new ReflectionTypeSolver());
+
+		// Configure JavaParser to use type resolution
+		JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
+		JavaParser.getStaticConfiguration()
+				.setSymbolResolver(symbolSolver);
+	}
 
 	static final TemplateParserContext TEMPLATE_CONTEXT = new TemplateParserContext("{{", "}}");
 
@@ -57,22 +66,93 @@ public class ExprParser {
 
 	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes, Map<String, Variable<?>> variables, ClassDef[] outLastClassDef) {
 		try {
-			expr = fieldAccessToGetter(clazz, prefixes, expr, variables, outLastClassDef);
+//			expr = fieldAccessToGetter(clazz, prefixes, expr, variables, outLastClassDef);
 
-			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
-			Atom atom = parser.parseExpression();
+			CompilationUnit ex = JavaParser.parse(format("class X extends %s { void foo() {  return %s ;  }  }", Util.sourceClassName(clazz), expr));
 
-			new PrefixAdder(prefix, excludes).visitAtom(atom);
+			ClassOrInterfaceDeclaration[] c = new ClassOrInterfaceDeclaration[1];
 
-			StringWriter sw = new StringWriter();
-			Unparser unparser = new Unparser(sw);
-			unparser.unparseAtom(atom);
-			unparser.close();
+			ex.accept(new GenericVisitorAdapter<Void, Void>() {
 
-			return sw.toString();
-		} catch (CompileException e) {
-			throw new NgoyException("Compile error: %s", e);
-		} catch (Exception e) {
+				@Override
+				public Void visit(ClassOrInterfaceDeclaration n, Void arg) {
+					c[0] = n;
+					return super.visit(n, arg);
+				}
+
+				@Override
+				public Void visit(ArrayCreationExpr n, Void arg) {
+					try {
+						ResolvedArrayType at = n.calculateResolvedType()
+								.asArrayType();
+
+						String arrayClass = Util.getArrayClass(at.getComponentType()
+								.describe());
+						outLastClassDef[0] = ClassDef.of(Class.forName(arrayClass));
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					}
+					return super.visit(n, arg);
+				}
+
+				@Override
+				public Void visit(MethodCallExpr n, Void arg) {
+
+					com.github.javaparser.ast.expr.Expression scope = n.getScope()
+							.orElse(null);
+
+					if (scope == null && !excludes.contains(n.getNameAsString())) {
+						n.setScope(new NameExpr(prefix));
+					}
+
+					return super.visit(n, arg);
+				}
+
+				@Override
+				public Void visit(FieldAccessExpr n, Void arg) {
+
+					return super.visit(n, arg);
+				}
+
+				@Override
+				public Void visit(NameExpr n, Void arg) {
+
+					try {
+						n.calculateResolvedType();
+						return super.visit(n, arg);
+					} catch (Exception e) {
+					}
+
+					n.setName("getName()");
+
+					String name = n.getNameAsString();
+					BodyDeclaration<?> getter = c[0].getMembers()
+							.stream()
+							.filter(it -> it.isMethodDeclaration() && it.asMethodDeclaration()
+									.getNameAsString()
+									.equals("getName"))
+							.findFirst()
+							.orElse(null);
+
+					if (!excludes.contains(name) && !name.startsWith(prefix)) {
+						n.setName(format("%s.%s", prefix, name));
+					}
+
+					return super.visit(n, arg);
+				}
+			}, null);
+
+			return ex.findFirst(ReturnStmt.class)
+					.map(rs -> rs.getExpression()
+							.get())
+					.get()
+					.toString();
+
+		}
+//		catch (CompileException e) {
+//			throw new NgoyException("Compile error: %s", e);
+//		}
+		catch (Exception e) {
 			throw NgoyException.wrap(e);
 		}
 	}
@@ -102,68 +182,6 @@ public class ExprParser {
 			e = format("$%s(%s%s)", pipe, e, params.isEmpty() ? "" : format(",%s", params));
 		}
 		return e;
-	}
-
-	private static class PrefixAdder extends AbstractTraverser<RuntimeException> {
-
-		private static final Field MODIFIERS_FIELD;
-		private static final Field IDENTIFIERS_FIELD;
-		private static final Field N_FIELD;
-		private static final Field OPTIONAL_TARGET_FIELD;
-
-		static {
-			try {
-				IDENTIFIERS_FIELD = AmbiguousName.class.getField("identifiers");
-				N_FIELD = AmbiguousName.class.getField("n");
-				OPTIONAL_TARGET_FIELD = MethodInvocation.class.getField("optionalTarget");
-
-				MODIFIERS_FIELD = Field.class.getDeclaredField("modifiers");
-				MODIFIERS_FIELD.setAccessible(true);
-
-				MODIFIERS_FIELD.setInt(OPTIONAL_TARGET_FIELD, OPTIONAL_TARGET_FIELD.getModifiers() & ~Modifier.FINAL);
-				MODIFIERS_FIELD.setInt(IDENTIFIERS_FIELD, IDENTIFIERS_FIELD.getModifiers() & ~Modifier.FINAL);
-				MODIFIERS_FIELD.setInt(N_FIELD, IDENTIFIERS_FIELD.getModifiers() & ~Modifier.FINAL);
-			} catch (Exception e) {
-				throw NgoyException.wrap(e);
-			}
-		}
-
-		private final String prefix;
-		private final Set<String> excludes;
-
-		private PrefixAdder(String prefix, Set<String> excludes) {
-			this.prefix = prefix;
-			this.excludes = excludes;
-		}
-
-		private void insertPrefix(String prefix, AmbiguousName ambiguousName) {
-			if (excludes.contains(ambiguousName.identifiers[0]) || prefix.isEmpty()) {
-				return;
-			}
-			List<String> more = new ArrayList<>(asList(ambiguousName.identifiers));
-			more.add(0, prefix);
-			try {
-				IDENTIFIERS_FIELD.set(ambiguousName, more.toArray(new String[more.size()]));
-				N_FIELD.set(ambiguousName, ambiguousName.n + 1);
-			} catch (Exception e) {
-				throw NgoyException.wrap(e);
-			}
-		}
-
-		public void traverseRvalue(Rvalue rv) {
-			if (rv instanceof AmbiguousName) {
-				insertPrefix(prefix, (AmbiguousName) rv);
-			} else if (rv instanceof MethodInvocation) {
-				MethodInvocation mi = (MethodInvocation) rv;
-				if (mi.optionalTarget == null && !excludes.contains(mi.methodName) && !prefix.isEmpty()) {
-					try {
-						OPTIONAL_TARGET_FIELD.set(mi, new AmbiguousName(Location.NOWHERE, new String[] { prefix }));
-					} catch (Exception e) {
-						throw NgoyException.wrap(e);
-					}
-				}
-			}
-		}
 	}
 
 	public static class ExpressionWithPipesParser extends TemplateAwareExpressionParser {

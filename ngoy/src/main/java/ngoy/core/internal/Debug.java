@@ -19,14 +19,14 @@ public final class Debug {
 
 	public static void writeTemplate(String code) {
 		if (!debug()) {
-			return;
+//			return;
 		}
 
 		try {
 			Path tempFile = File.createTempFile("ngoy-template", ".java")
 					.toPath();
 
-//			tempFile = new File("d:/downloads/qbert.java").toPath();
+			tempFile = new File("d:/downloads/qbert.java").toPath();
 
 			Files.write(tempFile, code.getBytes(StandardCharsets.UTF_8));
 			System.out.println(format("ngoy.debug: template has been written to %s", tempFile));

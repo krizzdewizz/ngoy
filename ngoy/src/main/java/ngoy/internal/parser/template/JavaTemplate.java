@@ -105,6 +105,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private String sourcePosition;
 
+	public String className;
+
 	public JavaTemplate(String contentType, boolean bodyOnly, Map<String, Variable<?>> variables) {
 		super(new Printer());
 		this.bodyOnly = bodyOnly;
@@ -127,9 +129,21 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void documentStart(List<Class<?>> pipes) {
 		if (!bodyOnly) {
-			$("package ngoy;");
+
+			String classSimpleName;
+			String pack;
+			if (className != null) {
+				int pos = className.lastIndexOf('.');
+				classSimpleName = className.substring(pos + 1);
+				pack = className.substring(0, pos);
+			} else {
+				classSimpleName = "X";
+				pack = "ngoy";
+			}
+
+			$("package ", pack, ";");
 			$("@SuppressWarnings(\"all\")");
-			$("public class X {");
+			$("public class ", classSimpleName, " {");
 		}
 
 		$("public static ", TemplateRender.class, " createRenderer(", Injector.class, " injector) { return new Renderer(injector); }");

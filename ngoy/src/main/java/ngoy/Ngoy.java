@@ -10,10 +10,8 @@ import static ngoy.core.Provider.of;
 import static ngoy.core.Provider.useClass;
 import static ngoy.core.Provider.useValue;
 import static ngoy.core.Util.copyToString;
-import static ngoy.core.Util.getCompileExceptionMessageWithoutLocation;
 import static ngoy.core.Util.getTemplate;
 import static ngoy.core.Util.isSet;
-import static ngoy.internal.parser.template.JavaTemplate.getExprComment;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,9 +30,6 @@ import java.util.Map;
 import java.util.PropertyResourceBundle;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.janino.ClassBodyEvaluator;
 
 import jodd.jerry.Jerry;
 import ngoy.common.CommonModule;
@@ -64,9 +59,9 @@ import ngoy.core.internal.Resolver;
 import ngoy.core.internal.StyleUrlsDirective;
 import ngoy.core.internal.TemplateRender;
 import ngoy.core.internal.WriterOutput;
+import ngoy.internal.parser.EclipseCompile;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.parser.template.JavaTemplate;
-import ngoy.internal.parser.template.JavaTemplate.ExprComment;
 import ngoy.internal.scan.ClassScanner;
 import ngoy.internal.site.SiteRenderer;
 import ngoy.router.RouterModule;
@@ -761,28 +756,21 @@ public class Ngoy<T> {
 		}
 	}
 
-	public interface CreateTemplate {
-		Class<?> createTemplate(Parser parser, String template, String contentType);
-	}
+	private static int tplIndex;
 
 	protected Class<?> compileTemplate(Parser parser, String template) {
-		JavaTemplate tpl = new JavaTemplate(getContentType(config), true, context != null ? context.getVariables() : emptyMap());
+
+		JavaTemplate tpl = new JavaTemplate(getContentType(config), false, context != null ? context.getVariables() : emptyMap());
+
+		tpl.className = "ngoy.X" + tplIndex;
+		tplIndex++;
+
 		parser.parse(template, tpl);
 		String code = tpl.toString();
 
 		Debug.writeTemplate(code);
 
-		ClassBodyEvaluator bodyEvaluator = new ClassBodyEvaluator();
-		try {
-			bodyEvaluator.cook(code);
-		} catch (CompileException e) {
-			ExprComment exprComment = getExprComment(code, e.getLocation()
-					.getLineNumber());
-
-			String msg = getCompileExceptionMessageWithoutLocation(e);
-			throw new NgoyException("Compile error in \"%s\": %s\nsource: %s", exprComment.comment, msg, exprComment.sourcePosition);
-		}
-		return bodyEvaluator.getClazz();
+		return EclipseCompile.compileClass(code, tpl.className);
 	}
 
 	private String getContentType(Config config) {

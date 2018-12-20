@@ -11,8 +11,6 @@ import java.io.StringReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.codehaus.commons.compiler.CompileException;
-
 /**
  * Utils.
  * 
@@ -196,18 +194,19 @@ public class Util {
 		}
 	}
 
-	public static String getCompileExceptionMessageWithoutLocation(CompileException compileException) {
-		String message = compileException.getMessage();
-		if (compileException.getLocation() != null) {
-			Matcher matcher = Pattern.compile(".*Column \\d*:(.*)")
-					.matcher(message);
-			if (matcher.find()) {
-				return matcher.group(1)
-						.trim();
-			}
-		}
-
-		return message;
+	public static String getCompileExceptionMessageWithoutLocation(Exception compileException) {
+		return compileException.getMessage();
+//		String message = compileException.getMessage();
+//		if (compileException.getLocation() != null) {
+//			Matcher matcher = Pattern.compile(".*Column \\d*:(.*)")
+//					.matcher(message);
+//			if (matcher.find()) {
+//				return matcher.group(1)
+//						.trim();
+//			}
+//		}
+//
+//		return message;
 	}
 
 	public static String primitiveToRefType(String clazz) {
@@ -217,9 +216,9 @@ public class Util {
 		}
 
 		if ("char".equals(clazz)) {
-			return Character.class.getSimpleName();
+			return Character.class.getName();
 		} else if ("int".equals(clazz)) {
-			return Integer.class.getSimpleName();
+			return Integer.class.getName();
 		}
 
 		return clazz.substring(0, 1)

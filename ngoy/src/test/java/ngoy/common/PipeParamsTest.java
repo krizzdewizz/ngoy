@@ -73,8 +73,7 @@ public class PipeParamsTest extends ANgoyTest {
 	@Test
 	public void testFuncCallMissingArg() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("No applicable constructor/method"));
-//		expectedEx.expectMessage(containsString("$myPipe"));
+		expectedEx.expectMessage(containsString("is not applicable for the arguments ()"));
 		render(FuncCallMissingArgCmp.class);
 	}
 
@@ -88,8 +87,8 @@ public class PipeParamsTest extends ANgoyTest {
 	@Test
 	public void testUnknownPipe() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("A method named \"$unknownPipe\" is not declared"));
-//		expectedEx.expectMessage(containsString("unknownPipe"));
+		expectedEx.expectMessage(containsString("$unknownPipe"));
+		expectedEx.expectMessage(containsString("is undefined"));
 		render(UnknownPipeCmp.class);
 	}
 }
