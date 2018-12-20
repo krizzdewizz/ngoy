@@ -83,6 +83,7 @@ public class Cli {
 			generator.setLog(s -> {
 				try {
 					out.write(s);
+					out.write(System.lineSeparator());
 					out.flush();
 				} catch (IOException e) {
 					throw NgoyException.wrap(e);

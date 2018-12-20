@@ -6,6 +6,7 @@ import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.getCompileExceptionMessageWithoutLocation;
 import static ngoy.core.Util.isSet;
 import static ngoy.core.Util.sourceClassName;
+import static ngoy.core.Util.tryLoadClass;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -26,17 +27,24 @@ import org.codehaus.janino.Java.ArrayAccessExpression;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
+import org.codehaus.janino.Java.BooleanLiteral;
 import org.codehaus.janino.Java.Cast;
+import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.FieldAccessExpression;
+import org.codehaus.janino.Java.FloatingPointLiteral;
+import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
+import org.codehaus.janino.Java.NewClassInstance;
 import org.codehaus.janino.Java.NewInitializedArray;
+import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.ParenthesizedExpression;
 import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.ReferenceType;
 import org.codehaus.janino.Java.Rvalue;
+import org.codehaus.janino.Java.StringLiteral;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
@@ -51,7 +59,17 @@ import ngoy.core.Variable;
 /**
  * Converts a field access to a getter call.
  * <p>
- * experimental.
+ * This is the beast.
+ * <ul>
+ * <li>converts smart strings first</li>
+ * <li>converts field access to getter</li>
+ * <li>convert array subscript on java.util.List and java.util.Map to get()
+ * calls</li>
+ * <li>since janino does not support generics, inserts the necessary cast
+ * expressions</li>
+ * <li>infers the type of the expression so we can have 'let/var' in *ngFor</li>
+ * </ul>
+ * 
  * 
  * @author krizz
  */
@@ -99,11 +117,11 @@ public final class FieldAccessToGetterParser {
 	}
 
 	private static class ToGetter extends DeepCopier {
-		private final Map<String, String> prefixes;
+		private final Map<String, Class<?>> prefixes;
 		private final Map<String, Variable<?>> variables;
 		private ClassDef lastClassDef;
 
-		public ToGetter(Class<?> clazz, Map<String, String> prefixes, Map<String, Variable<?>> variables) {
+		public ToGetter(Class<?> clazz, Map<String, Class<?>> prefixes, Map<String, Variable<?>> variables) {
 			this.variables = variables;
 			this.prefixes = prefixes;
 			lastClassDef = ClassDef.of(clazz);
@@ -113,24 +131,23 @@ public final class FieldAccessToGetterParser {
 			String[] ids = ambiguousName.identifiers;
 
 			if (ids[0].startsWith("java")) {
-				String q = Arrays.asList(ids)
+				String className = Arrays.asList(ids)
 						.subList(0, ambiguousName.n)
 						.stream()
 						.collect(joining("."));
-				try {
-					return new AtomDef<>(ambiguousName, ClassDef.of(getClass().getClassLoader()
-							.loadClass(q)));
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
+				Class<?> c = Util.tryLoadClass(className);
+				if (c == null) {
+					c = clazz;
 				}
+				return new AtomDef<>(ambiguousName, ClassDef.of(c));
 			}
 
-			String prefix = prefixes.get(ids[0]);
+			Class<?> prefix = prefixes.get(ids[0]);
 
 			ClassDef[] cd = new ClassDef[1];
 			int startIndex;
 			if (prefix != null) {
-				cd[0] = ClassDef.of(tryLoadClass(prefix));
+				cd[0] = ClassDef.of(prefix);
 				startIndex = 1;
 			} else {
 				cd[0] = ClassDef.of(clazz);
@@ -194,7 +211,7 @@ public final class FieldAccessToGetterParser {
 
 		private AtomDef<Cast> toGetter(Class<?> clazz, Cast cast) throws CompileException {
 			ClassDef cd = ClassDef.of(clazz);
-			Class<?> targetClass = tryLoadClass(cast.targetType.toString());
+			Class<?> targetClass = Util.tryLoadClass(cast.targetType.toString());
 			if (targetClass != null) {
 				cd = ClassDef.of(targetClass);
 			}
@@ -257,11 +274,22 @@ public final class FieldAccessToGetterParser {
 				Class<?> typeArg = cd.getTypeArgument();
 				Method meth = findMethod(typeArg, mi.methodName, mi.arguments.length);
 				if (meth != null) {
-					if (cd.needsCast && typeArg != Object.class) {
+					boolean needsCast = cd.needsCast;
+
+					cd = ClassDef.of(meth);
+
+					// try to infer from 1st argument
+					if (meth.getGenericReturnType() instanceof ParameterizedType && !needsCast && mi.arguments.length > 0) {
+						ClassDef argCd = resolveClass(lastClassDef.clazz, mi.arguments[0]);
+						if (argCd != null) {
+							cd = new ClassDef(meth.getReturnType(), argCd.clazz, true);
+						}
+					}
+
+					if (needsCast && typeArg != Object.class) {
 						Cast cast = new Cast(mi.getLocation(), new ReferenceType(mi.getLocation(), new String[] { sourceClassName(typeArg) }, null), target);
 						target = new ParenthesizedExpression(mi.getLocation(), cast);
 					}
-					cd = ClassDef.of(meth);
 				}
 			} else {
 				Method meth = findMethod(clazz, mi.methodName, mi.arguments.length);
@@ -271,6 +299,76 @@ public final class FieldAccessToGetterParser {
 			}
 
 			return new AtomDef<>(new MethodInvocation(mi.getLocation(), target, mi.methodName, copyRvalues(mi.arguments)), cd);
+		}
+
+		private ClassDef resolveClass(Class<?> clazz, Rvalue atom) {
+
+			atom = unwrapParenthesizedExpression(atom);
+
+			if (atom instanceof MethodInvocation) {
+				MethodInvocation mi = (MethodInvocation) atom;
+				if (mi.optionalTarget == null) {
+					Method meth = findMethod(clazz, mi.methodName, mi.arguments.length);
+					if (meth != null) {
+						return ClassDef.of(meth);
+					} else {
+						return null;
+					}
+				}
+
+				ClassDef cd = resolveClass(clazz, (Rvalue) mi.optionalTarget);
+				if (cd == null) {
+					return null;
+				}
+
+				Method meth = findMethod(cd.clazz, mi.methodName, mi.arguments.length);
+				if (meth != null) {
+					return ClassDef.of(meth);
+				}
+			} else if (atom instanceof FieldAccessExpression) {
+				FieldAccessExpression fae = (FieldAccessExpression) atom;
+				ClassDef cd = resolveClass(clazz, (Rvalue) fae.lhs);
+				if (cd == null) {
+					return null;
+				}
+				try {
+					return ClassDef.of(cd.clazz.getField(fae.fieldName));
+				} catch (NoSuchFieldException e) {
+					// ignore, try getter
+				}
+
+				Method getter = findGetter(cd.clazz, fae.fieldName);
+
+				if (getter != null) {
+					return ClassDef.of(getter);
+				}
+
+				return null;
+			} else if (atom instanceof StringLiteral) {
+				return ClassDef.of(String.class);
+			} else if (atom instanceof BooleanLiteral) {
+				return ClassDef.of(Boolean.class);
+			} else if (atom instanceof CharacterLiteral) {
+				return ClassDef.of(Character.class);
+			} else if (atom instanceof FloatingPointLiteral) {
+				return ClassDef.of(Float.class);
+			} else if (atom instanceof IntegerLiteral) {
+				return ClassDef.of(Integer.class);
+			} else if (atom instanceof NullLiteral) {
+				return ClassDef.of(Object.class);
+			} else if (atom instanceof NewClassInstance) {
+				Class<?> cc = tryLoadClass(((NewClassInstance) atom).type.toString());
+				if (cc != null) {
+					return ClassDef.of(cc);
+				}
+			} else if (atom instanceof Cast) {
+				Class<?> targetClass = Util.tryLoadClass(((Cast) atom).targetType.toString());
+				if (targetClass != null) {
+					return ClassDef.of(targetClass);
+				}
+			}
+
+			return null;
 		}
 
 		private AtomDef<?> toAtomDef(Class<?> clazz, Atom target) throws CompileException {
@@ -340,7 +438,7 @@ public final class FieldAccessToGetterParser {
 		public Rvalue copyNewInitializedArray(NewInitializedArray subject) throws CompileException {
 			ArrayType arrayType = subject.arrayType;
 			String type = Util.getArrayClass(arrayType.componentType.toString());
-			Class<?> clazz = tryLoadClass(type);
+			Class<?> clazz = Util.tryLoadClass(type);
 
 			if (clazz != null) {
 				lastClassDef = ClassDef.of(clazz);
@@ -360,7 +458,7 @@ public final class FieldAccessToGetterParser {
 	private FieldAccessToGetterParser() {
 	}
 
-	public static String fieldAccessToGetter(Class<?> clazz, Map<String, String> prefixes, String expr, Map<String, Variable<?>> variables, @Nullable ClassDef[] outLastClassDef) {
+	public static String fieldAccessToGetter(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, Map<String, Variable<?>> variables, @Nullable ClassDef[] outLastClassDef) {
 		if (!isSet(expr)) {
 			throw new NgoyException("Expression must not be empty");
 		}
@@ -408,21 +506,5 @@ public final class FieldAccessToGetterParser {
 		} catch (Exception e) {
 			throw wrap(e);
 		}
-	}
-
-	private static Class<?> tryLoadClass(String type) {
-		Class<?> c = null;
-		try {
-			c = Class.forName(type);
-		} catch (ClassNotFoundException e) {
-			try {
-				c = Thread.currentThread()
-						.getContextClassLoader()
-						.loadClass(type);
-			} catch (ClassNotFoundException ee) {
-				// ignore
-			}
-		}
-		return c;
 	}
 }

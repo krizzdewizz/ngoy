@@ -2,6 +2,7 @@ package ngoy.core.internal;
 
 import java.util.AbstractList;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 import ngoy.core.NgoyException;
 
@@ -70,6 +71,12 @@ public class IteratorWithVariables implements Iterator {
 			public int size() { return arr.length; } }));
 	}
 	/* @formatter:on */
+
+	public IteratorWithVariables(Stream stream) {
+		checkNonNull(stream, null);
+		this.target = stream.iterator();
+		index = -1;
+	}
 
 	public IteratorWithVariables(Iterable iterable) {
 		checkNonNull(iterable, null);

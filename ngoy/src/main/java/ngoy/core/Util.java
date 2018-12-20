@@ -275,4 +275,20 @@ public class Util {
 			return format("[L%s;", type);
 		}
 	}
+
+	public static Class<?> tryLoadClass(String type) {
+		Class<?> c = null;
+		try {
+			c = Class.forName(type);
+		} catch (ClassNotFoundException e) {
+			try {
+				c = Thread.currentThread()
+						.getContextClassLoader()
+						.loadClass(type);
+			} catch (ClassNotFoundException ee) {
+				// ignore
+			}
+		}
+		return c;
+	}
 }

@@ -4,7 +4,9 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.Util.getLine;
+import static ngoy.core.Util.primitiveToRefType;
 import static ngoy.core.Util.sourceClassName;
+import static ngoy.core.Util.tryLoadClass;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,7 +90,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final LinkedList<String> switchVars = new LinkedList<>();
 	private final LinkedList<Boolean> switchHadElseIf = new LinkedList<>();
 	private final LinkedList<CmpVar> cmpVars = new LinkedList<>();
-	private final LinkedList<Map<String, String>> localVarDefs = new LinkedList<>();
+	private final LinkedList<Map<String, Class<?>>> localVarDefs = new LinkedList<>();
 	private final LinkedList<Set<String>> prefixExcludes = new LinkedList<>();
 	private final Set<String> pipeNames = new HashSet<>();
 	private final Map<String, Integer> localVars = new HashMap<>();
@@ -252,8 +254,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			excludes.addAll(more);
 		}
 
-		Map<String, String> vars = new HashMap<>();
-		for (Map<String, String> it : localVarDefs) {
+		Map<String, Class<?>> vars = new HashMap<>();
+		for (Map<String, Class<?>> it : localVarDefs) {
 			vars.putAll(it);
 		}
 
@@ -421,28 +423,29 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String itemName = forOfDef.itemName;
 		String itemTypeName = forOfDef.itemType;
 		String listName = forOfDef.listName;
+		String origListName = listName;
+
+		CmpVar cmpVar = cmpVars.peek();
 
 		if ("let".equals(itemTypeName) || "var".equals(itemTypeName)) {
 			ClassDef[] outLastClassDef = new ClassDef[1];
-			listName = prefixName(listName, "", outLastClassDef);
+			listName = prefixName(listName, cmpVar.name, outLastClassDef);
 			ClassDef listClass = outLastClassDef[0];
 			if (!listClass.valid()) {
-				throw new NgoyException("'%s' is not iterable. Must be an instance of %s or an array", listName, Iterable.class.getName());
+				throw new NgoyException("'%s' is not iterable. Must be an instance of %s or an array", origListName, Iterable.class.getName());
 			}
 			itemTypeName = sourceClassName(listClass.getListItemType(listClass));
 		} else {
-			listName = prefixName(listName, "", null);
+			listName = prefixName(listName, cmpVar.name, null);
 		}
 
 		Set<String> ex = new HashSet<>(asList(itemName));
 
-		CmpVar cmpVar = cmpVars.peek();
-
-		String itemTypeClazz = Util.primitiveToRefType(itemTypeName);
+		String itemTypeClazz = primitiveToRefType(itemTypeName);
 
 		String iterVar = createLocalVar("iter");
-		printExprComment(listName);
-		$("for (", IteratorWithVariables.class, " ", iterVar, "= new ", IteratorWithVariables.class, "(", prefixName(listName, cmpVar.name), "); ", iterVar, ".hasNext();) {");
+		printExprComment(origListName);
+		$("for (", IteratorWithVariables.class, " ", iterVar, "= new ", IteratorWithVariables.class, "(", listName, "); ", iterVar, ".hasNext();) {");
 		$(itemTypeClazz, " ", itemName, "=(", itemTypeClazz, ")", iterVar, ".next();");
 
 		Set<Entry<ForOfVariable, String>> entries = variables.entrySet();
@@ -454,8 +457,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		prefixExcludes.push(ex);
 
-		Map<String, String> iterVarDef = new HashMap<>();
-		iterVarDef.put(itemName, itemTypeName);
+		Map<String, Class<?>> iterVarDef = new HashMap<>();
+		iterVarDef.put(itemName, tryLoadClass(itemTypeName));
 		localVarDefs.push(iterVarDef);
 	}
 

@@ -272,6 +272,32 @@ public class Ngoy<T> {
 		return new Builder<T>(appRoot);
 	}
 
+	public static void renderString(String template, Context<?> context, OutputStream out, Config... config) {
+		OutputStreamWriter writer = newOutputStreamWriter(out);
+		try {
+			renderString(template, context, writer, config);
+		} finally {
+			try {
+				writer.flush();
+			} catch (Exception e) {
+				throw wrap(e);
+			}
+		}
+	}
+
+	public static void renderTemplate(String template, Context<?> context, OutputStream out, Config... config) {
+		OutputStreamWriter writer = newOutputStreamWriter(out);
+		try {
+			renderTemplate(template, context, writer, config);
+		} finally {
+			try {
+				writer.flush();
+			} catch (Exception e) {
+				throw wrap(e);
+			}
+		}
+	}
+
 	/**
 	 * Renders the given string.
 	 * <p>
@@ -607,7 +633,7 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(OutputStream out) {
-		Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+		Writer writer = newOutputStreamWriter(out);
 		try {
 			render(writer);
 		} finally {
@@ -617,6 +643,10 @@ public class Ngoy<T> {
 				throw wrap(e);
 			}
 		}
+	}
+
+	private static OutputStreamWriter newOutputStreamWriter(OutputStream out) {
+		return new OutputStreamWriter(out, StandardCharsets.UTF_8);
 	}
 
 	/**
