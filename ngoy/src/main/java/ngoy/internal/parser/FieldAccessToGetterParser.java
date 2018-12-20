@@ -70,7 +70,6 @@ import ngoy.core.Variable;
  * <li>infers the type of the expression so we can have 'let/var' in *ngFor</li>
  * </ul>
  * 
- * 
  * @author krizz
  */
 public final class FieldAccessToGetterParser {
@@ -135,22 +134,19 @@ public final class FieldAccessToGetterParser {
 						.subList(0, ambiguousName.n)
 						.stream()
 						.collect(joining("."));
-				Class<?> c = Util.tryLoadClass(className);
-				if (c == null) {
-					c = clazz;
-				}
-				return new AtomDef<>(ambiguousName, ClassDef.of(c));
+				Class<?> c = tryLoadClass(className);
+				return new AtomDef<>(ambiguousName, ClassDef.of(c != null ? c : clazz));
 			}
 
 			Class<?> prefix = prefixes.get(ids[0]);
 
-			ClassDef[] cd = new ClassDef[1];
+			ClassDef cd = null;
 			int startIndex;
 			if (prefix != null) {
-				cd[0] = ClassDef.of(prefix);
+				cd = ClassDef.of(prefix);
 				startIndex = 1;
 			} else {
-				cd[0] = ClassDef.of(clazz);
+				cd = ClassDef.of(clazz);
 				startIndex = 0;
 			}
 
@@ -161,7 +157,7 @@ public final class FieldAccessToGetterParser {
 				String id = ids[i];
 
 				try {
-					cd[0] = ClassDef.of(cd[0].clazz.getField(id));
+					cd = ClassDef.of(cd.clazz.getField(id));
 					continue;
 				} catch (NoSuchFieldException e) {
 					// ignore, try getter
@@ -169,20 +165,20 @@ public final class FieldAccessToGetterParser {
 					throw wrap(e);
 				}
 
-				Method getter = findGetter(cd[0].clazz, id);
+				Method getter = findGetter(cd.clazz, id);
 
 				if (getter != null) {
 					idsCopy[i] = format("%s()", getter.getName());
-					cd[0] = ClassDef.of(getter);
+					cd = ClassDef.of(getter);
 				} else {
 					Variable<?> variable = variables.get(id);
 					if (variable != null) {
-						cd[0] = ClassDef.of(variable.type);
+						cd = ClassDef.of(variable.type);
 					}
 				}
 			}
 
-			return new AtomDef<>(new AmbiguousName(ambiguousName.getLocation(), idsCopy, ambiguousName.n), cd[0]);
+			return new AtomDef<>(new AmbiguousName(ambiguousName.getLocation(), idsCopy, ambiguousName.n), cd);
 		}
 
 		private AtomDef<?> toGetter(Class<?> clazz, ArrayAccessExpression aae) throws CompileException {
@@ -203,7 +199,7 @@ public final class FieldAccessToGetterParser {
 				if (mapClass) {
 					cd.typeParamIndex = 1;
 				}
-				return new AtomDef<>(new MethodInvocation(aae.getLocation(), target, "get", new Rvalue[] { aae.index }), cd);
+				return new AtomDef<>(new MethodInvocation(aae.getLocation(), target, "get", new Rvalue[] { copyRvalue(aae.index) }), cd);
 			}
 
 			return new AtomDef<>(aae, cd);
@@ -211,7 +207,7 @@ public final class FieldAccessToGetterParser {
 
 		private AtomDef<Cast> toGetter(Class<?> clazz, Cast cast) throws CompileException {
 			ClassDef cd = ClassDef.of(clazz);
-			Class<?> targetClass = Util.tryLoadClass(cast.targetType.toString());
+			Class<?> targetClass = tryLoadClass(cast.targetType.toString());
 			if (targetClass != null) {
 				cd = ClassDef.of(targetClass);
 			}
@@ -362,7 +358,7 @@ public final class FieldAccessToGetterParser {
 					return ClassDef.of(cc);
 				}
 			} else if (atom instanceof Cast) {
-				Class<?> targetClass = Util.tryLoadClass(((Cast) atom).targetType.toString());
+				Class<?> targetClass = tryLoadClass(((Cast) atom).targetType.toString());
 				if (targetClass != null) {
 					return ClassDef.of(targetClass);
 				}
@@ -394,10 +390,10 @@ public final class FieldAccessToGetterParser {
 			if (cd.needsCast) {
 				Method meth = findMethod(cd.clazz, mi.methodName, mi.arguments.length);
 				if (meth != null) {
-					Type tt = meth.getGenericReturnType();
-					String typeName = tt.getTypeName();
-					if (tt instanceof ParameterizedType) {
-						ParameterizedType pt = (ParameterizedType) tt;
+					Type rt = meth.getGenericReturnType();
+					String typeName = rt.getTypeName();
+					if (rt instanceof ParameterizedType) {
+						ParameterizedType pt = (ParameterizedType) rt;
 						typeName = pt.getActualTypeArguments()[0].getTypeName();
 					}
 
@@ -435,23 +431,23 @@ public final class FieldAccessToGetterParser {
 		}
 
 		@Override
+		public Lvalue copyFieldAccessExpression(FieldAccessExpression subject) throws CompileException {
+			AtomDef<Lvalue> fae = toGetter(lastClassDef.clazz, subject);
+			lastClassDef = fae.classDef;
+			return fae.atom;
+		}
+
+		@Override
 		public Rvalue copyNewInitializedArray(NewInitializedArray subject) throws CompileException {
 			ArrayType arrayType = subject.arrayType;
 			String type = Util.getArrayClass(arrayType.componentType.toString());
-			Class<?> clazz = Util.tryLoadClass(type);
+			Class<?> clazz = tryLoadClass(type);
 
 			if (clazz != null) {
 				lastClassDef = ClassDef.of(clazz);
 			}
 
 			return super.copyNewInitializedArray(subject);
-		}
-
-		@Override
-		public Lvalue copyFieldAccessExpression(FieldAccessExpression subject) throws CompileException {
-			AtomDef<Lvalue> fae = toGetter(lastClassDef.clazz, subject);
-			lastClassDef = fae.classDef;
-			return fae.atom;
 		}
 	}
 
@@ -484,7 +480,6 @@ public final class FieldAccessToGetterParser {
 				} else if (rvalue instanceof NewAnonymousClassInstance) {
 					throw new NgoyException("Error while compiling expression '%s'. Anonymous class is not allowed.", expr);
 				}
-
 			} catch (CompileException e) {
 				throw new NgoyException("Error while compiling expression '%s': %s. The expression must be a single rvalue.", expr, getCompileExceptionMessageWithoutLocation(e));
 			}

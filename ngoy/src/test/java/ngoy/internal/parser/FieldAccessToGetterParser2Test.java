@@ -16,6 +16,7 @@ public class FieldAccessToGetterParser2Test {
 
 	private static class Between {
 		public List<Person> persons;
+		public int theIndex;
 	}
 
 	private static class MyCmp {
@@ -25,6 +26,11 @@ public class FieldAccessToGetterParser2Test {
 
 		public List<Person> persons2;
 		public Between between;
+
+		public Between getBtw() {
+			return null;
+		}
+
 		public Map<String, Person> personMap;
 		public List<?> persons3;
 		public List<? extends Person> persons4;
@@ -45,6 +51,11 @@ public class FieldAccessToGetterParser2Test {
 	@Test
 	public void arrayIndexForList() {
 		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "persons[0].name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) getPersons().get(0)).getName()");
+	}
+
+	@Test
+	public void arrayIndexForList2() {
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "persons[btw.theIndex].name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) getPersons().get(getBtw().theIndex)).getName()");
 	}
 
 	@Test
