@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,6 +54,31 @@ public class FieldAccessTest extends ANgoyTest {
 	@Test
 	public void testIterables() {
 		assertThat(render(TestCmp.class)).isEqualTo("hello Peter <b>Paul,false</b><b>Mary,true</b>");
+	}
+
+	//
+
+	@Component(selector = "", template = "hello {{NAME}} {{doIt()}} <ng-container *ngFor='let c of colors'>{{c}}</ng-container>")
+	public static class StaticCmp {
+		public static enum Color {
+			RED, GREEN, BLUE
+		}
+
+		public static String doIt() {
+			return "justDoIt";
+		}
+
+		public static Stream<Color> getColors() {
+			return Stream.of(Color.values())
+					.filter(c -> c != Color.RED);
+		}
+
+		public static final String NAME = "world";
+	}
+
+	@Test
+	public void testStatic() {
+		assertThat(render(StaticCmp.class)).isEqualTo("hello world justDoIt GREENBLUE");
 	}
 
 	//
