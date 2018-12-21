@@ -295,15 +295,25 @@ public class Util {
 		return c;
 	}
 
-	@Nullable
 	public static Method findMethod(Class<?> c, String methodName, int nArgs) {
+		return findMethod(c, methodName, nArgs, false);
+	}
+
+	@Nullable
+	public static Method findMethod(Class<?> c, String methodName, int nArgs, boolean forLambda) {
+		boolean checkItf = c.isInterface() && forLambda;
+
 		return Stream.of(c.getMethods())
 				.filter(meth -> {
 					int mods = meth.getModifiers();
+					boolean staticc = Modifier.isStatic(mods);
+					if (checkItf && staticc) {
+						return false;
+					}
 					boolean hasArgs = meth.getParameterCount() == nArgs || meth.isVarArgs();
 					boolean isName = meth.getName()
 							.equals(methodName) || !isSet(methodName);
-					return hasArgs && isName && Modifier.isPublic(mods);
+					return !meth.isDefault() && hasArgs && isName && Modifier.isPublic(mods);
 				})
 				.findFirst()
 				.orElse(null);

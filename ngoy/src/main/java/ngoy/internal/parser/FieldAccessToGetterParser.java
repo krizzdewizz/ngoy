@@ -333,7 +333,7 @@ public final class FieldAccessToGetterParser {
 					.get(0);
 
 			int nParams = md.formalParameters.parameters.length;
-			Method lambdaMeth = findMethod(pt, null, nParams);
+			Method lambdaMeth = findMethod(pt, null, nParams, true);
 			if (lambdaMeth == null) {
 				throw new NgoyException("Class %s does not have a method with parameter count %s", pt.getName(), nParams);
 			}
