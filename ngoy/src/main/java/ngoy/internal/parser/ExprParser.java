@@ -57,14 +57,20 @@ public class ExprParser {
 		return s.replace(OR_ESCAPE, "||");
 	}
 
-	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes, Map<String, Variable<?>> variables, ClassDef[] outLastClassDef) {
+	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes, Map<String, Variable<?>> variables, ClassDef[] outLastClassDef,
+			Set<String> outMethodCalls) {
 		try {
+
+			if (outMethodCalls == null) {
+				outMethodCalls = new HashSet<>();
+			}
+
 			expr = fieldAccessToGetter(clazz, prefixes, expr, variables, outLastClassDef);
 
 			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
 			Atom atom = parser.parseExpression();
 
-			Atom copyAtom = new PrefixAdder(prefix, excludes).copyAtom(atom);
+			Atom copyAtom = new PrefixAdder(prefix, excludes, outMethodCalls).copyAtom(atom);
 
 			StringWriter sw = new StringWriter();
 			Unparser unparser = new Unparser(sw);
@@ -108,11 +114,13 @@ public class ExprParser {
 
 	private static class PrefixAdder extends DeepCopier {
 		private final String prefix;
+		private final Set<String> outMethodCalls;
 		private Set<String> excludes;
 
-		private PrefixAdder(String prefix, Set<String> excludes) {
+		private PrefixAdder(String prefix, Set<String> excludes, Set<String> outMethodCalls) {
 			this.prefix = prefix;
 			this.excludes = excludes;
+			this.outMethodCalls = outMethodCalls;
 		}
 
 		boolean inAnon;
@@ -156,6 +164,7 @@ public class ExprParser {
 
 		@Override
 		public Rvalue copyMethodInvocation(MethodInvocation subject) throws CompileException {
+			outMethodCalls.add(subject.methodName);
 			if (subject.optionalTarget == null && !excludes.contains(subject.methodName) && !prefix.isEmpty()) {
 				return new MethodInvocation(subject.getLocation(), new AmbiguousName(subject.getLocation(), new String[] { prefix }), subject.methodName, copyRvalues(subject.arguments));
 			}

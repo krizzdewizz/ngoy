@@ -3,6 +3,8 @@ package ngoy.internal.parser.template;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static ngoy.core.Util.getLine;
 import static ngoy.core.Util.primitiveToRefType;
 import static ngoy.core.Util.sourceClassName;
@@ -15,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -28,8 +31,8 @@ import ngoy.core.Variable;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.IteratorWithVariables;
-import ngoy.core.internal.WithCtx;
 import ngoy.core.internal.TemplateRender;
+import ngoy.core.internal.WithCtx;
 import ngoy.internal.parser.ClassDef;
 import ngoy.internal.parser.ExprParser;
 import ngoy.internal.parser.ForOfDef;
@@ -70,6 +73,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private static final String STRINGS = "$STRINGS$";
+	private static final String PIPE_METHODS = "$PIPE_METHODS$";
+	private static final String SET_PIPES = "$SET_PIPES$";
+	private static final String SET_PIPE_CTX = "$SET_PIPE_CTX$";
 
 	private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\r|\\n");
 
@@ -93,10 +99,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final LinkedList<CmpVar> cmpVars = new LinkedList<>();
 	private final LinkedList<Map<String, Class<?>>> localVarDefs = new LinkedList<>();
 	private final LinkedList<Set<String>> prefixExcludes = new LinkedList<>();
-	private final Set<String> pipeNames = new HashSet<>();
 	private final Map<String, Integer> localVars = new HashMap<>();
 	private final Map<String, Integer> stringRefs = new LinkedHashMap<>();
 	private final Map<String, Variable<?>> variables;
+	private final Set<String> methodCalls = new HashSet<>();
 	private final boolean bodyOnly;
 	private String cmpVar;
 	private String code;
@@ -105,6 +111,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private String stringsLocalVar;
 
 	private String sourcePosition;
+	private Map<String, Class<?>> pipesMap;
 
 	public JavaTemplate(String contentType, boolean bodyOnly, Map<String, Variable<?>> variables) {
 		super(new Printer());
@@ -127,6 +134,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	@Override
 	public void documentStart(List<Class<?>> pipes) {
+
+		pipesMap = pipes.stream()
+				.collect(toMap(pipe -> format("$%s", pipe.getAnnotation(Pipe.class)
+						.value()), Objects::requireNonNull));
+
 		if (!bodyOnly) {
 			$("package ngoy;");
 			$("@SuppressWarnings(\"all\")");
@@ -139,16 +151,16 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		$("private static class Renderer implements ", TemplateRender.class, "{");
 
-		addPipeMethods(pipes);
+		$(PIPE_METHODS);
 
 		$("private Renderer(", Injector.class, " injector) {");
-		setPipes(pipes);
+		$(SET_PIPES);
 		$("}");
 
 		$("private static final String[] ", stringsVar, "= new String[]{", STRINGS, "};");
 
 		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws Exception {");
-		setPipesCtx(pipes);
+		$(SET_PIPE_CTX);
 		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
 		addVariables();
 
@@ -174,42 +186,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 	}
 
-	private void addPipeMethods(List<Class<?>> pipes) {
-		for (Class<?> pipe : pipes) {
-			String pipeName = pipe.getAnnotation(Pipe.class)
-					.value();
-			String pipeFun = format("$%s", pipeName);
-			pipeNames.add(pipeFun);
-			$("private static ", PipeTransform.class, " _", pipeFun, ";");
-			$("private static Object ", pipeFun, "(Object obj, Object... args) {");
-			$("  return _", pipeFun, ".transform(obj, args);");
-			$("}");
-		}
-	}
-
-	private void setPipesCtx(List<Class<?>> pipes) {
-		for (Class<?> pipe : pipes) {
-			if (!WithCtx.class.isAssignableFrom(pipe)) {
-				continue;
-			}
-
-			String pipeName = pipe.getAnnotation(Pipe.class)
-					.value();
-			String pipeFun = format("$%s", pipeName);
-			$("((", WithCtx.class, ")_", pipeFun, ").setCtx(", CTX_VAR, ");");
-		}
-	}
-
-	private void setPipes(List<Class<?>> pipes) {
-		for (Class<?> pipe : pipes) {
-			String pipeName = pipe.getAnnotation(Pipe.class)
-					.value();
-			String pipeFun = format("$%s", pipeName);
-			$("_", pipeFun, "=(", PipeTransform.class, ")injector.get(", pipe, ".class);");
-
-		}
-	}
-
 	@Override
 	public void documentEnd() {
 		flushOut();
@@ -224,6 +200,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		code = super.toString();
 
 		replaceStrings();
+		replacePipes();
 	}
 
 	@Override
@@ -236,6 +213,58 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 				.stream()
 				.map(s -> format("\"%s\"", s))
 				.collect(joining(",\n")));
+	}
+
+	private void replacePipes() {
+
+		Set<String> pipeCalls = getPipeCalls();
+
+		String pipeMethods = new CodeBuilder(new Printer()) {
+			@Override
+			protected void doCreate() {
+				for (String pipeFun : pipeCalls) {
+					$("private static ", PipeTransform.class, " _", pipeFun, ";");
+					$("private static Object ", pipeFun, "(Object obj, Object... args) {");
+					$("  return _", pipeFun, ".transform(obj, args);");
+					$("}");
+				}
+			}
+		}.create()
+				.toString();
+
+		String setPipes = new CodeBuilder(new Printer()) {
+			@Override
+			protected void doCreate() {
+				for (String pipeFun : pipeCalls) {
+					$("_", pipeFun, "=(", PipeTransform.class, ")injector.get(", pipesMap.get(pipeFun), ".class);");
+				}
+			}
+		}.create()
+				.toString();
+
+		String setPipeCtx = new CodeBuilder(new Printer()) {
+			@Override
+			protected void doCreate() {
+				for (String pipeFun : pipeCalls) {
+					Class<?> pipe = pipesMap.get(pipeFun);
+					if (!WithCtx.class.isAssignableFrom(pipe)) {
+						continue;
+					}
+					$("((", WithCtx.class, ")_", pipeFun, ").setCtx(", CTX_VAR, ");");
+				}
+			}
+		}.create()
+				.toString();
+
+		code = code.replace(PIPE_METHODS, pipeMethods);
+		code = code.replace(SET_PIPES, setPipes);
+		code = code.replace(SET_PIPE_CTX, setPipeCtx);
+	}
+
+	private Set<String> getPipeCalls() {
+		return methodCalls.stream()
+				.filter(it -> pipesMap.containsKey(it))
+				.collect(toSet());
 	}
 
 	@Override
@@ -260,7 +289,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private String prefixName(String expr, String prefix, ClassDef[] outLastClassDef) {
-		Set<String> excludes = new HashSet<>(pipeNames);
+		Set<String> excludes = new HashSet<>(pipesMap.keySet());
 		excludes.addAll(variables.keySet());
 		excludes.add("java");
 		excludes.add("Map");
@@ -275,7 +304,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			vars.putAll(it);
 		}
 
-		return ExprParser.prefixName(cmpVars.peek().cmpClass, vars, expr, prefix, excludes, variables, outLastClassDef);
+		return ExprParser.prefixName(cmpVars.peek().cmpClass, vars, expr, prefix, excludes, variables, outLastClassDef, methodCalls);
 	}
 
 	@Override
