@@ -1,8 +1,10 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.NgoyException.wrap;
+import static ngoy.core.Util.findMethod;
 import static ngoy.core.Util.getCompileExceptionMessageWithoutLocation;
 import static ngoy.core.Util.isSet;
 import static ngoy.core.Util.sourceClassName;
@@ -12,29 +14,38 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AmbiguousName;
+import org.codehaus.janino.Java.AnonymousClassDeclaration;
 import org.codehaus.janino.Java.ArrayAccessExpression;
+import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
+import org.codehaus.janino.Java.BinaryOperation;
+import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.BooleanLiteral;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.FieldAccessExpression;
 import org.codehaus.janino.Java.FloatingPointLiteral;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Java.IntegerLiteral;
+import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Java.Lvalue;
+import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewClassInstance;
@@ -43,9 +54,12 @@ import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.ParenthesizedExpression;
 import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.ReferenceType;
+import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.StringLiteral;
 import org.codehaus.janino.Java.ThisReference;
+import org.codehaus.janino.Java.VariableDeclarator;
+import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Unparser;
@@ -86,19 +100,6 @@ public final class FieldAccessToGetterParser {
 
 	private static Rvalue unwrapParenthesizedExpression(Rvalue atom) {
 		return atom instanceof ParenthesizedExpression ? ((ParenthesizedExpression) atom).value : atom;
-	}
-
-	@Nullable
-	private static Method findMethod(Class<?> c, String methodName, int nArgs) {
-		return Stream.of(c.getMethods())
-				.filter(meth -> {
-					int mods = meth.getModifiers();
-					boolean hasArgs = meth.getParameterCount() == nArgs || meth.isVarArgs();
-					return hasArgs && meth.getName()
-							.equals(methodName) && Modifier.isPublic(mods);
-				})
-				.findFirst()
-				.orElse(null);
 	}
 
 	private static Method findGetter(Class<?> clazz, String fieldName) {
@@ -294,7 +295,102 @@ public final class FieldAccessToGetterParser {
 				}
 			}
 
-			return new AtomDef<>(new MethodInvocation(mi.getLocation(), target, mi.methodName, copyRvalues(mi.arguments)), cd);
+			AtomDef<Rvalue[]> mad = copyMethodArgs(mi, cd);
+			cd = mad.classDef;
+			return new AtomDef<>(new MethodInvocation(mi.getLocation(), target, mi.methodName, mad.atom), cd);
+		}
+
+		private AtomDef<Rvalue[]> copyMethodArgs(MethodInvocation mi, ClassDef cd) throws CompileException {
+			List<Rvalue> all = new ArrayList<>();
+
+			Method meth = findMethod(cd.clazz, mi.methodName, mi.arguments.length);
+			if (meth == null) {
+				return new AtomDef<>(copyRvalues(mi.arguments), cd);
+			}
+			int i = 0;
+			for (Rvalue a : mi.arguments) {
+				if (a instanceof NewAnonymousClassInstance) {
+					AtomDef<Rvalue> ad = convertLambdaAnon(meth, (NewAnonymousClassInstance) a, i, cd);
+					cd = ad.classDef;
+					all.add(ad.atom);
+				} else {
+					all.add(copyRvalue(a));
+				}
+				i++;
+			}
+
+			return new AtomDef<>(all.toArray(new Rvalue[all.size()]), cd);
+		}
+
+		private AtomDef<Rvalue> convertLambdaAnon(Method meth, NewAnonymousClassInstance arg, int argIndex, ClassDef cd) throws CompileException {
+			Class<?> pt = meth.getParameterTypes()[argIndex];
+			String cc = sourceClassName(pt);
+			String[] ids = cc.split("\\.");
+
+			AnonymousClassDeclaration decl = new AnonymousClassDeclaration(arg.getLocation(), new ReferenceType(arg.getLocation(), ids, null));
+
+			MethodDeclarator md = arg.anonymousClassDeclaration.getMethodDeclarations()
+					.get(0);
+
+			int nParams = md.formalParameters.parameters.length;
+			Method lambdaMeth = findMethod(pt, null, nParams);
+			if (lambdaMeth == null) {
+				throw new NgoyException("Class %s does not have a method with parameter count %s", pt.getName(), nParams);
+			}
+
+			Class<?> rt = lambdaMeth.getReturnType();
+			if (rt == void.class) {
+				throw new NgoyException("Cannot convert lambda expression to a void method: %s.%s", pt.getName(), lambdaMeth.getName());
+			}
+
+			String rtc = sourceClassName(rt);
+			String[] rtIds = rtc.split("\\.");
+
+			FormalParameters mdParams = md.formalParameters;
+			FormalParameter mdParam0 = mdParams.parameters[0];
+			Location loc = md.getLocation();
+			String _mdParam0 = format("_%s", mdParam0.name);
+			FormalParameter p0 = new FormalParameter(loc, true, copyType(mdParams.parameters[0].type), _mdParam0);
+
+			List<FormalParameter> paramsCopy = new ArrayList<>();
+			paramsCopy.add(p0);
+			for (FormalParameter pp : asList(mdParams.parameters).subList(1, mdParams.parameters.length)) {
+				paramsCopy.add(copyFormalParameter(pp));
+			}
+
+			FormalParameters params = new FormalParameters(loc, paramsCopy.toArray(new FormalParameter[0]), false);
+
+			String[] effectivePt = cd.getTypeArgument()
+					.getName()
+					.split("\\.");
+			ReferenceType effectiveRefType = new ReferenceType(loc, effectivePt, null);
+			List<BlockStatement> statements = new ArrayList<>();
+			ArrayInitializerOrRvalue init = new Cast(loc, effectiveRefType, new AmbiguousName(loc, new String[] { _mdParam0 }));
+			VariableDeclarator[] decls = new VariableDeclarator[] { new VariableDeclarator(loc, mdParam0.name, 0, init) };
+			statements.add(new LocalVariableDeclarationStatement(loc, new Java.Modifiers(Mod.FINAL), effectiveRefType, decls));
+
+			ClassDef returnCd = resolveClass(lastClassDef.clazz, ((ReturnStatement) md.optionalStatements.get(0)).optionalReturnValue);
+			if (returnCd != null) {
+				cd.genericType = returnCd.clazz;
+			}
+
+			for (BlockStatement s : md.optionalStatements) {
+				statements.add(copyBlockStatement(s));
+			}
+
+			decl.addDeclaredMethod(new MethodDeclarator(//
+					loc, //
+					null, //
+					new Java.Modifiers(Mod.PUBLIC), //
+					null, //
+					new ReferenceType(loc, rtIds, null), //
+					lambdaMeth.getName(), //
+					params, //
+					new org.codehaus.janino.Java.Type[0], //
+					null, //
+					statements //
+			));
+			return new AtomDef<>(new NewAnonymousClassInstance(arg.getLocation(), null, decl, new Rvalue[0]), cd);
 		}
 
 		private ClassDef resolveClass(Class<?> clazz, Rvalue atom) {
@@ -361,6 +457,26 @@ public final class FieldAccessToGetterParser {
 				Class<?> targetClass = tryLoadClass(((Cast) atom).targetType.toString());
 				if (targetClass != null) {
 					return ClassDef.of(targetClass);
+				}
+			} else if (atom instanceof BinaryOperation) {
+				BinaryOperation bo = (BinaryOperation) atom;
+				switch (bo.operator) {
+				case ">":
+				case "<":
+				case ">=":
+				case "<=":
+				case "==":
+				case "||":
+				case "&&":
+				case "!=":
+					return ClassDef.of(boolean.class);
+				case "|":
+				case "&":
+				case "^":
+					return ClassDef.of(int.class);
+				default:
+					// depends on operands
+					// TODO
 				}
 			}
 
@@ -472,8 +588,13 @@ public final class FieldAccessToGetterParser {
 
 		@Override
 		public Rvalue copyNewAnonymousClassInstance(NewAnonymousClassInstance subject) throws CompileException {
+			if (subject.anonymousClassDeclaration.baseType.toString()
+					.equals("LAMBDA")) {
+				return super.copyNewAnonymousClassInstance(subject);
+			}
 			throw new CompileException("Anonymous class is not allowed", subject.getLocation());
 		}
+
 	}
 
 	private FieldAccessToGetterParser() {
@@ -485,6 +606,7 @@ public final class FieldAccessToGetterParser {
 		}
 
 		expr = SmartStringParser.toJavaString(expr);
+		expr = LambdaParser.parse(expr);
 
 		try {
 			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));

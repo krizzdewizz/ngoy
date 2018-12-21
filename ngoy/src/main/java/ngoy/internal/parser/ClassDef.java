@@ -27,7 +27,7 @@ public class ClassDef {
 	}
 
 	public final Class<?> clazz;
-	public final Type genericType;
+	public Type genericType;
 	public final boolean needsCast;
 	public int typeParamIndex;
 

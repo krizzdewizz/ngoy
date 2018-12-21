@@ -87,13 +87,35 @@ public class ForOf2Test extends ANgoyTest {
 
 	//
 
-	@Component(selector = "test", template = "<ng-container *ngFor=\"let entry : java.util.stream.Stream.of('a', 'b', 'c')\">{{entry.trim()}}</ng-container>")
+	@Component(selector = "test", template = "<ng-container *ngFor=\"let entry : java.util.stream.Stream.of('a ', ' b', ' c ').map(c -> c.trim() + 'x')\">{{entry.trim()}}</ng-container>")
 	public static class CmpStream2 {
 	}
 
 	@Test
 	public void testStream2() {
-		assertThat(render(CmpStream2.class)).isEqualTo("abc");
+		assertThat(render(CmpStream2.class)).isEqualTo("axbxcx");
+	}
+
+	//
+
+	@Component(selector = "test", template = "<ng-container *ngFor=\"let entry : java.util.stream.Stream.of('a ', ' b', ' c ').filter(it -> !it.contains('a')).map(c -> c.trim() + 'x')\">{{entry.trim()}}</ng-container>")
+	public static class CmpStream3 {
+	}
+
+	@Test
+	public void testStream3() {
+		assertThat(render(CmpStream3.class)).isEqualTo("bxcx");
+	}
+
+	//
+
+	@Component(selector = "test", template = "<ng-container *ngFor=\"let entry : java.util.stream.Stream.of('aa ', ' b', ' cc ').map(c -> c.trim().length() > 1)\">{{entry}}</ng-container>")
+	public static class CmpStream4 {
+	}
+
+	@Test
+	public void testStream4() {
+		assertThat(render(CmpStream4.class)).isEqualTo("truefalsetrue");
 	}
 
 }

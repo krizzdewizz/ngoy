@@ -8,6 +8,7 @@ import static ngoy.internal.parser.FieldAccessToGetterParser.fieldAccessToGetter
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,8 +19,11 @@ import java.util.regex.Pattern;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Atom;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Java.Lvalue;
+import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
+import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
@@ -104,11 +108,38 @@ public class ExprParser {
 
 	private static class PrefixAdder extends DeepCopier {
 		private final String prefix;
-		private final Set<String> excludes;
+		private Set<String> excludes;
 
 		private PrefixAdder(String prefix, Set<String> excludes) {
 			this.prefix = prefix;
 			this.excludes = excludes;
+		}
+
+		boolean inAnon;
+
+		@Override
+		public Rvalue copyNewAnonymousClassInstance(NewAnonymousClassInstance subject) throws CompileException {
+			inAnon = true;
+			Rvalue anon = super.copyNewAnonymousClassInstance(subject);
+			inAnon = false;
+			return anon;
+		}
+
+		@Override
+		public MethodDeclarator copyMethodDeclarator(MethodDeclarator subject) throws CompileException {
+			Set<String> prevExcludes;
+			if (inAnon) {
+				prevExcludes = new HashSet<>(excludes);
+				for (FormalParameter p : subject.formalParameters.parameters) {
+					excludes.add(p.name);
+					excludes.add(p.name.substring(1)); // remove _
+				}
+			} else {
+				prevExcludes = excludes;
+			}
+			MethodDeclarator md = super.copyMethodDeclarator(subject);
+			excludes = prevExcludes;
+			return md;
 		}
 
 		@Override

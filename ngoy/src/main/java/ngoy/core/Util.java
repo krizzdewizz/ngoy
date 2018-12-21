@@ -8,8 +8,11 @@ import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.codehaus.commons.compiler.CompileException;
 
@@ -290,5 +293,19 @@ public class Util {
 			}
 		}
 		return c;
+	}
+
+	@Nullable
+	public static Method findMethod(Class<?> c, String methodName, int nArgs) {
+		return Stream.of(c.getMethods())
+				.filter(meth -> {
+					int mods = meth.getModifiers();
+					boolean hasArgs = meth.getParameterCount() == nArgs || meth.isVarArgs();
+					boolean isName = meth.getName()
+							.equals(methodName) || !isSet(methodName);
+					return hasArgs && isName && Modifier.isPublic(mods);
+				})
+				.findFirst()
+				.orElse(null);
 	}
 }
