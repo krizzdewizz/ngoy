@@ -323,11 +323,12 @@ public final class FieldAccessToGetterParser {
 		}
 
 		private AtomDef<Rvalue> convertLambdaAnon(Method meth, NewAnonymousClassInstance arg, int argIndex, ClassDef cd) throws CompileException {
+			Location loc = arg.getLocation();
 			Class<?> pt = meth.getParameterTypes()[argIndex];
 			String cc = sourceClassName(pt);
 			String[] ids = cc.split("\\.");
 
-			AnonymousClassDeclaration decl = new AnonymousClassDeclaration(arg.getLocation(), new ReferenceType(arg.getLocation(), ids, null));
+			AnonymousClassDeclaration decl = new AnonymousClassDeclaration(loc, new ReferenceType(arg.getLocation(), ids, null));
 
 			MethodDeclarator md = arg.anonymousClassDeclaration.getMethodDeclarations()
 					.get(0);
@@ -348,7 +349,6 @@ public final class FieldAccessToGetterParser {
 
 			FormalParameters mdParams = md.formalParameters;
 			FormalParameter mdParam0 = mdParams.parameters[0];
-			Location loc = md.getLocation();
 			String _mdParam0 = format("_%s", mdParam0.name);
 			FormalParameter p0 = new FormalParameter(loc, true, copyType(mdParams.parameters[0].type), _mdParam0);
 
@@ -390,7 +390,7 @@ public final class FieldAccessToGetterParser {
 					null, //
 					statements //
 			));
-			return new AtomDef<>(new NewAnonymousClassInstance(arg.getLocation(), null, decl, new Rvalue[0]), cd);
+			return new AtomDef<>(new NewAnonymousClassInstance(loc, null, decl, new Rvalue[0]), cd);
 		}
 
 		private ClassDef resolveClass(Class<?> clazz, Rvalue atom) {

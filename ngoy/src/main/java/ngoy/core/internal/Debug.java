@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import ngoy.internal.parser.template.CodeBuilder;
-import ngoy.internal.parser.template.Printer;
 
 public final class Debug {
 	private Debug() {
@@ -34,17 +33,15 @@ public final class Debug {
 			String pack = "ngoy.core.internal";
 			String clazz = "XTemplate";
 			String fileName = format("%s.java", clazz);
-			Printer printer = new Printer();
-			new CodeBuilder(printer) {
+			String cu = new CodeBuilder() {
 				protected void doCreate() {
 					$("package ", pack, ";");
 					$("public class ", clazz, "{");
 					$$(code);
 					$("}");
 				}
-			}.create();
-
-			String cu = printer.toString();
+			}.create()
+					.toString();
 
 			Path tempFile;
 			if (localDebug) {

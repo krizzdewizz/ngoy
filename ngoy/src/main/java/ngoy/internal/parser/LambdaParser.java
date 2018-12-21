@@ -8,7 +8,6 @@ import java.util.List;
 
 import ngoy.core.NgoyException;
 import ngoy.internal.parser.template.CodeBuilder;
-import ngoy.internal.parser.template.Printer;
 
 public class LambdaParser {
 
@@ -33,8 +32,7 @@ public class LambdaParser {
 
 		public String toAnonClass() {
 			String base = "LAMBDA";
-			Printer printer = new Printer();
-			new CodeBuilder(printer) {
+			return new CodeBuilder() {
 				protected void doCreate() {
 					$$("new ", base, "(){public Object LAMBDA_METH(");
 					boolean hadParam = false;
@@ -49,9 +47,8 @@ public class LambdaParser {
 					$$("{return ", expression, ";}");
 					$$("}");
 				}
-			}.create();
-
-			return printer.toString();
+			}.create()
+					.toString();
 		}
 	}
 

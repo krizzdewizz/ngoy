@@ -114,7 +114,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private Map<String, Class<?>> pipesMap;
 
 	public JavaTemplate(String contentType, boolean bodyOnly, Map<String, Variable<?>> variables) {
-		super(new Printer());
 		this.bodyOnly = bodyOnly;
 		this.variables = variables;
 		out = new TextOutput(printer, () -> depth, this::createStringRef, contentType);
@@ -219,7 +218,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		Set<String> pipeCalls = getPipeCalls();
 
-		String pipeMethods = new CodeBuilder(new Printer()) {
+		String pipeMethods = new CodeBuilder() {
 			@Override
 			protected void doCreate() {
 				for (String pipeFun : pipeCalls) {
@@ -232,7 +231,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}.create()
 				.toString();
 
-		String setPipes = new CodeBuilder(new Printer()) {
+		String setPipes = new CodeBuilder() {
 			@Override
 			protected void doCreate() {
 				for (String pipeFun : pipeCalls) {
@@ -242,7 +241,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}.create()
 				.toString();
 
-		String setPipeCtx = new CodeBuilder(new Printer()) {
+		String setPipeCtx = new CodeBuilder() {
 			@Override
 			protected void doCreate() {
 				for (String pipeFun : pipeCalls) {

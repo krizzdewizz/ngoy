@@ -6,8 +6,8 @@ public class CodeBuilder {
 	protected int depth;
 	protected final Printer printer;
 
-	public CodeBuilder(Printer printer) {
-		this.printer = printer;
+	public CodeBuilder() {
+		this.printer = new Printer();
 	}
 
 	public CodeBuilder create() {
