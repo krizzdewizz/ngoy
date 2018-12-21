@@ -1,5 +1,5 @@
 package ngoy.core.internal;
 
 public interface TemplateRender {
-	void render(Ctx ctx);
+	void render(Ctx ctx) throws Exception;
 }
