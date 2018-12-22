@@ -54,28 +54,32 @@ public class LambdaParser {
 
 	public static String parse(String s) {
 		int[] outPos = new int[1];
-		int len = s.length();
 		String parsed = s;
-		while (outPos[0] >= 0 && outPos[0] < len) {
-			parsed = parse(parsed, null, outPos);
+		int pos = 0;
+		while (pos >= 0 && pos < parsed.length()) {
+			parsed = parse(parsed, pos, null, outPos);
+			pos = outPos[0];
 		}
 
 		return parsed;
 	}
 
-	protected static String parse(String s, Lambda[] outLambda, int[] outPos) {
+	protected static String parse(String s, int searchPos, Lambda[] outLambda, int[] outPos) {
 		if (outPos != null) {
 			outPos[0] = -1;
 		}
 		if (!isSet(s)) {
 			return s;
 		}
-		int pos = s.indexOf("->");
+		int pos = s.indexOf("->", searchPos);
 		if (pos < 0) {
 			return s;
 		}
 
 		if (inString(s, pos + 2)) {
+			if (outPos != null) {
+				outPos[0] = pos + 2;
+			}
 			return s;
 		}
 
@@ -164,6 +168,7 @@ public class LambdaParser {
 					params.add(reverse(param.toString()));
 					param.setLength(0);
 					state = ParamState.INIT;
+					pos--;
 					break loop;
 				} else if (c == ',') {
 					params.add(reverse(param.toString()));

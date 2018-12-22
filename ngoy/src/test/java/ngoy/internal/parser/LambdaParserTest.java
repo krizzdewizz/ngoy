@@ -30,7 +30,7 @@ public class LambdaParserTest {
 
 	@Test
 	public void rest() {
-		String parsed = LambdaParser.parse("java.util.stream.Stream.of('a', 'b', 'c').map(c -> c + 'x').qbert", null, null);
+		String parsed = LambdaParser.parse("java.util.stream.Stream.of('a', 'b', 'c').map(c -> c + 'x').qbert", 0, null, null);
 		assertThat(parsed).isEqualTo("java.util.stream.Stream.of('a', 'b', 'c').map(new LAMBDA(){public Object LAMBDA_METH(Object c){return  c + 'x';}}).qbert");
 //		assertThat(md.expression).isEqualTo("foo(x).noop(a ? x : p)");
 	}
@@ -71,7 +71,7 @@ public class LambdaParserTest {
 
 	private Lambda parse(String s) {
 		Lambda[] q = new Lambda[1];
-		LambdaParser.parse(s, q, null);
+		LambdaParser.parse(s, 0, q, null);
 		return q[0];
 	}
 
@@ -104,15 +104,21 @@ public class LambdaParserTest {
 	}
 
 	@Test
-	public void toAnonWithType() {
+	public void withType() {
 		String anon = LambdaParser.parse("(int x) -> x");
 		assertThat(anon).isEqualTo("new LAMBDA(){public Object LAMBDA_METH(int x){return  x;}}");
 	}
 
 	@Test
-	public void toAnonWithTwoParams() {
+	public void withTwoParams() {
 		String anon = LambdaParser.parse("(x, int y) -> x");
 		assertThat(anon).isEqualTo("new LAMBDA(){public Object LAMBDA_METH(Object x,int y){return  x;}}");
+	}
+
+	@Test
+	public void param() {
+		String anon = LambdaParser.parse("foo((x, int y) -> x)");
+		assertThat(anon).isEqualTo("foo(new LAMBDA(){public Object LAMBDA_METH(Object x,int y){return  x;}})");
 	}
 
 	@Test
@@ -135,7 +141,7 @@ public class LambdaParserTest {
 
 	@Test
 	public void inString3() {
-		String anon = LambdaParser.parse("(x, int y) -> \"x\"");
-		assertThat(anon).isEqualTo("new LAMBDA(){public Object LAMBDA_METH(Object x,int y){return  \"x\";}}");
+		String anon = LambdaParser.parse("foo((x, int y) -> \" -> \").bar(s -> s)");
+		assertThat(anon).isEqualTo("foo(new LAMBDA(){public Object LAMBDA_METH(Object x,int y){return  \" -> \";}}).bar(new LAMBDA(){public Object LAMBDA_METH(Object s){return  s;}})");
 	}
 }
