@@ -276,7 +276,7 @@ public final class FieldAccessToGetterParser {
 					cd = ClassDef.of(meth);
 
 					// try to infer from 1st argument
-					if (meth.getGenericReturnType() instanceof ParameterizedType && !needsCast && mi.arguments.length > 0) {
+					if (!needsCast && meth.getGenericReturnType() instanceof ParameterizedType && mi.arguments.length > 0) {
 						ClassDef argCd = resolveClass(lastClassDef.clazz, mi.arguments[0]);
 						if (argCd != null) {
 							cd = new ClassDef(meth.getReturnType(), argCd.clazz, true);
@@ -401,11 +401,7 @@ public final class FieldAccessToGetterParser {
 				MethodInvocation mi = (MethodInvocation) atom;
 				if (mi.optionalTarget == null) {
 					Method meth = findMethod(clazz, mi.methodName, mi.arguments.length);
-					if (meth != null) {
-						return ClassDef.of(meth);
-					} else {
-						return null;
-					}
+					return meth != null ? ClassDef.of(meth) : null;
 				}
 
 				ClassDef cd = resolveClass(clazz, (Rvalue) mi.optionalTarget);
@@ -436,6 +432,8 @@ public final class FieldAccessToGetterParser {
 				}
 
 				return null;
+			} else if (atom instanceof AmbiguousName) {
+				return toGetter(clazz, (AmbiguousName) atom).classDef;
 			} else if (atom instanceof StringLiteral) {
 				return ClassDef.of(String.class);
 			} else if (atom instanceof BooleanLiteral) {
