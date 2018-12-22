@@ -120,4 +120,22 @@ public class LambdaParserTest {
 		String anon = LambdaParser.parse("filter(x -> x).map(a -> a)");
 		assertThat(anon).isEqualTo("filter(new LAMBDA(){public Object LAMBDA_METH(Object x){return  x;}}).map(new LAMBDA(){public Object LAMBDA_METH(Object a){return  a;}})");
 	}
+
+	@Test
+	public void inString() {
+		String anon = LambdaParser.parse("\"(a ->, x\"");
+		assertThat(anon).isEqualTo("\"(a ->, x\"");
+	}
+
+	@Test
+	public void inString2() {
+		String anon = LambdaParser.parse("\"(a ->, \\\" x\"");
+		assertThat(anon).isEqualTo("\"(a ->, \\\" x\"");
+	}
+
+	@Test
+	public void inString3() {
+		String anon = LambdaParser.parse("(x, int y) -> \"x\"");
+		assertThat(anon).isEqualTo("new LAMBDA(){public Object LAMBDA_METH(Object x,int y){return  \"x\";}}");
+	}
 }

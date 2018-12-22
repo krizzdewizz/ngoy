@@ -75,6 +75,10 @@ public class LambdaParser {
 			return s;
 		}
 
+		if (inString(s, pos + 2)) {
+			return s;
+		}
+
 		int[] paramPos = new int[1];
 		int[] bodyPos = new int[1];
 		List<Param> params = parseParams(s, pos - 1, paramPos);
@@ -87,6 +91,20 @@ public class LambdaParser {
 			outPos[0] = bodyPos[0];
 		}
 		return s.substring(0, paramPos[0]) + lambda.toAnonClass() + s.substring(bodyPos[0]);
+	}
+
+	private static boolean inString(String s, int pos) {
+		int quotes = 0;
+		for (int n = s.length(); pos < n; pos++) {
+			char c = s.charAt(pos);
+			char next = pos + 1 < n ? s.charAt(pos + 1) : 0;
+			if (c == '\\' && next == '"') {
+				pos += 1;
+			} else if (c == '"') {
+				quotes++;
+			}
+		}
+		return quotes % 2 == 1;
 	}
 
 	private static enum BodyState {

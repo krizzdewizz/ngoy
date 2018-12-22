@@ -255,9 +255,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}.create()
 				.toString();
 
-		code = code.replace(PIPE_METHODS, pipeMethods);
-		code = code.replace(SET_PIPES, setPipes);
-		code = code.replace(SET_PIPE_CTX, setPipeCtx);
+		code = code.replace(PIPE_METHODS, pipeMethods)
+				.replace(SET_PIPES, setPipes)
+				.replace(SET_PIPE_CTX, setPipeCtx);
 	}
 
 	private Set<String> getPipeCalls() {
