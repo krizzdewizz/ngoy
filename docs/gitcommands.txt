@@ -9,10 +9,18 @@ git pull
 git merge develop
 
 # remove -SNAPSHOT in build.gradle, ngoy, ngoy.cmd
+# verify line endings in ngoy
 # update version in README.md
 
 # build binaries
 gradle clean buildAll
+
+# smoke test
+# extract *all.zip to d:/downloads
+# in ubuntu
+alias ngoy=/mnt/d/downloads/ngoy-1.0.0-rc6/ngoy
+ngoy --version
+ngoy -e "1 + 1"
 
 git add build.gradle ngoy ngoy.cmd ../README.md
 git commit -m "<release>"
