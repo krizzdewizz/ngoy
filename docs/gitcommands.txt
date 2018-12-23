@@ -18,7 +18,7 @@ gradle clean buildAll
 # smoke test
 # extract *all.zip to d:/downloads
 # in ubuntu
-alias ngoy=/mnt/d/downloads/ngoy-1.0.0-rc6/ngoy
+alias ngoy=/mnt/d/downloads/ngoy-1.0.0-rc7/ngoy
 ngoy --version
 ngoy -e "1 + 1"
 
