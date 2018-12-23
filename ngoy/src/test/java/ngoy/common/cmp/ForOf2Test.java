@@ -141,4 +141,15 @@ public class ForOf2Test extends ANgoyTest {
 	public void testStream6() {
 		assertThat(render(CmpStream6.class)).isEqualTo("qbertbqbertcc");
 	}
+
+	//
+
+	@Component(selector = "test", template = "<li *ngFor='let x of java.util.stream.Stream.of(1, 2, 3).filter(x -> x > 1)'>{{x}}</li>")
+	public static class CmpStream7 {
+	}
+
+	@Test
+	public void testStream7() {
+		assertThat(render(CmpStream7.class)).isEqualTo("<li>2</li><li>3</li>");
+	}
 }

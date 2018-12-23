@@ -92,17 +92,17 @@ public class Ctx {
 		this.variables = variables;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static Map Map(Object... pairs) {
-		Map map = new HashMap();
+	@SuppressWarnings("unchecked")
+	public static <K, V> Map<K, V> Map(Object... pairs) {
+		Map<K, V> map = new HashMap<>();
 		for (int i = 0, n = pairs.length; i < n; i += 2) {
-			map.put(pairs[i], pairs[i + 1]);
+			map.put((K) pairs[i], (V) pairs[i + 1]);
 		}
 		return map;
 	}
 
-	@SuppressWarnings({ "rawtypes" })
-	public static List List(Object... items) {
+	@SafeVarargs
+	public static <T> List<T> List(T... items) {
 		return asList(items);
 	}
 }

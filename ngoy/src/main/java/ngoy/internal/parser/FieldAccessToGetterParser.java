@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
@@ -69,6 +70,7 @@ import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.Util;
 import ngoy.core.Variable;
+import ngoy.core.internal.Ctx;
 
 /**
  * Converts a field access to a getter call.
@@ -288,6 +290,18 @@ public final class FieldAccessToGetterParser {
 						target = new ParenthesizedExpression(mi.getLocation(), cast);
 					}
 				}
+			} else if (mi.methodName.equals("List") || mi.methodName.equals("Map")) {
+				Method meth = findMethod(Ctx.class, mi.methodName, 0);
+				int argIndex = mi.methodName.equals("List") ? 0 : 1;
+				// try to infer from argument index
+				if (mi.arguments.length < argIndex + 1) {
+					cd = ClassDef.of(meth);
+				} else {
+					ClassDef argCd = resolveClass(lastClassDef.clazz, mi.arguments[argIndex]);
+					if (argCd != null) {
+						cd = new ClassDef(meth.getReturnType(), argCd.clazz, true);
+					}
+				}
 			} else {
 				Method meth = findMethod(clazz, mi.methodName, mi.arguments.length);
 				if (meth != null) {
@@ -369,9 +383,13 @@ public final class FieldAccessToGetterParser {
 			VariableDeclarator[] decls = new VariableDeclarator[] { new VariableDeclarator(loc, mdParam0.name, 0, init) };
 			statements.add(new LocalVariableDeclarationStatement(loc, new Java.Modifiers(Mod.FINAL), effectiveRefType, decls));
 
-			ClassDef returnCd = resolveClass(lastClassDef.clazz, ((ReturnStatement) md.optionalStatements.get(0)).optionalReturnValue);
-			if (returnCd != null) {
-				cd.genericType = returnCd.clazz;
+			// cheap workaround
+			if (meth.getName()
+					.equals("map") && meth.getDeclaringClass() == Stream.class) {
+				ClassDef returnCd = resolveClass(lastClassDef.clazz, ((ReturnStatement) md.optionalStatements.get(0)).optionalReturnValue);
+				if (returnCd != null) {
+					cd.genericType = returnCd.clazz;
+				}
 			}
 
 			for (BlockStatement s : md.optionalStatements) {

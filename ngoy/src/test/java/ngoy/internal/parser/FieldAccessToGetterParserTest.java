@@ -4,7 +4,6 @@ import static java.util.Collections.emptyMap;
 import static ngoy.internal.parser.FieldAccessToGetterParser.fieldAccessToGetter;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +51,7 @@ public class FieldAccessToGetterParserTest {
 
 	@Test
 	public void getX() {
-		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "getBetween().persons.get(0).name", emptyMap(), null))
-				.isEqualTo("((ngoy.model.Person) (getBetween().getPersons()).get(0)).getName()");
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "getBetween().persons.get(0).name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) (getBetween().getPersons()).get(0)).getName()");
 	}
 
 	@Test
@@ -92,5 +90,21 @@ public class FieldAccessToGetterParserTest {
 		Map<String, Class<?>> vars = new HashMap<>();
 		vars.put("x", Person.class);
 		assertThat(fieldAccessToGetter(MyCmp.class, vars, "qbert.foo(x.name)", emptyMap(), null)).isEqualTo("getQbert().foo(x.getName())");
+	}
+
+	@Test
+	public void builtInList() {
+		ClassDef[] outLastClassDef = new ClassDef[1];
+		fieldAccessToGetter(MyCmp.class, emptyMap(), "List(1, 2, 3)", emptyMap(), outLastClassDef);
+		assertThat(outLastClassDef[0].clazz).isEqualTo(List.class);
+		assertThat(outLastClassDef[0].getTypeArgument()).isEqualTo(Integer.class);
+	}
+
+	@Test
+	public void builtInMap() {
+		ClassDef[] outLastClassDef = new ClassDef[1];
+		fieldAccessToGetter(MyCmp.class, emptyMap(), "Map('a', 1, 'b', 2, 'c', 3)", emptyMap(), outLastClassDef);
+		assertThat(outLastClassDef[0].clazz).isEqualTo(Map.class);
+		assertThat(outLastClassDef[0].getTypeArgument()).isEqualTo(Integer.class);
 	}
 }

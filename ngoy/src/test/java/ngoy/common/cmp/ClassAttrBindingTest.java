@@ -52,6 +52,24 @@ public class ClassAttrBindingTest extends ANgoyTest {
 
 	//
 
+	@Component(selector = "", template = "<a [ngClass]=\"Map('q', true, 'a', false, 'a-a', true)\"></a>")
+	public static class ObjLiteralCmp {
+		public Map<String, Boolean> all = new HashMap<>();
+
+		public ObjLiteralCmp() {
+			all.put("q", true);
+			all.put("a", false);
+			all.put("a-a", true);
+		}
+	}
+
+	@Test
+	public void testClassAttrObjMapFun() {
+		assertThat(render(ObjLiteralCmp.class)).isEqualTo("<a class=\"q a-a\"></a>");
+	}
+
+	//
+
 	@Component(selector = "", template = "<a [class.x]=\"false\" [ngClass]=\"all\"></a>")
 	public static class NullCmp {
 		public Map<String, Boolean> all = new HashMap<>();
