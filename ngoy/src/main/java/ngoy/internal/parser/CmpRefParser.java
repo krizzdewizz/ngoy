@@ -8,6 +8,8 @@ import static ngoy.core.dom.XDom.getClassList;
 import static ngoy.core.dom.XDom.getNodeName;
 import static ngoy.core.dom.XDom.getStyleList;
 import static ngoy.core.dom.XDom.isEqualNode;
+import static ngoy.internal.parser.AttributeBinding.addHostAttributeBindings;
+import static ngoy.internal.parser.AttributeBinding.replaceAttrs;
 import static ngoy.internal.parser.Inputs.cmpInputs;
 
 import java.util.ArrayList;
@@ -55,8 +57,7 @@ public class CmpRefParser {
 				parser.cmpElements.add(el);
 			} else {
 				parser.handler.elementHead(getNodeName(el));
-				AttributeBinding.replaceAttrs(parser, el, emptySet(), classNames, attrNames, styleNames);
-				AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
+				replaceAttrs(parser, el, emptySet(), classNames, attrNames, styleNames);
 				parser.handler.elementHeadEnd();
 			}
 			return;
@@ -67,17 +68,16 @@ public class CmpRefParser {
 		splitComponentsAndDirectives(cmpRefs, allCmps, allDirs);
 
 		Set<String> excludeBindings = new HashSet<>();
-		List<CmpInput> cmpInputs = allCmps.isEmpty() ? emptyList() : cmpInputs(el, allCmps.get(0).clazz, excludeBindings, parser.resolver);
+		List<CmpInput> cmpInputs = allCmps.isEmpty() ? emptyList() : cmpInputs(el, allCmps.get(0).clazz, excludeBindings);
 		List<List<CmpInput>> dirInputs = allDirs.stream()
-				.map(ref -> cmpInputs(el, ref.clazz, excludeBindings, parser.resolver))
+				.map(ref -> cmpInputs(el, ref.clazz, excludeBindings))
 				.collect(toList());
 
 		boolean hadElementHead = false;
 
 		if (!allDirs.isEmpty()) {
 			parser.handler.elementHead(getNodeName(el));
-			AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames);
-			AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
+			replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames);
 			hadElementHead = true;
 
 			int i = 0;
@@ -88,8 +88,7 @@ public class CmpRefParser {
 				List<String[]> cNames = new ArrayList<>();
 				List<String[]> aNames = new ArrayList<>();
 				List<String[]> sNames = new ArrayList<>();
-				AttributeBinding.addHostAttributeBindings(parser, ref.clazz, excludeBindings, cNames, aNames, sNames);
-				AttributeBinding.replaceAttrExpr(parser, cNames, aNames, sNames);
+				addHostAttributeBindings(parser, ref.clazz, excludeBindings, cNames, aNames, sNames);
 				parser.handler.componentEnd();
 				i++;
 			}
@@ -109,8 +108,7 @@ public class CmpRefParser {
 			} else {
 				if (!hadElementHead) {
 					parser.handler.elementHead(getNodeName(el));
-					AttributeBinding.replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames);
-					AttributeBinding.replaceAttrExpr(parser, classNames, attrNames, styleNames);
+					replaceAttrs(parser, el, excludeBindings, classNames, attrNames, styleNames);
 				}
 
 				parser.handler.componentStart(ref);
@@ -118,8 +116,7 @@ public class CmpRefParser {
 				List<String[]> cNames = new ArrayList<>();
 				List<String[]> aNames = new ArrayList<>();
 				List<String[]> sNames = new ArrayList<>();
-				AttributeBinding.addHostAttributeBindings(parser, ref.clazz, excludeBindings, cNames, aNames, sNames);
-				AttributeBinding.replaceAttrExpr(parser, cNames, aNames, sNames);
+				addHostAttributeBindings(parser, ref.clazz, excludeBindings, cNames, aNames, sNames);
 				parser.handler.elementHeadEnd();
 			}
 

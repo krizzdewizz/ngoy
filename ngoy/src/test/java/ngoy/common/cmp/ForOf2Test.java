@@ -87,7 +87,7 @@ public class ForOf2Test extends ANgoyTest {
 
 	//
 
-	@Component(selector = "test", template = "<ng-container *ngFor=\"let entry : java.util.stream.Stream.of('a ', ' b', ' c ').map(c -> c.trim() + 'x')\">{{entry.trim()}}</ng-container>")
+	@Component(selector = "test", template = "<ng-container *ngFor=\"let entry : java.util.stream.Stream.of('a ', ' b', ' c ').map(c -> c.trim() + 'x')\">{{entry}}</ng-container>")
 	public static class CmpStream2 {
 	}
 

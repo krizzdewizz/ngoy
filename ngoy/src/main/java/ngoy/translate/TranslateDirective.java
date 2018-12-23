@@ -40,12 +40,8 @@ import ngoy.core.Input;
 @Directive(selector = "[translate]")
 public class TranslateDirective {
 
-	private TranslateService translateService;
-
 	@Inject
-	public void setTranslateService(TranslateService s) {
-		translateService = s;
-	}
+	public TranslateService translateService;
 
 	@HostBinding("ngText")
 	public String translation;

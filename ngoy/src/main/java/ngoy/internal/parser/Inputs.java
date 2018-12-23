@@ -10,8 +10,6 @@ import java.util.Set;
 
 import jodd.jerry.Jerry;
 import ngoy.core.Input;
-import ngoy.core.NgoyException;
-import ngoy.core.internal.Resolver;
 
 public class Inputs {
 
@@ -31,7 +29,7 @@ public class Inputs {
 	private Inputs() {
 	}
 
-	public static List<CmpInput> cmpInputs(Jerry el, Class<?> clazz, Set<String> excludeBindings, Resolver resolver) {
+	public static List<CmpInput> cmpInputs(Jerry el, Class<?> clazz, Set<String> excludeBindings) {
 		List<CmpInput> result = new ArrayList<>();
 		for (Field f : clazz.getFields()) {
 			Input input = f.getAnnotation(Input.class);
@@ -45,8 +43,8 @@ public class Inputs {
 				binding = fieldName;
 			}
 
-			addInput(InputType.FIELD, ValueType.TEXT, result, el, binding, fieldName, f.getType(), clazz, excludeBindings, resolver);
-			addInput(InputType.FIELD, ValueType.EXPR, result, el, binding, fieldName, f.getType(), clazz, excludeBindings, resolver);
+			addInput(InputType.FIELD, ValueType.TEXT, result, el, binding, fieldName, excludeBindings);
+			addInput(InputType.FIELD, ValueType.EXPR, result, el, binding, fieldName, excludeBindings);
 		}
 
 		for (Method m : clazz.getMethods()) {
@@ -65,9 +63,8 @@ public class Inputs {
 				binding = fieldName(methodName);
 			}
 
-			Class<?> paramType = m.getParameters()[0].getType();
-			addInput(InputType.METHOD, ValueType.TEXT, result, el, binding, methodName, paramType, clazz, excludeBindings, resolver);
-			addInput(InputType.METHOD, ValueType.EXPR, result, el, binding, methodName, paramType, clazz, excludeBindings, resolver);
+			addInput(InputType.METHOD, ValueType.TEXT, result, el, binding, methodName, excludeBindings);
+			addInput(InputType.METHOD, ValueType.EXPR, result, el, binding, methodName, excludeBindings);
 		}
 		return result;
 	}
@@ -85,19 +82,16 @@ public class Inputs {
 		public final String input;
 		public final ValueType valueType;
 		public final String value;
-		public final Class<?> inputClass;
 
-		public CmpInput(InputType type, String input, Class<?> inputClass, ValueType valueType, String value) {
+		public CmpInput(InputType type, String input, ValueType valueType, String value) {
 			this.type = type;
 			this.input = input;
-			this.inputClass = inputClass;
 			this.valueType = valueType;
 			this.value = value;
 		}
 	}
 
-	private static void addInput(InputType inputType, ValueType valueType, List<CmpInput> result, Jerry el, String input, String fieldName, Class<?> fieldType, Class<?> clazz,
-			Set<String> excludeBindings, Resolver resolver) {
+	private static void addInput(InputType inputType, ValueType valueType, List<CmpInput> result, Jerry el, String input, String fieldName, Set<String> excludeBindings) {
 		boolean isExpr = valueType == ValueType.EXPR;
 		String attr = isExpr ? format("[%s]", input) : input;
 		String inp = el.attr(attr);
@@ -105,12 +99,7 @@ public class Inputs {
 			return;
 		}
 
-		if (!isExpr && !fieldType.isAssignableFrom(String.class)) {
-			throw new NgoyException("The input '%s' on component %s expects value of type %s but would receive a string. Use a binding expression %s instead.", input, clazz.getName(),
-					fieldType.getName(), format("[%s]", input));
-		}
-
-		result.add(new CmpInput(inputType, fieldName, fieldType, valueType, isExpr ? ExprParser.convertPipesToTransformCalls(inp, resolver) : inp));
+		result.add(new CmpInput(inputType, fieldName, valueType, inp));
 
 		excludeBindings.add(input.toLowerCase());
 		excludeBindings.add(fieldName.toLowerCase());

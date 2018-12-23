@@ -762,10 +762,6 @@ public class Ngoy<T> {
 		}
 	}
 
-	public interface CreateTemplate {
-		Class<?> createTemplate(Parser parser, String template, String contentType);
-	}
-
 	protected Class<?> compileTemplate(Parser parser, String template) {
 		JavaTemplate tpl = new JavaTemplate(getContentType(config), true, context != null ? context.getVariables() : emptyMap());
 		parser.parse(template, tpl);

@@ -2,6 +2,7 @@ package ngoy.internal.parser;
 
 import static java.lang.String.format;
 import static ngoy.core.dom.XDom.getAttributes;
+import static ngoy.internal.parser.ExprParser.convertPipesToTransformCalls;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -19,7 +20,8 @@ public class AttributeBinding {
 	private static final String BINDING_TEXT = "ngText";
 	private static final String BINDING_STYLE = "style.";
 
-	static void addAttributeBinding(Parser parser, String name, String expr, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames, List<String[]> targetStyleNames) {
+	private static void addAttributeBinding(Parser parser, String name, String expr, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames,
+			List<String[]> targetStyleNames) {
 
 		String rawName = name.substring(1, name.length() - 1);
 
@@ -27,7 +29,7 @@ public class AttributeBinding {
 			return;
 		}
 
-		expr = ExprParser.convertPipesToTransformCalls(expr, parser.resolver);
+		expr = convertPipesToTransformCalls(expr, parser.resolver);
 
 		if (rawName.equals("ngClass")) {
 			targetClassNames.add(new String[] { rawName, expr });
@@ -70,6 +72,8 @@ public class AttributeBinding {
 				}
 			}
 		}
+
+		replaceAttrExpr(parser, targetClassNames, targetAttrNames, targetStyleNames);
 	}
 
 	static void addHostAttributeBindings(Parser parser, Class<?> cmpClass, Set<String> excludeBindings, List<String[]> classNames, List<String[]> attrNames, List<String[]> styleNames) {
@@ -94,9 +98,11 @@ public class AttributeBinding {
 
 			addAttributeBinding(parser, format("[%s]", hb.value()), format("%s()", m.getName()), excludeBindings, classNames, attrNames, styleNames);
 		}
+
+		replaceAttrExpr(parser, classNames, attrNames, styleNames);
 	}
 
-	static void replaceAttrExpr(Parser parser, List<String[]> classNames, List<String[]> attrNames, List<String[]> styleNames) {
+	private static void replaceAttrExpr(Parser parser, List<String[]> classNames, List<String[]> attrNames, List<String[]> styleNames) {
 		if (!classNames.isEmpty()) {
 			parser.handler.attributeClasses(classNames);
 		}

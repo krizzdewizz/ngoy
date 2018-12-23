@@ -2,8 +2,6 @@ package ngoy.internal.parser;
 
 import static java.lang.String.format;
 
-import ngoy.core.NgoyException;
-
 public class ForOfMicroParser {
 	public static String parse(String s) {
 		// *ngFor let x of all; index as i:<template content>
@@ -15,7 +13,7 @@ public class ForOfMicroParser {
 		String right = s.substring(prefix.length() + 1);
 		int posEnd = right.indexOf(':');
 		if (posEnd < 0) {
-			throw new NgoyException("forOf parse error: missing colon.");
+			throw new ParseException("forOf parse error: missing colon.");
 		}
 
 		String letPart = right.substring(0, posEnd);

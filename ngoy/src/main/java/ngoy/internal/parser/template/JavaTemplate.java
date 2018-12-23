@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
+import ngoy.core.Nullable;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
 import ngoy.core.Util;
@@ -273,7 +274,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 		if (textIsExpr) {
 			printExprComment(text);
-			printOutExpr(prefixName(text, cmpVars.peek().name));
+			printOutExpr(prefixName(text));
 		} else {
 			if (escape) {
 				out.print(text, false, true);
@@ -283,11 +284,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 	}
 
-	private String prefixName(String expr, String prefix) {
-		return prefixName(expr, prefix, null);
+	private String prefixName(String expr) {
+		return prefixName(expr, null, null);
 	}
 
-	private String prefixName(String expr, String prefix, ClassDef[] outLastClassDef) {
+	private String prefixName(String expr, @Nullable CmpVar cmpVar, @Nullable ClassDef[] outLastClassDef) {
 		Set<String> excludes = new HashSet<>(pipesMap.keySet());
 		excludes.addAll(variables.keySet());
 		excludes.add("java");
@@ -303,7 +304,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			vars.putAll(it);
 		}
 
-		return ExprParser.prefixName(cmpVars.peek().cmpClass, vars, expr, prefix, excludes, variables, outLastClassDef, methodCalls);
+		if (cmpVar == null) {
+			cmpVar = cmpVars.peek();
+		}
+
+		return ExprParser.prefixName(cmpVar.cmpClass, vars, expr, cmpVar.name, excludes, variables, outLastClassDef, methodCalls);
 	}
 
 	@Override
@@ -318,7 +323,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void textOverride(String expr) {
 		printExprComment(expr);
-		$(textOverrideVar, "=(String)", prefixName(expr, cmpVars.peek().name), ";");
+		$(textOverrideVar, "=(String)", prefixName(expr), ";");
 		hadTextOverride = true;
 	}
 
@@ -359,7 +364,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		flushOut();
 		String evalResultVar = createLocalVar("attrExpr");
 		printExprComment(expr);
-		$("final Object ", evalResultVar, "=", prefixName(expr, cmpVars.peek().name), ";");
+		$("final Object ", evalResultVar, "=", prefixName(expr), ";");
 
 		$("if(", evalResultVar, "!=null) {");
 		printOut(" ", name, "=\"");
@@ -405,9 +410,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		if (Util.isSet(switchFirstCase)) {
 			switchVar = createLocalVar("switchVar");
 			printExprComment(expr);
-			$("final Object ", switchVar, "=", prefixName(expr, cmpVars.peek().name), ";");
+			$("final Object ", switchVar, "=", prefixName(expr), ";");
 			printExprComment(switchFirstCase);
-			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase, cmpVars.peek().name), ")) {");
+			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase), ")) {");
 			switchHadElseIf.push(true);
 		} else {
 			switchVar = "";
@@ -434,7 +439,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			}
 
 			printExprComment(expr);
-			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(expr, cmpVars.peek().name), ")) {");
+			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(expr), ")) {");
 		}
 	}
 
@@ -473,14 +478,14 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		if ("let".equals(itemTypeName) || "var".equals(itemTypeName)) {
 			ClassDef[] outLastClassDef = new ClassDef[1];
-			listName = prefixName(listName, cmpVar.name, outLastClassDef);
+			listName = prefixName(listName, cmpVar, outLastClassDef);
 			ClassDef listClass = outLastClassDef[0];
 			if (!listClass.valid()) {
 				throw new NgoyException("'%s' is not iterable. Must be an instance of %s or an array", origListName, Iterable.class.getName());
 			}
 			itemTypeName = sourceClassName(listClass.getListItemType(listClass));
 		} else {
-			listName = prefixName(listName, cmpVar.name, null);
+			listName = prefixName(listName);
 		}
 
 		Set<String> ex = new HashSet<>(asList(itemName));
@@ -532,7 +537,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private void ifExprIsTrue(String expr) {
 		flushOut();
 		printExprComment(expr);
-		$("if(", prefixName(expr, cmpVars.peek().name), ") {");
+		$("if(", prefixName(expr), ") {");
 	}
 
 	public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
@@ -597,7 +602,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 				$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 				$(listVar, ".append(\"", clazz, "\");");
 			} else {
-				String ex = prefixName(expr, cmpVars.peek().name);
+				String ex = prefixName(expr);
 				if (forStyles) {
 					if (clazz.equals("ngStyle")) {
 						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()) {");
@@ -658,11 +663,12 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			InputType inputType = input.type;
 			ValueType inputValueType = input.valueType;
 
+			CmpVar parentCmp = cmpVars.get(1);
 			printExprComment(input.value);
-			String value = inputValueType == ValueType.EXPR ? prefixName(input.value, cmpVars.get(1).name) : format("\"%s\"", Util.escapeJava(input.value));
+			String value = inputValueType == ValueType.EXPR ? prefixName(input.value, parentCmp, null) : format("\"%s\"", Util.escapeJava(input.value));
 			switch (inputType) {
 			case FIELD:
-				$(cmpVars.peek().name, ".", input.input, "=(", input.inputClass, ")", value, ";");
+				$(cmpVars.peek().name, ".", input.input, "=", value, ";");
 				break;
 			case METHOD:
 				$(cmpVars.peek().name, ".", input.input, "(", value, ");");

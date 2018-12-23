@@ -111,30 +111,20 @@ public class LambdaParser {
 		return quotes % 2 == 1;
 	}
 
-	private static enum BodyState {
-		READ, LPAREN, RPAREN
-	}
-
 	private static String parseBody(String s, int pos, int[] outPos) {
-		BodyState state = BodyState.READ;
 		StringBuilder body = new StringBuilder();
 		int parenCount = 1;
-		loop: for (int n = s.length(); pos < n; pos++) {
+		for (int n = s.length(); pos < n; pos++) {
 			char c = s.charAt(pos);
-			switch (state) {
-			case READ:
-				if (c == '(') {
-					parenCount++;
-				} else if (c == ')') {
-					parenCount--;
-					if (parenCount == 0) {
-						break loop;
-					}
+			if (c == '(') {
+				parenCount++;
+			} else if (c == ')') {
+				parenCount--;
+				if (parenCount == 0) {
+					break;
 				}
-				body.append(c);
-				break;
-			default:
 			}
+			body.append(c);
 		}
 
 		outPos[0] = pos;

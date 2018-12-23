@@ -70,7 +70,7 @@ public class ExprParser {
 			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
 			Atom atom = parser.parseExpression();
 
-			Atom copyAtom = new PrefixAdder(prefix, excludes, outMethodCalls).copyAtom(atom);
+			Atom copyAtom = new Prefixer(prefix, excludes, outMethodCalls).copyAtom(atom);
 
 			StringWriter sw = new StringWriter();
 			Unparser unparser = new Unparser(sw);
@@ -112,12 +112,12 @@ public class ExprParser {
 		return e;
 	}
 
-	private static class PrefixAdder extends DeepCopier {
+	private static class Prefixer extends DeepCopier {
 		private final String prefix;
 		private final Set<String> outMethodCalls;
 		private Set<String> excludes;
 
-		private PrefixAdder(String prefix, Set<String> excludes, Set<String> outMethodCalls) {
+		private Prefixer(String prefix, Set<String> excludes, Set<String> outMethodCalls) {
 			this.prefix = prefix;
 			this.excludes = excludes;
 			this.outMethodCalls = outMethodCalls;

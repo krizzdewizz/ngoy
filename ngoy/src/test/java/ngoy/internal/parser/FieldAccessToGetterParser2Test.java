@@ -55,8 +55,7 @@ public class FieldAccessToGetterParser2Test {
 
 	@Test
 	public void arrayIndexForList2() {
-		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "persons[btw.theIndex].name", emptyMap(), null))
-				.isEqualTo("((ngoy.model.Person) getPersons().get(getBtw().theIndex)).getName()");
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "persons[btw.theIndex].name", emptyMap(), null)).isEqualTo("((ngoy.model.Person) getPersons().get(getBtw().theIndex)).getName()");
 	}
 
 	@Test
@@ -97,7 +96,7 @@ public class FieldAccessToGetterParser2Test {
 	@Test
 	public void betweens() {
 		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "betweens.get(0).persons.get(0)", emptyMap(), null))
-				.isEqualTo("((ngoy.internal.parser.FieldAccessToGetterParser2Test.Between) betweens.get(0)).persons.get(0)");
+				.isEqualTo("(ngoy.model.Person) ((ngoy.internal.parser.FieldAccessToGetterParser2Test.Between) betweens.get(0)).persons.get(0)");
 	}
 
 	@Test

@@ -9,6 +9,7 @@ import static ngoy.core.dom.NgoyElement.getPosition;
 import static ngoy.core.dom.XDom.getAttributes;
 import static ngoy.core.dom.XDom.getNodeName;
 import static ngoy.core.dom.XDom.parseHtml;
+import static ngoy.internal.parser.ExprParser.convertPipesToTransformCalls;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -279,7 +280,7 @@ public class Parser {
 
 		boolean escapeText = insideScriptOrStyle == 0;
 		if (templateIsExpression) {
-			handler.text(ExprParser.convertPipesToTransformCalls(text, resolver), true, escapeText);
+			handler.text(convertPipesToTransformCalls(text, resolver), true, escapeText);
 		} else {
 			ExprParser.parse(text, resolver, (s, isExpr) -> handler.text(s, isExpr, escapeText));
 		}

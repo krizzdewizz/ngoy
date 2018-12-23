@@ -84,7 +84,7 @@ public class AttrBindingTest extends ANgoyTest {
 	@Test
 	public void testAttrNonString() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("but would receive a string"));
+		expectedEx.expectMessage(containsString("Assignment conversion not possible"));
 		render(AttrNonString.class);
 	}
 
@@ -105,7 +105,7 @@ public class AttrBindingTest extends ANgoyTest {
 	@Test
 	public void testAttrNonStringParam() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("but would receive a string"));
+		expectedEx.expectMessage(containsString("No applicable constructor/method found"));
 		render(AttrNonStringParam.class);
 	}
 }

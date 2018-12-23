@@ -10,8 +10,4 @@ public class Global {
 	}
 
 	public final String nl = System.lineSeparator();
-
-	public Object iif(boolean condition, Object truee, Object falsee) {
-		return condition ? truee : falsee;
-	}
 }

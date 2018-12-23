@@ -75,7 +75,7 @@ public class RuntimeErrorsTest extends ANgoyTest {
 	@Test
 	public void testInputWrongType() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Cannot cast"));
+		expectedEx.expectMessage(containsString("Assignment conversion not possible"));
 		render(CmpInputWrongType.class);
 	}
 

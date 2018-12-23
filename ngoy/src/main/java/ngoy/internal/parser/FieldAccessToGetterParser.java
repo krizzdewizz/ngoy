@@ -555,7 +555,22 @@ public final class FieldAccessToGetterParser {
 		public Rvalue copyMethodInvocation(MethodInvocation subject) throws CompileException {
 			AtomDef<MethodInvocation> mi = toGetter(lastClassDef.clazz, subject);
 			lastClassDef = mi.classDef;
-			return mi.atom;
+
+			ClassDef cd = lastClassDef;
+			Rvalue target = mi.atom;
+
+			if (cd.needsCast && cd.genericType instanceof ParameterizedType) {
+				Class<?> typeArg = cd.getTypeArgument();
+				if (typeArg != Object.class) {
+					Method meth = findMethod(cd.clazz, subject.methodName, subject.arguments.length);
+					if (meth != null) {
+						target = new Cast(target.getLocation(), new ReferenceType(target.getLocation(), new String[] { sourceClassName(typeArg) }, null), (Rvalue) target);
+						lastClassDef = ClassDef.of(typeArg);
+					}
+				}
+			}
+
+			return target;
 		}
 
 		@Override
