@@ -83,6 +83,30 @@ public class FieldAccessTest extends ANgoyTest {
 
 	//
 
+	@Component(selector = "", template = "{{messages.isEmpty()}}")
+	public static class IsEmptyCmp {
+		public List<String> messages = asList("hello");
+	}
+
+	@Test
+	public void testIsEmpty() {
+		assertThat(render(IsEmptyCmp.class)).isEqualTo("false");
+	}
+
+	//
+
+	@Component(selector = "", template = "{{messages.get(0).trim()}}")
+	public static class SimpleCmp {
+		public List<String> messages = asList("hello ");
+	}
+
+	@Test
+	public void testSimple() {
+		assertThat(render(SimpleCmp.class)).isEqualTo("hello");
+	}
+
+	//
+
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

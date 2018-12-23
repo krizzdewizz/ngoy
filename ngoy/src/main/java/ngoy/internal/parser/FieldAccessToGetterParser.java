@@ -270,6 +270,9 @@ public final class FieldAccessToGetterParser {
 
 				setTypeParamIndex(cd, target instanceof MethodInvocation ? (MethodInvocation) target : mi);
 
+				// workaround 2
+				boolean miNot = findMethod(cd.clazz, mi.methodName, mi.arguments.length) == null;
+
 				Class<?> typeArg = cd.getTypeArgument();
 				Method meth = findMethod(typeArg, mi.methodName, mi.arguments.length);
 				if (meth != null) {
@@ -285,7 +288,7 @@ public final class FieldAccessToGetterParser {
 						}
 					}
 
-					if (needsCast && typeArg != Object.class) {
+					if (needsCast && typeArg != Object.class && miNot) {
 						Cast cast = new Cast(mi.getLocation(), new ReferenceType(mi.getLocation(), new String[] { sourceClassName(typeArg) }, null), target);
 						target = new ParenthesizedExpression(mi.getLocation(), cast);
 					}
