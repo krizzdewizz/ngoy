@@ -184,7 +184,7 @@ public final class FieldAccessToGetterParser {
 			return new AtomDef<>(new AmbiguousName(ambiguousName.getLocation(), idsCopy, ambiguousName.n), cd);
 		}
 
-		private AtomDef<?> toGetter(Class<?> clazz, ArrayAccessExpression aae) throws CompileException {
+		private AtomDef<Rvalue> toGetter(Class<?> clazz, ArrayAccessExpression aae) throws CompileException {
 			ClassDef cd = ClassDef.of(clazz);
 			Atom target = aae.lhs;
 			if (target != null) {
@@ -558,7 +558,6 @@ public final class FieldAccessToGetterParser {
 
 			ClassDef cd = lastClassDef;
 			Rvalue target = mi.atom;
-
 			if (cd.needsCast && cd.genericType instanceof ParameterizedType) {
 				Class<?> typeArg = cd.getTypeArgument();
 				if (typeArg != Object.class) {
@@ -585,6 +584,24 @@ public final class FieldAccessToGetterParser {
 			AtomDef<Lvalue> fae = toGetter(lastClassDef.clazz, subject);
 			lastClassDef = fae.classDef;
 			return fae.atom;
+		}
+
+		@Override
+		public Lvalue copyArrayAccessExpression(ArrayAccessExpression subject) throws CompileException {
+			AtomDef<Rvalue> aae = toGetter(lastClassDef.clazz, subject);
+			lastClassDef = aae.classDef;
+
+			ClassDef cd = lastClassDef;
+			Rvalue target = aae.atom;
+			if (cd.needsCast && cd.genericType instanceof ParameterizedType) {
+				Class<?> typeArg = cd.getTypeArgument();
+				if (typeArg != Object.class) {
+					target = new Cast(target.getLocation(), new ReferenceType(target.getLocation(), new String[] { sourceClassName(typeArg) }, null), (Rvalue) target);
+					lastClassDef = ClassDef.of(typeArg);
+				}
+			}
+
+			return target instanceof Lvalue ? (Lvalue) target : new ParenthesizedExpression(target.getLocation(), target);
 		}
 
 		@Override

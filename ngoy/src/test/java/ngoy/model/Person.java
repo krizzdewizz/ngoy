@@ -1,8 +1,11 @@
 package ngoy.model;
 
+import java.util.List;
+
 public class Person {
 	private final String name;
 	private final int age;
+	private List<Person> friends;
 
 	public Person(String name) {
 		this(name, 0);
@@ -23,5 +26,13 @@ public class Person {
 
 	public boolean isTeenager() {
 		return age < 20;
+	}
+
+	public List<Person> getFriends() {
+		return friends;
+	}
+
+	public void setFriends(List<Person> friends) {
+		this.friends = friends;
 	}
 }

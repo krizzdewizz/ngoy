@@ -19,6 +19,14 @@ public class FieldAccessToGetterParser2Test {
 		public int theIndex;
 	}
 
+	private static class BetweenRecursive {
+		public List<Person> getPersons() {
+			return null;
+		}
+
+		public BetweenRecursive parent;
+	}
+
 	private static class MyCmp {
 		public List<Person> getPersons() {
 			return null;
@@ -26,6 +34,7 @@ public class FieldAccessToGetterParser2Test {
 
 		public List<Person> persons2;
 		public Between between;
+		public BetweenRecursive betweenRecursive;
 
 		public Between getBtw() {
 			return null;
@@ -114,5 +123,17 @@ public class FieldAccessToGetterParser2Test {
 	public void betweenKeySet() {
 		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "betweenMap.keySet().iterator().next().persons.get(0).name", emptyMap(), null))
 				.isEqualTo("((ngoy.model.Person) ((ngoy.internal.parser.FieldAccessToGetterParser2Test.Between) betweenMap.keySet().iterator().next()).persons.get(0)).getName()");
+	}
+
+	@Test
+	public void deep() {
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "betweenRecursive.parent.persons[0].name", emptyMap(), null))
+				.isEqualTo("((ngoy.model.Person) betweenRecursive.parent.getPersons().get(0)).getName()");
+	}
+
+	@Test
+	public void deep2() {
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "betweenRecursive.persons[0].friends[0].name", emptyMap(), null))
+				.isEqualTo("((ngoy.model.Person) (((ngoy.model.Person) betweenRecursive.getPersons().get(0)).getFriends()).get(0)).getName()");
 	}
 }

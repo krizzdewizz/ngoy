@@ -32,9 +32,9 @@ public class CmpTest extends ANgoyTest {
 		public Person person;
 	}
 
-	@Component(selector = "test", template = "<person [person]='getPersons().get(0)'></person><person [person]='getPersons().get(1)'></person><person [person]='getPersons().get(2)'></person>")
+	@Component(selector = "test", template = "<person [person]='getPersons()[0]'></person><person [person]='getPersons()[1]'></person><person [person]='getPersons()[2]'></person>")
 	@NgModule(declarations = { PersonCmp.class })
-	public static class Cmp {
+	public static class TestCmp {
 
 		private TestService<List<Person>> service;
 
@@ -50,6 +50,23 @@ public class CmpTest extends ANgoyTest {
 
 	@Test
 	public void test() {
-		assertThat(render(Cmp.class, useValue(TestService.class, personService))).isEqualTo("<person>hello: peter</person><person>hello: paul</person><person>hello: mary</person>");
+		assertThat(render(TestCmp.class, useValue(TestService.class, personService))).isEqualTo("<person>hello: peter</person><person>hello: paul</person><person>hello: mary</person>");
+	}
+
+	@Component(selector = "test", template = "<person [person]='persons[0]'></person><person [person]='persons[1]'></person><person [person]='persons[2]'></person>")
+	@NgModule(declarations = { PersonCmp.class })
+	public static class Test2Cmp {
+
+		@Inject
+		public void setSetIt(TestService<List<Person>> service) {
+			this.persons = service.value;
+		}
+
+		public List<Person> persons;
+	}
+
+	@Test
+	public void test2() {
+		assertThat(render(Test2Cmp.class, useValue(TestService.class, personService))).isEqualTo("<person>hello: peter</person><person>hello: paul</person><person>hello: mary</person>");
 	}
 }
