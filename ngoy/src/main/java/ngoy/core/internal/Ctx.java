@@ -4,8 +4,10 @@ import static java.util.Arrays.asList;
 import static ngoy.core.Util.escapeHtmlXml;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
@@ -104,5 +106,10 @@ public class Ctx {
 	@SafeVarargs
 	public static <T> List<T> List(T... items) {
 		return asList(items);
+	}
+
+	@SafeVarargs
+	public static <T> Set<T> Set(T... items) {
+		return new HashSet<T>(List(items));
 	}
 }

@@ -91,6 +91,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	static final String CTX_VAR = "__";
+	private static final Set<String> GLOBALS = new HashSet<>(asList("java", "Map", "List", "Set"));
 
 	private final TextOutput out;
 	private String textOverrideVar;
@@ -175,6 +176,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		$("private static ", List.class, " List(Object...items) {");
 		$(" return ", Ctx.class, ".List(items);");
+		$("}");
+
+		$("private static ", Set.class, " Set(Object...items) {");
+		$(" return ", Ctx.class, ".Set(items);");
 		$("}");
 	}
 
@@ -291,9 +296,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private String prefixName(String expr, @Nullable CmpVar cmpVar, @Nullable ClassDef[] outLastClassDef) {
 		Set<String> excludes = new HashSet<>(pipesMap.keySet());
 		excludes.addAll(variables.keySet());
-		excludes.add("java");
-		excludes.add("Map");
-		excludes.add("List");
+		excludes.addAll(GLOBALS);
+
 		Set<String> more = prefixExcludes.peek();
 		if (more != null) {
 			excludes.addAll(more);
