@@ -89,7 +89,7 @@ public class DatePipeTest extends ANgoyTest {
 	public void testWithConfig() {
 		DatePipe.Config config = new DatePipe.Config();
 		config.defaultLocalDatePattern = "dd. MMMM yyyy";
-		assertThat(render(WithConfigCmp.class, builder -> builder.providers(useValue(DatePipe.Config.class, config)))).isEqualTo("28. October 2018");
+		assertThat(render(WithConfigCmp.class, builder -> builder.providers(useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)), useValue(DatePipe.Config.class, config)))).isEqualTo("28. October 2018");
 	}
 
 	//

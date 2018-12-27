@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.codehaus.commons.compiler.CompileException;
@@ -651,7 +652,11 @@ public final class FieldAccessToGetterParser {
 	private FieldAccessToGetterParser() {
 	}
 
-	public static String fieldAccessToGetter(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, Map<String, Variable<?>> variables, @Nullable ClassDef[] outLastClassDef) {
+	public interface CopyMore {
+		Rvalue apply(Rvalue rvalue) throws CompileException;
+	}
+
+	public static String fieldAccessToGetter(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, Map<String, Variable<?>> variables, CopyMore copyMore, @Nullable ClassDef[] outLastClassDef) {
 		if (!isSet(expr)) {
 			throw new NgoyException("Expression must not be empty");
 		}
@@ -666,8 +671,12 @@ public final class FieldAccessToGetterParser {
 				throw new NgoyException("The expression must be a single rvalue", expr);
 			}
 
+			if (copyMore == null) {
+				copyMore = Objects::requireNonNull;
+			}
+
 			ToGetter toGetter = new ToGetter(clazz, prefixes, variables);
-			Rvalue copy = unwrapParenthesizedExpression(toGetter.copyRvalue(rvalues[0]));
+			Rvalue copy = copyMore.apply(unwrapParenthesizedExpression(toGetter.copyRvalue(rvalues[0])));
 
 			StringWriter sw = new StringWriter();
 			Unparser unparser = new Unparser(sw);
@@ -680,8 +689,7 @@ public final class FieldAccessToGetterParser {
 
 			return sw.toString();
 		} catch (Exception e) {
-			throw new NgoyException("Error while compiling expression '%s': %s. The expression must be a single rvalue", expr,
-					e instanceof CompileException ? getCompileExceptionMessageWithoutLocation((CompileException) e) : e.getMessage());
+			throw new NgoyException("Error while compiling expression '%s': %s. The expression must be a single rvalue", expr, e instanceof CompileException ? getCompileExceptionMessageWithoutLocation((CompileException) e) : e.getMessage());
 		}
 	}
 }

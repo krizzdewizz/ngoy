@@ -5,8 +5,6 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static ngoy.internal.parser.FieldAccessToGetterParser.fieldAccessToGetter;
 
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -18,16 +16,12 @@ import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.Java.AmbiguousName;
-import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.Rvalue;
-import org.codehaus.janino.Parser;
-import org.codehaus.janino.Scanner;
-import org.codehaus.janino.Unparser;
 import org.codehaus.janino.util.DeepCopier;
 
 import ngoy.core.NgoyException;
@@ -57,32 +51,9 @@ public class ExprParser {
 		return s.replace(OR_ESCAPE, "||");
 	}
 
-	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes, Map<String, Variable<?>> variables, ClassDef[] outLastClassDef,
-			Set<String> outMethodCalls) {
-		try {
-
-			if (outMethodCalls == null) {
-				outMethodCalls = new HashSet<>();
-			}
-
-			expr = fieldAccessToGetter(clazz, prefixes, expr, variables, outLastClassDef);
-
-			Parser parser = new org.codehaus.janino.Parser(new Scanner(null, new StringReader(expr)));
-			Atom atom = parser.parseExpression();
-
-			Atom copyAtom = new Prefixer(prefix, excludes, outMethodCalls).copyAtom(atom);
-
-			StringWriter sw = new StringWriter();
-			Unparser unparser = new Unparser(sw);
-			unparser.unparseAtom(copyAtom);
-			unparser.close();
-
-			return sw.toString();
-		} catch (CompileException e) {
-			throw new NgoyException("Compile error: %s", e);
-		} catch (Exception e) {
-			throw NgoyException.wrap(e);
-		}
+	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes, Map<String, Variable<?>> variables, ClassDef[] outLastClassDef, Set<String> outMethodCalls) {
+		Set<String> outCalls = outMethodCalls != null ? outMethodCalls : new HashSet<>();
+		return fieldAccessToGetter(clazz, prefixes, expr, variables, rvalue -> new Prefixer(prefix, excludes, outCalls).copyRvalue(rvalue), outLastClassDef);
 	}
 
 	public static String convertPipesToTransformCalls(String expressionString, Resolver resolver) {

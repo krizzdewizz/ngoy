@@ -139,11 +139,6 @@ public class Parser {
 		}
 
 		@Override
-		public void elementHead(String name) {
-			super.elementHead(name);
-		}
-
-		@Override
 		public void componentEnd() {
 			super.componentEnd();
 			cmpClassesStack.pop();
@@ -161,7 +156,8 @@ public class Parser {
 	}
 
 	/**
-	 * @param resolver if null, uses {@link Resolver#DEFAULT}
+	 * @param resolver
+	 *            if null, uses {@link Resolver#DEFAULT}
 	 */
 	public Parser(@Nullable Resolver resolver) {
 		this.cmpRefParser = new CmpRefParser(this);
@@ -214,7 +210,8 @@ public class Parser {
 		compileCmps(cmpRefs, el);
 
 		if (getNodeName(el).equals(NG_TEMPLATE)) {
-			// may the component/directive has changed the node name in ngOnCompile()
+			// may the component/directive has changed the node name in
+			// ngOnCompile()
 			return;
 		}
 
