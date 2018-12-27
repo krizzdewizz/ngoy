@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
+import ngoy.Ngoy.Builder;
 import ngoy.core.Component;
 import ngoy.core.LocaleProvider;
 import ngoy.core.NgoyException;
@@ -64,7 +65,9 @@ public class DatePipeTest extends ANgoyTest {
 
 	@Test
 	public void testAllDates() {
-		assertThat(render(AllDatesCmp.class)).isEqualTo("2018-10-28, 2018-10-28T12:44:00, 28.11.2018 12:44:00, 28.11.2018 12:44:00");
+		DatePipe.Config config = new DatePipe.Config();
+		config.defaultDatePattern = "dd.MM.yyyy HH:mm:ss";
+		assertThat(render(AllDatesCmp.class, builder -> provideConfig(config, builder))).isEqualTo("2018-10-28, 2018-10-28T12:44:00, 28.11.2018 12:44:00, 28.11.2018 12:44:00");
 	}
 
 	//
@@ -89,8 +92,11 @@ public class DatePipeTest extends ANgoyTest {
 	public void testWithConfig() {
 		DatePipe.Config config = new DatePipe.Config();
 		config.defaultLocalDatePattern = "dd. MMMM yyyy";
-		assertThat(render(WithConfigCmp.class, builder -> builder.providers(useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)), useValue(DatePipe.Config.class, config))))
-				.isEqualTo("28. October 2018");
+		assertThat(render(WithConfigCmp.class, builder -> provideConfig(config, builder))).isEqualTo("28. October 2018");
+	}
+
+	private Builder<?> provideConfig(DatePipe.Config config, Builder<?> builder) {
+		return builder.providers(useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)), useValue(DatePipe.Config.class, config));
 	}
 
 	//

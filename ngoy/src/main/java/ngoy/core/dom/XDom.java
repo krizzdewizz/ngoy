@@ -113,7 +113,7 @@ public class XDom {
 	}
 
 	/**
-	 * Removes al content from the given element.
+	 * Removes all content from the given element.
 	 * 
 	 * @param el
 	 */
