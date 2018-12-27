@@ -79,6 +79,7 @@ tasks.withType(Test) {
 }
 
 javadoc {
+  options.links 'https://docs.oracle.com/javase/8/docs/api/'
   exclude '**/internal/**'
 }
 javadoc.options.addStringOption('Xdoclint:none', '-quiet')

@@ -1,7 +1,7 @@
 package ngoy;
 
 /**
- * The ngoy version.
+ * ngoy version.
  * 
  * @author krizz
  */

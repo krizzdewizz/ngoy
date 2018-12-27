@@ -38,7 +38,7 @@ public interface Resolver {
 		}
 
 		@Override
-		public Class<?> getAppRoot() {
+		public Class<?> getAppClass() {
 			return null;
 		}
 
@@ -58,7 +58,7 @@ public interface Resolver {
 
 	Set<Class<?>> getCmpClasses();
 
-	Class<?> getAppRoot();
+	Class<?> getAppClass();
 
 	List<Class<?>> resolvePipes();
 }

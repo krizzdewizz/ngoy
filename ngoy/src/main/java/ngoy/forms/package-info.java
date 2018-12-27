@@ -1,4 +1,4 @@
 /**
- * Forms module
+ * Forms module.
  */
 package ngoy.forms;

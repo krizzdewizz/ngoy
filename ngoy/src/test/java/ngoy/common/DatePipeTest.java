@@ -49,7 +49,7 @@ public class DatePipeTest extends ANgoyTest {
 
 	@Test
 	public void testNoPattern() {
-		assertThat(render(NoPatternCmp.class)).isEqualTo("28.10.2018 12:44:00");
+		assertThat(render(NoPatternCmp.class)).isEqualTo("2018-10-28T12:44:00");
 	}
 
 	//
@@ -64,7 +64,7 @@ public class DatePipeTest extends ANgoyTest {
 
 	@Test
 	public void testAllDates() {
-		assertThat(render(AllDatesCmp.class)).isEqualTo("28.10.2018, 28.10.2018 12:44:00, 28.11.2018 12:44:00, 28.11.2018 12:44:00");
+		assertThat(render(AllDatesCmp.class)).isEqualTo("2018-10-28, 2018-10-28T12:44:00, 28.11.2018 12:44:00, 28.11.2018 12:44:00");
 	}
 
 	//
@@ -89,7 +89,8 @@ public class DatePipeTest extends ANgoyTest {
 	public void testWithConfig() {
 		DatePipe.Config config = new DatePipe.Config();
 		config.defaultLocalDatePattern = "dd. MMMM yyyy";
-		assertThat(render(WithConfigCmp.class, builder -> builder.providers(useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)), useValue(DatePipe.Config.class, config)))).isEqualTo("28. October 2018");
+		assertThat(render(WithConfigCmp.class, builder -> builder.providers(useValue(LocaleProvider.class, new LocaleProvider.Default(Locale.ENGLISH)), useValue(DatePipe.Config.class, config))))
+				.isEqualTo("28. October 2018");
 	}
 
 	//

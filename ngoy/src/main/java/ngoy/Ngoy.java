@@ -75,7 +75,7 @@ import ngoy.translate.TranslateModule;
 import ngoy.translate.TranslateService;
 
 /**
- * The main entry point to ngoy.
+ * Main entry point to ngoy.
  * <p>
  * Use {@link #renderString(String, Context, Writer, Config...)} or
  * {@link #renderTemplate(String, Context, Writer, Config...) } for simple
@@ -92,15 +92,15 @@ public class Ngoy<T> {
 	 * Used to build an 'app'.
 	 */
 	public static class Builder<T> {
-		private final Class<T> appRoot;
+		private final Class<T> appClass;
 		private final Config config = new Config();
 		private final List<Provider> providers = new ArrayList<>();
 		private final List<Injector> injectors = new ArrayList<>();
 		private final List<ModuleWithProviders<?>> modules = new ArrayList<>();
 		private final List<String> packagePrefixes = new ArrayList<>();
 
-		private Builder(Class<T> appRoot) {
-			this.appRoot = appRoot;
+		private Builder(Class<T> appClass) {
+			this.appClass = appClass;
 		}
 
 		/**
@@ -248,7 +248,7 @@ public class Ngoy<T> {
 		 * @return App
 		 */
 		public Ngoy<T> build() {
-			return new Ngoy<T>(appRoot, //
+			return new Ngoy<T>(appClass, //
 					null, //
 					config, //
 					injectors, //
@@ -262,15 +262,15 @@ public class Ngoy<T> {
 	/**
 	 * Begins building an 'app' using components, pipes etc.
 	 *
-	 * @param appRoot The root component. The class must have at least the
-	 *                {@link Component} annotation set. It may have the
-	 *                {@link NgModule} annotation set if the app is using other
-	 *                components
+	 * @param appClass The class or the root component. The class must have at least
+	 *                 the {@link Component} annotation set. It may have the
+	 *                 {@link NgModule} annotation set if the app is using other
+	 *                 components
 	 * @return A new builder
 	 * @param <T> The type of the app
 	 */
-	public static <T> Builder<T> app(Class<T> appRoot) {
-		return new Builder<T>(appRoot);
+	public static <T> Builder<T> app(Class<T> appClass) {
+		return new Builder<T>(appClass);
 	}
 
 	public static void renderString(String template, Context<?> context, OutputStream out, Config... config) {
@@ -409,7 +409,7 @@ public class Ngoy<T> {
 	}
 
 	private final Config config;
-	private final Class<T> appRoot;
+	private final Class<T> appClass;
 	private T appInstance;
 	private TemplateRender templateRenderer;
 	private Resolver resolver;
@@ -428,11 +428,11 @@ public class Ngoy<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Ngoy(Class<?> appRoot, String template, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders,
+	protected Ngoy(Class<?> appClass, String template, Config config, List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders,
 			Context<?> context) {
 		this.context = context;
 		this.template = config.templateIsExpression ? template : null;
-		this.appRoot = (Class<T>) appRoot;
+		this.appClass = (Class<T>) appClass;
 		this.config = config;
 		init(injectors, modules, packagePrefixes, rootProviders);
 		compile(template);
@@ -442,7 +442,7 @@ public class Ngoy<T> {
 
 		if (!packagePrefixes.isEmpty()) {
 			modules.add(new ClassScanner() //
-					.exclude(appRoot.getName())
+					.exclude(appClass.getName())
 					.scan(packagePrefixes.toArray(new String[packagePrefixes.size()])));
 		}
 
@@ -465,7 +465,7 @@ public class Ngoy<T> {
 
 		addModuleDecls(CoreInternalModule.class, cmpDecls, pipeDecls, cmpProviders);
 		addModuleDecls(CommonModule.class, cmpDecls, pipeDecls, cmpProviders);
-		addModuleDecls(appRoot, cmpDecls, pipeDecls, cmpProviders);
+		addModuleDecls(appClass, cmpDecls, pipeDecls, cmpProviders);
 
 		List<Provider> all = new ArrayList<>();
 
@@ -508,15 +508,25 @@ public class Ngoy<T> {
 
 	@SuppressWarnings("unchecked")
 	private void initAppInstance(List<Provider> rootProviders) {
-		Provider appRootProvider = provides(appRoot, rootProviders);
-		if (appRootProvider != null && appRootProvider.getUseValue() != null) {
-			appInstance = (T) appRootProvider.getUseValue();
-			injector.applyInjections(appInstance, injector.fieldInjections(appRoot, new HashSet<>()));
+		Provider appClassProvider = provides(appClass, rootProviders);
+		if (appClassProvider != null && appClassProvider.getUseValue() != null) {
+			appInstance = (T) appClassProvider.getUseValue();
+			injector.applyInjections(appInstance, injector.fieldInjections(appClass, new HashSet<>()));
 		} else {
-			injector.put(of(appRoot));
-			appInstance = (T) injector.get(appRoot);
+			injector.put(of(appClass));
+			appInstance = (T) injector.get(appClass);
 		}
-		injector.put(Provider.useValue(AppRoot.class, () -> appRoot));
+		injector.put(Provider.useValue(AppRoot.class, new AppRoot() {
+			@Override
+			public Class<?> getAppClass() {
+				return appClass;
+			}
+
+			@Override
+			public <A> A getAppInstance() {
+				return (A) appInstance;
+			}
+		}));
 	}
 
 	private List<Provider> toProviders(List<Class<?>> list) {
@@ -566,13 +576,13 @@ public class Ngoy<T> {
 
 			@Override
 			public Class<?> resolveCmpClass(Class<?> cmpClass) {
-				return cmpClass != null ? cmpClass : appRoot;
+				return cmpClass != null ? cmpClass : appClass;
 			}
 
 			@Override
 			public Set<Class<?>> getCmpClasses() {
 				Set<Class<?>> all = new LinkedHashSet<>();
-				all.add(appRoot);
+				all.add(appClass);
 				cmpDecls.values()
 						.stream()
 						.flatMap(List::stream)
@@ -582,8 +592,8 @@ public class Ngoy<T> {
 			}
 
 			@Override
-			public Class<?> getAppRoot() {
-				return appRoot;
+			public Class<?> getAppClass() {
+				return appClass;
 			}
 
 			@Override
@@ -743,7 +753,7 @@ public class Ngoy<T> {
 	private void compile(String template) {
 		try {
 			Parser parser = createParser(resolver, config);
-			Class<?> templateClass = compileTemplate(parser, template != null ? template : getTemplate(appRoot));
+			Class<?> templateClass = compileTemplate(parser, template != null ? template : getTemplate(appClass));
 			templateRenderer = (TemplateRender) templateClass.getMethod("createRenderer", Injector.class)
 					.invoke(null, resolver.getInjector());
 		} catch (Exception e) {
@@ -787,8 +797,8 @@ public class Ngoy<T> {
 			return contentType;
 		}
 		String contentType = config.contentType;
-		if ((contentType == null || contentType.isEmpty()) && appRoot != null) {
-			Component cmp = appRoot.getAnnotation(Component.class);
+		if ((contentType == null || contentType.isEmpty()) && appClass != null) {
+			Component cmp = appClass.getAnnotation(Component.class);
 			if (cmp != null) {
 				contentType = cmp.contentType();
 			}

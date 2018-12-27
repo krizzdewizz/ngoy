@@ -1,7 +1,7 @@
 package ngoy.common;
 
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static ngoy.core.Util.isSet;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -18,15 +18,18 @@ import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
 
 /**
- * Formats a {@link LocalDateTime} instance in the current locale, accepting an
- * optional format pattern as the first argument.
+ * Formats a {@link LocalDateTime}, {@link LocalDate} or {@link Date}/Long
+ * instance in the current locale, accepting an optional format pattern as the
+ * first argument.
+ * <p>
+ * Another {@link Config} may be provided to override defaults.
  * <p>
  * Example:
  * <p>
  * 
  * <pre>
  *  
- * {{ T(java.time.LocalDateTime).of(2018, 10, 28, 12, 44) | date:'MMMM' }}
+ * {{ java.time.LocalDateTime.of(2018, 10, 28, 12, 44) | date:'MMMM' }}
  * </pre>
  * <p>
  * Output:
@@ -40,10 +43,31 @@ import ngoy.core.PipeTransform;
 @Pipe("date")
 public class DatePipe implements PipeTransform {
 
+	/**
+	 * Provide a Config to override default format patterns.
+	 */
 	public static class Config {
-		public String defaultDatePattern = "dd.MM.yyyy HH:mm:ss";
-		public String defaultLocalDatePattern = "dd.MM.yyyy";
-		public String defaultLocalDateTimePattern = format("%s hh:mm:ss", defaultLocalDatePattern);
+
+		/**
+		 * Pattern used to format {@link Date}/Long instances.
+		 * <p>
+		 * If null or empty, uses {@link SimpleDateFormat#getDateTimeInstance()}
+		 */
+		public String defaultDatePattern;
+
+		/**
+		 * Pattern used to format {@link LocalDate} instances.
+		 * <p>
+		 * If null or empty, uses {@link DateTimeFormatter#ISO_LOCAL_DATE}
+		 */
+		public String defaultLocalDatePattern;
+
+		/**
+		 * Pattern used to format {@link LocalDateTime} instances.
+		 * <p>
+		 * If null or empty, uses {@link DateTimeFormatter#ISO_LOCAL_DATE_TIME}
+		 */
+		public String defaultLocalDateTimePattern;
 	}
 
 	private static final Config DEFAULT_CONFIG = new Config();
@@ -62,9 +86,9 @@ public class DatePipe implements PipeTransform {
 		}
 
 		if (obj instanceof LocalDateTime) {
-			return formatter(formatPattern(params, config.defaultLocalDateTimePattern)).format((LocalDateTime) obj);
+			return formatter(formatPattern(params, config.defaultLocalDateTimePattern), DateTimeFormatter.ISO_LOCAL_DATE_TIME).format((LocalDateTime) obj);
 		} else if (obj instanceof LocalDate) {
-			return formatter(formatPattern(params, config.defaultLocalDatePattern)).format((LocalDate) obj);
+			return formatter(formatPattern(params, config.defaultLocalDatePattern), DateTimeFormatter.ISO_LOCAL_DATE).format((LocalDate) obj);
 		} else if (obj instanceof Date) {
 			return formatDate((Date) obj, params, config.defaultDatePattern);
 		} else if (obj instanceof Long) {
@@ -76,11 +100,11 @@ public class DatePipe implements PipeTransform {
 
 	private String formatDate(Date date, Object[] params, String defPattern) {
 		String pattern = formatPattern(params, defPattern);
-		return new SimpleDateFormat(pattern, localeProvider.getLocale()).format(date);
+		return (isSet(pattern) ? new SimpleDateFormat(pattern, localeProvider.getLocale()) : SimpleDateFormat.getDateTimeInstance()).format(date);
 	}
 
-	private DateTimeFormatter formatter(String pattern) {
-		return DateTimeFormatter.ofPattern(pattern, localeProvider.getLocale());
+	private DateTimeFormatter formatter(String pattern, DateTimeFormatter def) {
+		return isSet(pattern) ? DateTimeFormatter.ofPattern(pattern, localeProvider.getLocale()) : def;
 	}
 
 	private String formatPattern(Object[] params, String def) {

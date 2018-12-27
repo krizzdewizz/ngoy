@@ -1,4 +1,4 @@
 /**
- * Translation module
+ * Translation/i18n module.
  */
 package ngoy.translate;

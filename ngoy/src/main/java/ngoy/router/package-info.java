@@ -1,4 +1,4 @@
 /**
- * Router module
+ * Router module.
  */
 package ngoy.router;

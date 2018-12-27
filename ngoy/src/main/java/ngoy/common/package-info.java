@@ -1,4 +1,4 @@
 /**
- * Common module
+ * Common module.
  */
 package ngoy.common;

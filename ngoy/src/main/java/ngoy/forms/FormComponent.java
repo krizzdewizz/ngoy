@@ -60,7 +60,7 @@ public class FormComponent implements OnInit {
 			controllerMethod = String.valueOf(controller);
 		}
 
-		formAction = findControllerMethodAction(appRoot.getAppRootClass()
+		formAction = findControllerMethodAction(appRoot.getAppClass()
 				.getName(), controllerMethod);
 	}
 
