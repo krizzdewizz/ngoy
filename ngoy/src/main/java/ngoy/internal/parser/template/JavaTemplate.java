@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static ngoy.core.Util.getLine;
+import static ngoy.core.Util.isSet;
 import static ngoy.core.Util.primitiveToRefType;
 import static ngoy.core.Util.sourceClassName;
 import static ngoy.core.Util.tryLoadClass;
@@ -107,7 +108,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final Map<String, Integer> stringRefs = new LinkedHashMap<>();
 	private final Map<String, Variable<?>> variables;
 	private final Set<String> methodCalls = new HashSet<>();
-	private final boolean bodyOnly;
 	private String cmpVar;
 	private String code;
 
@@ -117,10 +117,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private String sourcePosition;
 	private Map<String, Class<?>> pipesMap;
 
-	public JavaTemplate(String contentType, boolean bodyOnly, Map<String, Variable<?>> variables) {
-		this.bodyOnly = bodyOnly;
+	public JavaTemplate(String contentType, Map<String, Variable<?>> variables) {
 		this.variables = variables;
-		out = new TextOutput(printer, () -> depth, this::createStringRef, contentType);
+		out = new TextOutput(printer, this::getDepth, this::createStringRef, contentType);
 		stringsVar = createLocalVar("strings", false);
 		stringsLocalVar = createLocalVar("stringsLocal", false);
 	}
@@ -141,12 +140,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		pipesMap = pipes.stream()
 				.collect(toMap(pipe -> format("$%s", pipe.getAnnotation(Pipe.class)
 						.value()), Objects::requireNonNull));
-
-		if (!bodyOnly) {
-			$("package ngoy;");
-			$("@SuppressWarnings(\"all\")");
-			$("public class X {");
-		}
 
 		$("public static ", TemplateRender.class, " createRenderer(", Injector.class, " injector) { return new Renderer(injector); }");
 
@@ -172,16 +165,16 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private void addApiHelpers() {
-		$("private static ", Map.class, " Map(Object...pairs) {");
-		$(" return ", Ctx.class, ".Map(pairs);");
+		$("private static <K,V> ", Map.class, "<K,V> Map(Object...pairs) {");
+		$(" return ", Ctx.class, ".<K,V>Map(pairs);");
 		$("}");
 
-		$("private static ", List.class, " List(Object...items) {");
-		$(" return ", Ctx.class, ".List(items);");
+		$("private static <T> ", List.class, " List(T...items) {");
+		$(" return ", Ctx.class, ".<T>List(items);");
 		$("}");
 
-		$("private static ", Set.class, " Set(Object...items) {");
-		$(" return ", Ctx.class, ".Set(items);");
+		$("private static <T> ", Set.class, " Set(T...items) {");
+		$(" return ", Ctx.class, ".<T>Set(items);");
 		$("}");
 	}
 
@@ -199,10 +192,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("}"); // render method
 
 		$("}"); // class Renderer
-
-		if (!bodyOnly) {
-			$("}");
-		}
 
 		code = super.toString();
 
@@ -329,7 +318,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void textOverride(String expr) {
 		printExprComment(expr);
-		$(textOverrideVar, "=(String)", prefixName(expr), ";");
+		String retVar = createLocalVar("textOverrideRet");
+		$("final Object ", retVar, "=", prefixName(expr), ";");
+		$(textOverrideVar, "=", retVar, "==null?null:", retVar, ".toString();");
 		hadTextOverride = true;
 	}
 
@@ -381,22 +372,22 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("}");
 	}
 
-	private String createLocalVar(String tag) {
-		return createLocalVar(tag, true);
+	private String createLocalVar(String name) {
+		return createLocalVar(name, true);
 	}
 
-	private String createLocalVar(String tag, boolean flush) {
+	private String createLocalVar(String name, boolean flush) {
 		if (flush) {
 			flushOut();
 		}
-		Integer idx = localVars.get(tag);
+		Integer idx = localVars.get(name);
 		if (idx == null) {
 			idx = 0;
 		} else {
 			idx++;
 		}
-		localVars.put(tag, idx);
-		return format("__%s%s", tag, idx == 0 ? "" : String.valueOf(idx));
+		localVars.put(name, idx);
+		return format("__%s%s", name, idx == 0 ? "" : String.valueOf(idx));
 	}
 
 	@Override
@@ -413,7 +404,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	public void elementConditionalStart(String expr, String switchFirstCase) {
 		flushOut();
 		String switchVar;
-		if (Util.isSet(switchFirstCase)) {
+		if (isSet(switchFirstCase)) {
 			switchVar = createLocalVar("switchVar");
 			printExprComment(expr);
 			$("final Object ", switchVar, "=", prefixName(expr), ";");
@@ -620,7 +611,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						$("final Object ", valueVar, "=", "entry.getValue();");
 						$("  if(", valueVar, "!= null && !", valueVar, ".toString().isEmpty()) {");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
-						$(listVar, ".append(((String)entry.getKey()).concat(\":\").concat(", valueVar, ".toString()));");
+						$(listVar, ".append(entry.getKey()).append(':').append(", valueVar, ");");
 						$("  }");
 						$("}");
 					} else {
@@ -633,11 +624,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						$("final Object ", exVar, "=", ex, ";");
 						$("if(", exVar, "!=null && !", exVar, ".toString().isEmpty()) {");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
-						$$(listVar, ".append(\"", clazz, ":\".concat(", exVar, ".toString())");
+						$(listVar, ".append(\"", clazz, "\").append(':').append(", exVar, ");");
 						if (!unit.isEmpty()) {
-							$$(".concat(\"", unit, "\")");
+							$(listVar, ".append(\"", unit, "\");");
 						}
-						$(");");
 						$("}");
 					}
 				} else {

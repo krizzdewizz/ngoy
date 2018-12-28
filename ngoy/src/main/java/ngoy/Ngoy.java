@@ -773,7 +773,7 @@ public class Ngoy<T> {
 	}
 
 	protected Class<?> compileTemplate(Parser parser, String template) {
-		JavaTemplate tpl = new JavaTemplate(getContentType(config), true, context != null ? context.getVariables() : emptyMap());
+		JavaTemplate tpl = new JavaTemplate(getContentType(config), context != null ? context.getVariables() : emptyMap());
 		parser.parse(template, tpl);
 		String code = tpl.toString();
 

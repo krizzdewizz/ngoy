@@ -3,7 +3,7 @@ package ngoy.internal.parser.template;
 import static ngoy.core.Util.sourceClassName;
 
 public class CodeBuilder {
-	protected int depth;
+	private int depth;
 	protected final Printer printer;
 
 	public CodeBuilder() {
@@ -60,5 +60,9 @@ public class CodeBuilder {
 	@Override
 	public String toString() {
 		return printer.toString();
+	}
+
+	protected int getDepth() {
+		return depth;
 	}
 }
