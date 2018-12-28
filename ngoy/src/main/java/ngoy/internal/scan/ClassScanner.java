@@ -1,14 +1,14 @@
 package ngoy.internal.scan;
 
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static ngoy.core.NgoyException.wrap;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ScanResult;
 import ngoy.core.Component;
 import ngoy.core.Directive;
 import ngoy.core.Injectable;
@@ -18,47 +18,37 @@ import ngoy.core.Provider;
 
 public class ClassScanner {
 
-	private final Set<String> exclude = new HashSet<>();
+	private final Set<String> excludeClassNames = new HashSet<>();
 
-	public ClassScanner exclude(String... names) {
-		exclude.addAll(asList(names));
+	public ClassScanner excludeClassNames(String... classNames) {
+		excludeClassNames.addAll(asList(classNames));
 		return this;
 	}
 
 	public ModuleWithProviders<?> scan(String... packagePrefixes) {
 
-		List<Class<?>> declarations = new ArrayList<>();
-		List<Provider> providers = new ArrayList<>();
+		ClassGraph classGraph = new ClassGraph().blacklistClasses(excludeClassNames.toArray(new String[excludeClassNames.size()]))
+				.whitelistPackages(packagePrefixes)
+				.enableAnnotationInfo();
 
-		jodd.io.findfile.ClassScanner scanner = new jodd.io.findfile.ClassScanner();
-		scanner.registerEntryConsumer(entry -> fillIntoLists(entry, declarations, providers))
-				.scanDefaultClasspath()
-				.excludeAllEntries(true);
+		try (ScanResult scanResult = classGraph.scan()) {
+			Class<?>[] declarations = Stream.of(Component.class, Directive.class, Pipe.class)
+					.map(Class::getName)
+					.flatMap(c -> scanResult.getClassesWithAnnotation(c)
+							.stream())
+					.map(ClassInfo::loadClass)
+					.toArray(Class[]::new);
 
-		for (String prefix : packagePrefixes) {
-			scanner.includeEntries(format("%s.*", prefix));
-		}
+			Provider[] providers = scanResult.getClassesWithAnnotation(Injectable.class.getName())
+					.stream()
+					.map(ClassInfo::loadClass)
+					.map(Provider::of)
+					.toArray(Provider[]::new);
 
-		scanner.excludeEntries(exclude.toArray(new String[exclude.size()]));
-
-		scanner.start();
-
-		return ModuleWithProviders.of(Void.class)
-				.declarations(declarations.toArray(new Class[declarations.size()]))
-				.providers(providers.toArray(new Provider[providers.size()]))
-				.build();
-	}
-
-	private void fillIntoLists(jodd.io.findfile.ClassScanner.ClassPathEntry entry, List<Class<?>> declarations, List<Provider> providers) {
-		try {
-			Class<?> clazz = entry.loadClass();
-			if (clazz.getAnnotation(Component.class) != null || clazz.getAnnotation(Directive.class) != null || clazz.getAnnotation(Pipe.class) != null) {
-				declarations.add(clazz);
-			} else if (clazz.getAnnotation(Injectable.class) != null) {
-				providers.add(Provider.of(clazz));
-			}
-		} catch (Exception e) {
-			throw wrap(e);
+			return ModuleWithProviders.of(Void.class)
+					.declarations(declarations)
+					.providers(providers)
+					.build();
 		}
 	}
 }

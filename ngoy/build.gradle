@@ -34,6 +34,7 @@ dependencies {
 	implementation 'org.codehaus.janino:janino:3.0.11'
 	implementation 'commons-cli:commons-cli:1.4'
 	implementation 'org.jodd:jodd-lagarto:5.0.6'
+	implementation 'io.github.classgraph:classgraph:4.6.10'
 
     // JUnit test framework
     testImplementation 'junit:junit:4.12'
@@ -106,6 +107,8 @@ shadowJar {
 	
 	relocate 'jodd', 'ngoy.core.dom.jodd'
 	relocate 'org', 'ngoy.internal.lib.org'
+	relocate 'io.github.classgraph', 'ngoy.internal.lib.io.github.classgraph'
+	relocate 'nonapi.io.github.classgraph', 'ngoy.internal.lib.nonapi.io.github.classgraph'
 	
 	minimize()
 }

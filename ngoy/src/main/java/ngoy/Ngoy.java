@@ -442,7 +442,7 @@ public class Ngoy<T> {
 
 		if (!packagePrefixes.isEmpty()) {
 			modules.add(new ClassScanner() //
-					.exclude(appClass.getName())
+					.excludeClassNames(appClass.getName())
 					.scan(packagePrefixes.toArray(new String[packagePrefixes.size()])));
 		}
 

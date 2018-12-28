@@ -29,12 +29,12 @@ public class ClassScannerTest {
 	}
 
 	@Test
-	public void testExclude() {
-		ClassScanner scanner = new ClassScanner().exclude(XCmp.class.getName());
-		ModuleWithProviders<?> mod = scanner.scan(ClassScannerTest.class.getPackage()
-				.getName());
-
-		assertThat(mod.getDeclarations()).hasSize(4);
-		assertThat(mod.getDeclarations()).contains(ACmp.class, ADirective.class, BPipe.class, BCmp.class);
-	}
+		public void testExcludeClassNames() {
+			ClassScanner scanner = new ClassScanner().excludeClassNames(XCmp.class.getName());
+			ModuleWithProviders<?> mod = scanner.scan(ClassScannerTest.class.getPackage()
+					.getName());
+	
+			assertThat(mod.getDeclarations()).hasSize(4);
+			assertThat(mod.getDeclarations()).contains(ACmp.class, ADirective.class, BPipe.class, BCmp.class);
+		}
 }

@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * 	}
  * }
  * 
- * &#64;Component(selector = "test", template = "&lt;person name="Peter" [title]="'Sir'">&lt;/person>")
+ * &#64;Component(selector = "test", template = "&lt;person name="Peter" [title]="'Sir'"&gt;&lt;/person>")
  * &#64;NgModule(declarations = { PersonCmp.class })
  * public static class TestCmp {
  * }
