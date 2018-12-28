@@ -38,13 +38,15 @@ public class App {
 
 ## Getting Started
 
+Visit the ngoy [website](https://krizzdewizz.github.io/ngoy-website).
+
 Clone [ngoy-starter-web](https://github.com/krizzdewizz/ngoy-starter-web) to get started.
 
 Run the complete [Tour of Heroes](https://github.com/krizzdewizz/ngoy-tour-of-heroes) tutorial rewrite using ngoy.
 
 Checkout the [examples collection](https://github.com/krizzdewizz/ngoy-examples).
 
-Visit the ngoy [website](https://krizzdewizz.github.io/ngoy-website).
+More ready-to-use [modules](https://github.com/krizzdewizz/ngoy-modules).
 
 ## Distribution
 
@@ -53,12 +55,28 @@ You can download the ngoy binaries from [here](https://github.com/krizzdewizz/ng
 `build.gradle`:
 ```
 repositories {
-	maven { url "https://jitpack.io" }
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
-	implementation("com.github.krizzdewizz:ngoy:1.0.0-rc7")
+    implementation("com.github.krizzdewizz:ngoy:1.0.0-rc7")
 }
+```
+
+`pom.xml`:
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependency>
+    <groupId>com.github.krizzdewizz</groupId>
+    <artifactId>ngoy</artifactId>
+    <version>1.0.0-rc7</version>
+</dependency>
 ```
 
 ## Feedback
