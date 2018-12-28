@@ -3,6 +3,7 @@ package ngoy.common;
 import static java.util.Arrays.asList;
 import static ngoy.core.Util.isSet;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -100,7 +101,7 @@ public class DatePipe implements PipeTransform {
 
 	private String formatDate(Date date, Object[] params, String defPattern) {
 		String pattern = formatPattern(params, defPattern);
-		return (isSet(pattern) ? new SimpleDateFormat(pattern, localeProvider.getLocale()) : SimpleDateFormat.getDateTimeInstance()).format(date);
+		return (isSet(pattern) ? new SimpleDateFormat(pattern, localeProvider.getLocale()) : DateFormat.getDateTimeInstance()).format(date);
 	}
 
 	private DateTimeFormatter formatter(String pattern, DateTimeFormatter def) {

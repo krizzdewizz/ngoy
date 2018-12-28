@@ -1,6 +1,5 @@
 package ngoy.core.internal;
 
-import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.NgoyException.wrap;
@@ -53,10 +52,6 @@ public class DefaultInjector implements Injector {
 	private final Injector[] moreInjectors;
 	private final Set<Class<?>> cmpDecls;
 	private final Map<Class<?>, Factory> factories = new HashMap<>();
-
-	public DefaultInjector(Provider... providers) {
-		this(emptySet(), new Injector[0], providers);
-	}
 
 	public DefaultInjector(Set<Class<?>> cmpDecls, Injector[] more, Provider... providers) {
 		this.cmpDecls = cmpDecls;
@@ -162,7 +157,7 @@ public class DefaultInjector implements Injector {
 					Object instance = constructor.invokeWithArguments(arr);
 					applyInjections(instance, fieldInjections);
 					providerInstances.put(clazz, instance);
-					return (T) instance;
+					return instance;
 				} catch (Throwable e) {
 					throw wrap(e);
 				}

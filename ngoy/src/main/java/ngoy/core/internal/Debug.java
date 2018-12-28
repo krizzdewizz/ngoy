@@ -34,6 +34,7 @@ public final class Debug {
 			String clazz = "XTemplate";
 			String fileName = format("%s.java", clazz);
 			String cu = new CodeBuilder() {
+				@Override
 				protected void doCreate() {
 					$("package ", pack, ";");
 					$("public class ", clazz, "{");

@@ -33,6 +33,7 @@ public class LambdaParser {
 		public String toAnonClass() {
 			String base = "LAMBDA";
 			return new CodeBuilder() {
+				@Override
 				protected void doCreate() {
 					$$("new ", base, "(){public Object LAMBDA_METH(");
 					boolean hadParam = false;

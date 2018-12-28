@@ -546,6 +546,7 @@ public final class FieldAccessToGetterParser {
 			cd.typeParamIndex = typeParamIndex;
 		}
 
+		@Override
 		public Lvalue copyAmbiguousName(AmbiguousName subject) throws CompileException {
 			AtomDef<AmbiguousName> an = toGetter(lastClassDef.clazz, subject);
 			lastClassDef = an.classDef;
@@ -564,7 +565,7 @@ public final class FieldAccessToGetterParser {
 				if (typeArg != Object.class) {
 					Method meth = findMethod(cd.clazz, subject.methodName, subject.arguments.length);
 					if (meth != null) {
-						target = new Cast(target.getLocation(), new ReferenceType(target.getLocation(), new String[] { sourceClassName(typeArg) }, null), (Rvalue) target);
+						target = new Cast(target.getLocation(), new ReferenceType(target.getLocation(), new String[] { sourceClassName(typeArg) }, null), target);
 						lastClassDef = ClassDef.of(typeArg);
 					}
 				}
@@ -597,7 +598,7 @@ public final class FieldAccessToGetterParser {
 			if (cd.needsCast && cd.genericType instanceof ParameterizedType) {
 				Class<?> typeArg = cd.getTypeArgument();
 				if (typeArg != Object.class) {
-					target = new Cast(target.getLocation(), new ReferenceType(target.getLocation(), new String[] { sourceClassName(typeArg) }, null), (Rvalue) target);
+					target = new Cast(target.getLocation(), new ReferenceType(target.getLocation(), new String[] { sourceClassName(typeArg) }, null), target);
 					lastClassDef = ClassDef.of(typeArg);
 				}
 			}

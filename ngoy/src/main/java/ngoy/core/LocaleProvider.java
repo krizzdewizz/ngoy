@@ -18,6 +18,7 @@ public interface LocaleProvider {
 			this.locale = locale;
 		}
 
+		@Override
 		public Locale getLocale() {
 			return locale;
 		}

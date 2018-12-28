@@ -25,6 +25,7 @@ public class TextOutput extends BufferedOutput {
 		printCall = "text/plain".equals(contentType) ? "p" : "pe";
 	}
 
+	@Override
 	protected void doPrint(String text, boolean isExpr) {
 		if (isExpr) {
 			printEscaped(text);

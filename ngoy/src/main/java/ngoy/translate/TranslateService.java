@@ -84,7 +84,7 @@ public class TranslateService {
 
 		Locale localeNow = localeProvider.getLocale();
 		if (bundle == null || !localeNow.equals(prevLocale)) {
-			bundle = PropertyResourceBundle.getBundle(bundleBaseName, localeNow);
+			bundle = ResourceBundle.getBundle(bundleBaseName, localeNow);
 			prevLocale = localeNow;
 		}
 	}

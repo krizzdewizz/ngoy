@@ -84,8 +84,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\r|\\n");
 
 	private static class CmpVar {
-		private String name;
-		private Class<?> cmpClass;
+		private final String name;
+		private final Class<?> cmpClass;
 
 		public CmpVar(String name, Class<?> cmpClass) {
 			this.name = name;
@@ -463,6 +463,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		localVarDefs.pop();
 	}
 
+	@Override
 	public void elementRepeatedStart(ForOfDef forOfDef, Map<ForOfVariable, String> variables) {
 		flushOut();
 
@@ -537,6 +538,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("if(", prefixName(expr), ") {");
 	}
 
+	@Override
 	public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
 		Class<?> cmpClass = cmpRef.clazz;
 

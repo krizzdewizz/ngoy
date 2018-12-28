@@ -514,7 +514,7 @@ public class Ngoy<T> {
 			injector.applyInjections(appInstance, injector.fieldInjections(appClass, new HashSet<>()));
 		} else {
 			injector.put(of(appClass));
-			appInstance = (T) injector.get(appClass);
+			appInstance = injector.get(appClass);
 		}
 		injector.put(Provider.useValue(AppRoot.class, new AppRoot() {
 			@Override

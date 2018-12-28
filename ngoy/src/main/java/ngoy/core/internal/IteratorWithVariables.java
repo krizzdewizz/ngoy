@@ -27,48 +27,48 @@ public class IteratorWithVariables implements Iterator {
 	/* @formatter:off */
 	public IteratorWithVariables(boolean[] arr) {
 		this(checkNonNull(arr, new AbstractList() {
-			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } }));
+			@Override public Object get(int index) { return arr[index]; }
+			@Override public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(byte[] arr) {
 		this(checkNonNull(arr,new AbstractList() {
-			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } }));
+			@Override public Object get(int index) { return arr[index]; }
+			@Override public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(char[] arr) {
 		this(checkNonNull(arr, new AbstractList() {
-			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } }));
+			@Override public Object get(int index) { return arr[index]; }
+			@Override public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(short[] arr) {
 		this(checkNonNull(arr,new AbstractList() {
-			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } }));
+			@Override public Object get(int index) { return arr[index]; }
+			@Override public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(int[] arr) {
 		this(checkNonNull(arr,new AbstractList() {
-			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } }));
+			@Override public Object get(int index) { return arr[index]; }
+			@Override public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(long[] arr) {
 		this(checkNonNull(arr, new AbstractList() {
-			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } }));
+			@Override public Object get(int index) { return arr[index]; }
+			@Override public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(float[] arr) {
 		this(checkNonNull(arr,new AbstractList() {
-			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } }));
+			@Override public Object get(int index) { return arr[index]; }
+			@Override public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(double[] arr) {
 		this(checkNonNull(arr,new AbstractList() {
-			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } }));
+			@Override public Object get(int index) { return arr[index]; }
+			@Override public int size() { return arr.length; } }));
 	}
 	public IteratorWithVariables(Object[] arr) {
 		this(checkNonNull(arr,new AbstractList() {
-			public Object get(int index) { return arr[index]; }
-			public int size() { return arr.length; } }));
+			@Override public Object get(int index) { return arr[index]; }
+			@Override public int size() { return arr.length; } }));
 	}
 	/* @formatter:on */
 

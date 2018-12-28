@@ -161,50 +161,62 @@ public interface ParserHandler {
 			this.target = target;
 		}
 
+		@Override
 		public void documentStart(List<Class<?>> pipes) {
 			target.documentStart(pipes);
 		}
 
+		@Override
 		public void documentEnd() {
 			target.documentEnd();
 		}
 
+		@Override
 		public void elementHead(String name) {
 			target.elementHead(name);
 		}
 
+		@Override
 		public void attributeStart(String name, boolean hasValue) {
 			target.attributeStart(name, hasValue);
 		}
 
+		@Override
 		public void attributeClasses(List<String[]> classExprPairs) {
 			target.attributeClasses(classExprPairs);
 		}
 
+		@Override
 		public void attributeExpr(String name, String expr) {
 			target.attributeExpr(name, expr);
 		}
 
+		@Override
 		public void attributeEnd() {
 			target.attributeEnd();
 		}
 
+		@Override
 		public void elementHeadEnd() {
 			target.elementHeadEnd();
 		}
 
+		@Override
 		public void text(String text, boolean textIsExpr, boolean escape) {
 			target.text(text, textIsExpr, escape);
 		}
 
+		@Override
 		public void elementEnd(String name) {
 			target.elementEnd(name);
 		}
 
+		@Override
 		public void elementConditionalStart(String expr, String switchFirstCase) {
 			target.elementConditionalStart(expr, switchFirstCase);
 		}
 
+		@Override
 		public void elementConditionalElse() {
 			target.elementConditionalElse();
 		}
@@ -214,34 +226,42 @@ public interface ParserHandler {
 			target.elementConditionalElseIf(expr);
 		}
 
+		@Override
 		public void elementConditionalEnd() {
 			target.elementConditionalEnd();
 		}
 
+		@Override
 		public void elementRepeatedStart(ForOfDef forOfDef, Map<ForOfVariable, String> variables) {
 			target.elementRepeatedStart(forOfDef, variables);
 		}
 
+		@Override
 		public void elementRepeatedEnd() {
 			target.elementRepeatedEnd();
 		}
 
+		@Override
 		public void componentStart(CmpRef cmpRef) {
 			target.componentStart(cmpRef);
 		}
 
+		@Override
 		public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
 			target.componentStartInput(cmpRef, appRoot, params);
 		}
 
+		@Override
 		public void componentEnd() {
 			target.componentEnd();
 		}
 
+		@Override
 		public void ngContentStart() {
 			target.ngContentStart();
 		}
 
+		@Override
 		public void ngContentEnd() {
 			target.ngContentEnd();
 		}
