@@ -12,8 +12,6 @@ import java.util.Set;
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
-import ngoy.core.OnDestroy;
-import ngoy.core.OnInit;
 import ngoy.core.Variable;
 
 public class Ctx {
@@ -38,24 +36,12 @@ public class Ctx {
 		this.injector = injector;
 	}
 
-	public void cmpDestroy(Object cmp) {
-		if (cmp instanceof OnDestroy) {
-			((OnDestroy) cmp).ngOnDestroy();
-		}
-	}
-
 	public Object cmpNew(Class<?> clazz) {
 		return injector.getNew(clazz);
 	}
 
 	public Object cmp(Class<?> clazz) {
 		return injector.get(clazz);
-	}
-
-	public void cmpInit(Object cmp) {
-		if (cmp instanceof OnInit) {
-			((OnInit) cmp).ngOnInit();
-		}
 	}
 
 	public void pe(@Nullable Object obj) {

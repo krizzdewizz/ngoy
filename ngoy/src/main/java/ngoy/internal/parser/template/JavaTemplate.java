@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
+import ngoy.core.OnDestroy;
+import ngoy.core.OnInit;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
 import ngoy.core.Util;
@@ -561,14 +563,18 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void componentStart(CmpRef cmpRef) {
 		cmpVars.push(new CmpVar(cmpVar, cmpRef.clazz));
-		$("", CTX_VAR, ".cmpInit(", cmpVar, ");");
+		if (OnInit.class.isAssignableFrom(cmpRef.clazz)) {
+			$("((", OnInit.class, ")", cmpVar, ").ngOnInit();");
+		}
 	}
 
 	@Override
 	public void componentEnd() {
-		String cmpVar = cmpVars.pop().name;
+		CmpVar cmpVar = cmpVars.pop();
 		flushOut();
-		$("", CTX_VAR, ".cmpDestroy(", cmpVar, ");");
+		if (OnDestroy.class.isAssignableFrom(cmpVar.cmpClass)) {
+			$("((", OnDestroy.class, ")", cmpVar.name, ").ngOnDestroy();");
+		}
 		$("}");
 	}
 
