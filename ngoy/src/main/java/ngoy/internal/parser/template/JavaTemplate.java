@@ -153,7 +153,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$(SET_PIPES);
 		$("}");
 
-		$("private static final String[] ", stringsVar, "= new String[]{", STRINGS, "};");
+		$("private static final String[] ", stringsVar, "=new String[]{", STRINGS, "};");
 
 		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws Exception {");
 		$(SET_PIPE_CTX);
@@ -479,7 +479,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			listName = prefixName(listName, cmpVar, outLastClassDef);
 			ClassDef listClass = outLastClassDef[0];
 			if (!listClass.valid()) {
-				throw new NgoyException("'%s' is not iterable. Must be an instance of %s or an array", origListName, Iterable.class.getName());
+				throw new NgoyException("'%s' is not iterable. Must be an instance of %s, %s, or an array", origListName, Iterable.class.getName(), Stream.class.getName());
 			}
 			itemTypeName = sourceClassName(listClass.getListItemType(listClass));
 		} else {
@@ -492,7 +492,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		String iterVar = createLocalVar("iter");
 		printExprComment(origListName);
-		$("for (final ", IteratorWithVariables.class, " ", iterVar, "= new ", IteratorWithVariables.class, "(", listName, "); ", iterVar, ".hasNext();) {");
+		$("for (final ", IteratorWithVariables.class, " ", iterVar, "=new ", IteratorWithVariables.class, "(", listName, "); ", iterVar, ".hasNext();) {");
 		$(itemTypeClazz, " ", itemName, "=(", itemTypeClazz, ")", iterVar, ".next();");
 
 		Set<Entry<ForOfVariable, String>> entries = variables.entrySet();
