@@ -475,13 +475,13 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		CmpVar cmpVar = cmpVars.peek();
 
 		if ("let".equals(itemTypeName) || "var".equals(itemTypeName)) {
-			ClassDef[] outLastClassDef = new ClassDef[1];
-			listName = prefixName(listName, cmpVar, outLastClassDef);
-			ClassDef listClass = outLastClassDef[0];
+			ClassDef[] lastClassDef = new ClassDef[1];
+			listName = prefixName(listName, cmpVar, lastClassDef);
+			ClassDef listClass = lastClassDef[0];
 			if (!listClass.valid()) {
 				throw new NgoyException("'%s' is not iterable. Must be an instance of %s, %s, or an array", origListName, Iterable.class.getName(), Stream.class.getName());
 			}
-			itemTypeName = sourceClassName(listClass.getListItemType(listClass));
+			itemTypeName = sourceClassName(listClass.getItemType());
 		} else {
 			listName = prefixName(listName);
 		}
@@ -524,11 +524,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private void printOut(Object... s) {
-		String arg = Stream.of(s)
+		String text = Stream.of(s)
 				.map(Object::toString)
 				.map(Util::escapeJava)
 				.collect(joining(""));
-		String text = format("%s", arg);
 		out.print(text, false, false);
 	}
 

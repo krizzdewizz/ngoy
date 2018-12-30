@@ -45,12 +45,12 @@ public class ClassDef {
 		return clazz.isArray() || Iterable.class.isAssignableFrom(clazz) || Stream.class.isAssignableFrom(clazz);
 	}
 
-	public Class<?> getListItemType(ClassDef cd) {
+	public Class<?> getItemType() {
 		Class<?> itemType;
-		if (cd.clazz.isArray()) {
-			itemType = cd.clazz.getComponentType();
-		} else if ((Iterable.class.isAssignableFrom(cd.clazz) || Stream.class.isAssignableFrom(cd.clazz)) && cd.needsCast) {
-			itemType = cd.getTypeArgument();
+		if (clazz.isArray()) {
+			itemType = clazz.getComponentType();
+		} else if (needsCast && (Iterable.class.isAssignableFrom(clazz) || Stream.class.isAssignableFrom(clazz))) {
+			itemType = getTypeArgument();
 		} else {
 			itemType = Object.class;
 		}
