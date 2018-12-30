@@ -4,12 +4,14 @@ import static java.lang.String.format;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import jodd.jerry.Jerry;
 import ngoy.core.Input;
+import ngoy.core.NgoyException;
 
 public class Inputs {
 
@@ -31,13 +33,18 @@ public class Inputs {
 
 	public static List<CmpInput> cmpInputs(Jerry el, Class<?> clazz, Set<String> excludeBindings) {
 		List<CmpInput> result = new ArrayList<>();
-		for (Field f : clazz.getFields()) {
-			Input input = f.getAnnotation(Input.class);
+		for (Field field : clazz.getFields()) {
+			Input input = field.getAnnotation(Input.class);
 			if (input == null) {
 				continue;
 			}
 
-			String fieldName = f.getName();
+			int mods = field.getModifiers();
+			if (Modifier.isStatic(mods) || Modifier.isFinal(mods)) {
+				throw new NgoyException("@Input annotated field must be public, non-final, non-static: %s.%s", clazz.getName(), field.getName());
+			}
+
+			String fieldName = field.getName();
 			String binding = input.value();
 			if (binding.isEmpty()) {
 				binding = fieldName;
@@ -47,17 +54,22 @@ public class Inputs {
 			addInput(InputType.FIELD, ValueType.EXPR, result, el, binding, fieldName, excludeBindings);
 		}
 
-		for (Method m : clazz.getMethods()) {
-			Input input = m.getAnnotation(Input.class);
+		for (Method meth : clazz.getMethods()) {
+			Input input = meth.getAnnotation(Input.class);
 			if (input == null) {
 				continue;
 			}
 
-			if (m.getParameterCount() != 1) {
-				throw new ParseException("input setter method %s.%s must have exactly one parameter.", clazz.getName(), m.getName());
+			int mods = meth.getModifiers();
+			if (Modifier.isStatic(mods)) {
+				throw new NgoyException("@Input annotated method must be public, non-static: %s.%s", clazz.getName(), meth.getName());
 			}
 
-			String methodName = m.getName();
+			if (meth.getParameterCount() != 1) {
+				throw new ParseException("@Input annotated method must have exactly one parameter: %s.%s", clazz.getName(), meth.getName());
+			}
+
+			String methodName = meth.getName();
 			String binding = input.value();
 			if (binding.isEmpty()) {
 				binding = fieldName(methodName);

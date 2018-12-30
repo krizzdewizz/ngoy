@@ -29,7 +29,7 @@ import ngoy.core.Provider;
 public class DefaultInjector implements Injector {
 
 	private interface Factory {
-		public Object create();
+		Object create();
 	}
 
 	private interface Injection {
@@ -195,9 +195,14 @@ public class DefaultInjector implements Injector {
 			Lookup lookup = MethodHandles.lookup();
 			final List<Injection> injections = new ArrayList<>();
 			for (Field field : clazz.getFields()) {
-				int mods = field.getModifiers();
-				if (!Modifier.isPublic(mods) || Modifier.isStatic(mods) || Modifier.isFinal(mods) || findAnnotation(field.getAnnotations(), "Inject") == null) {
+
+				if (findAnnotation(field.getAnnotations(), "Inject") == null) {
 					continue;
+				}
+
+				int mods = field.getModifiers();
+				if (Modifier.isStatic(mods) || Modifier.isFinal(mods)) {
+					throw new NgoyException("@Inject annotated field must be public, non-final, non-static: %s.%s", clazz.getName(), field.getName());
 				}
 
 				boolean optional = findAnnotation(field.getAnnotations(), "Optional") != null;
@@ -210,13 +215,17 @@ public class DefaultInjector implements Injector {
 			}
 
 			for (Method meth : clazz.getMethods()) {
-				int mods = meth.getModifiers();
-				if (!Modifier.isPublic(mods) || Modifier.isStatic(mods) || findAnnotation(meth.getAnnotations(), "Inject") == null) {
+				if (findAnnotation(meth.getAnnotations(), "Inject") == null) {
 					continue;
 				}
 
+				int mods = meth.getModifiers();
+				if (Modifier.isStatic(mods)) {
+					throw new NgoyException("@Inject annotated method must be public, non-static: %s.%s", clazz.getName(), meth.getName());
+				}
+
 				if (meth.getParameterCount() != 1) {
-					throw new NgoyException("Inject setter method must have exactly one parameter: %s.%s", clazz.getName(), meth.getName());
+					throw new NgoyException("@Inject annotated method must have exactly one parameter: %s.%s", clazz.getName(), meth.getName());
 				}
 
 				boolean optional = findAnnotation(meth.getAnnotations(), "Optional") != null;

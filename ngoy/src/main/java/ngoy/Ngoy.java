@@ -628,7 +628,7 @@ public class Ngoy<T> {
 	}
 
 	private Ctx createRenderContext() {
-		Ctx ctx = Ctx.of(injector);
+		Ctx ctx = new Ctx(injector);
 
 		if (context != null) {
 			ctx.setVariables(context.getVariables());

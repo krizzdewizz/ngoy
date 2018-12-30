@@ -16,23 +16,11 @@ import ngoy.core.Variable;
 
 public class Ctx {
 
-	public static Ctx of() {
-		return new Ctx();
-	}
-
-	public static Ctx of(Injector injector) {
-		return new Ctx(injector);
-	}
-
 	private final Injector injector;
 	private Output out;
 	private Map<String, Variable<?>> variables = new HashMap<>();
 
-	private Ctx() {
-		this(null);
-	}
-
-	private Ctx(@Nullable Injector injector) {
+	public Ctx(Injector injector) {
 		this.injector = injector;
 	}
 

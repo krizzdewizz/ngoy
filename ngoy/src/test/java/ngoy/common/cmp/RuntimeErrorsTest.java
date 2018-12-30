@@ -9,6 +9,7 @@ import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
+import ngoy.core.Inject;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
@@ -91,4 +92,127 @@ public class RuntimeErrorsTest extends ANgoyTest {
 		expectedEx.expectMessage(containsString("Not a boolean expression"));
 		render(CmpNotBoolean.class);
 	}
+
+	//
+
+	@Component(selector = "a", template = "")
+	public static class CmpFieldInjectFinal {
+		@Inject
+		public final String x = null;
+	}
+
+	@Component(selector = "test", template = "<a></a>")
+	@NgModule(declarations = { CmpFieldInjectFinal.class })
+	public static class CmpFieldInjectFinalTest {
+	}
+
+	@Test
+	public void testFieldInjectFinal() {
+		expectedEx.expect(NgoyException.class);
+		expectedEx.expectMessage(containsString("@Inject annotated field must be public, non-final, non-static"));
+		render(CmpFieldInjectFinalTest.class);
+	}
+
+	//
+
+	@Component(selector = "a", template = "")
+	public static class CmpFieldInjectStatic {
+		@Inject
+		public static String x;
+	}
+
+	@Component(selector = "test", template = "<a></a>")
+	@NgModule(declarations = { CmpFieldInjectStatic.class })
+	public static class CmpFieldInjectStaticTest {
+	}
+
+	@Test
+	public void testFieldInjectStatic() {
+		expectedEx.expect(NgoyException.class);
+		expectedEx.expectMessage(containsString("@Inject annotated field must be public, non-final, non-static"));
+		render(CmpFieldInjectStaticTest.class);
+	}
+
+	//
+
+	@Component(selector = "a", template = "")
+	public static class CmpMethodInjectStatic {
+		@Inject
+		public static void setX(@SuppressWarnings("unused") String x) {
+		}
+	}
+
+	@Component(selector = "test", template = "<a></a>")
+	@NgModule(declarations = { CmpMethodInjectStatic.class })
+	public static class CmpMethodInjectStaticTest {
+	}
+
+	@Test
+	public void testMethodInjectStatic() {
+		expectedEx.expect(NgoyException.class);
+		expectedEx.expectMessage(containsString("@Inject annotated method must be public, non-static"));
+		render(CmpMethodInjectStaticTest.class);
+	}
+
+	//
+
+	@Component(selector = "a", template = "")
+	public static class CmpMethodInputStatic {
+		@Input
+		public static void setX(@SuppressWarnings("unused") String x) {
+		}
+	}
+
+	@Component(selector = "test", template = "<a x=\"'b'\"></a>")
+	@NgModule(declarations = { CmpMethodInputStatic.class })
+	public static class CmpMethodInputStaticTest {
+	}
+
+	@Test
+	public void testMethodInputStatic() {
+		expectedEx.expect(NgoyException.class);
+		expectedEx.expectMessage(containsString("@Input annotated method must be public, non-static"));
+		render(CmpMethodInputStaticTest.class);
+	}
+
+	//
+
+	@Component(selector = "a", template = "")
+	public static class CmpFieldInputStatic {
+		@Input
+		public static String x;
+	}
+
+	@Component(selector = "test", template = "<a x=\"'b'\"></a>")
+	@NgModule(declarations = { CmpFieldInputStatic.class })
+	public static class CmpFieldInputStaticTest {
+	}
+
+	@Test
+	public void testFieldInputStatic() {
+		expectedEx.expect(NgoyException.class);
+		expectedEx.expectMessage(containsString("@Input annotated field must be public, non-final, non-static"));
+		render(CmpFieldInputStaticTest.class);
+	}
+
+	//
+
+	@Component(selector = "a", template = "")
+	public static class CmpFieldInputFinal {
+		@Input
+		public final String x = null;
+	}
+
+	@Component(selector = "test", template = "<a x=\"'b'\"></a>")
+	@NgModule(declarations = { CmpFieldInputFinal.class })
+	public static class CmpFieldInputFinalTest {
+	}
+
+	@Test
+	public void testFieldInputFinal() {
+		expectedEx.expect(NgoyException.class);
+		expectedEx.expectMessage(containsString("@Input annotated field must be public, non-final, non-static"));
+		render(CmpFieldInputFinalTest.class);
+	}
+
 }
