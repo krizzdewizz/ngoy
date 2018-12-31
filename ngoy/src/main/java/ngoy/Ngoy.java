@@ -575,11 +575,6 @@ public class Ngoy<T> {
 			}
 
 			@Override
-			public Class<?> resolveCmpClass(Class<?> cmpClass) {
-				return cmpClass != null ? cmpClass : appClass;
-			}
-
-			@Override
 			public Set<Class<?>> getCmpClasses() {
 				Set<Class<?>> all = new LinkedHashSet<>();
 				all.add(appClass);

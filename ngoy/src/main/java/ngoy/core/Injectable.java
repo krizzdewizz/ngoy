@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotated class's will be included as a provider/service when scanning the
+ * An annotated class will be included as a provider/service when scanning the
  * class path.
  * 
  * @author krizz

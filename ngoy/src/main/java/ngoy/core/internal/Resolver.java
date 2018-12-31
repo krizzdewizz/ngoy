@@ -28,11 +28,6 @@ public interface Resolver {
 		}
 
 		@Override
-		public Class<?> resolveCmpClass(Class<?> cmpClass) {
-			return null;
-		}
-
-		@Override
 		public Set<Class<?>> getCmpClasses() {
 			return emptySet();
 		}
@@ -54,11 +49,9 @@ public interface Resolver {
 
 	Class<?> resolvePipe(String name);
 
-	Class<?> resolveCmpClass(Class<?> cmpClass);
+	List<Class<?>> resolvePipes();
 
 	Set<Class<?>> getCmpClasses();
 
 	Class<?> getAppClass();
-
-	List<Class<?>> resolvePipes();
 }

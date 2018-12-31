@@ -156,8 +156,7 @@ public class Parser {
 	}
 
 	/**
-	 * @param resolver
-	 *            if null, uses {@link Resolver#DEFAULT}
+	 * @param resolver if null, uses {@link Resolver#DEFAULT}
 	 */
 	public Parser(@Nullable Resolver resolver) {
 		this.cmpRefParser = new CmpRefParser(this);
@@ -354,7 +353,7 @@ public class Parser {
 
 	Class<?> topCmpClass() {
 		CmpRef peek = handler.cmpClassesStack.peek();
-		return resolver.resolveCmpClass(peek == null ? null : peek.clazz);
+		return peek == null ? resolver.getAppClass() : peek.clazz;
 	}
 
 	private String exceptionInfo(String template, boolean newLine) {
