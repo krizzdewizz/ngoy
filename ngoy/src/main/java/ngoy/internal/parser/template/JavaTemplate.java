@@ -258,9 +258,18 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private Set<String> getPipeCalls() {
-		return methodCalls.stream()
+
+		Set<String> pipeCalls = methodCalls.stream()
 				.filter(it -> pipesMap.containsKey(it))
 				.collect(toSet());
+
+		pipesMap.entrySet()
+				.stream()
+				.filter(entry -> WithCtx.class.isAssignableFrom(entry.getValue()))
+				.map(Map.Entry::getKey)
+				.forEach(pipeCalls::add);
+
+		return pipeCalls;
 	}
 
 	@Override
