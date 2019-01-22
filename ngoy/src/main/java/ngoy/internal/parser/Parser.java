@@ -71,6 +71,7 @@ public class Parser {
 			Node n = node.get(0);
 			switch (n.getNodeType()) {
 			case TEXT:
+				handler.setSourcePosition(exceptionInfo("", false));
 				replaceExpr(((Text) n).getTextContent());
 				break;
 			case ELEMENT:
@@ -358,7 +359,7 @@ public class Parser {
 
 	private String exceptionInfo(String template, boolean newLine) {
 		Position pos = getCurrentPosition();
-		String position = pos == null ? "" : pos.toString();
+		String position = pos == null ? "[1:1 @0]" : pos.toString();
 
 		String templateUrl = "";
 		String className = "";
@@ -375,9 +376,11 @@ public class Parser {
 			templateUrl = template;
 		}
 
+		String ref = isSet(templateUrl) ? format("templateUrl: %s", templateUrl) : format("component: %s", className);
+
 		String nlStart = newLine ? "\n" : "";
 		String nl = newLine ? "\n" : ", ";
-		return format("%sComponent: %s%stemplateUrl: '%s'%sposition: %s", nlStart, className, nl, templateUrl, nl, position);
+		return format("%s%s%sposition: %s", nlStart, ref, nl, position);
 	}
 
 	private Position getCurrentPosition() {

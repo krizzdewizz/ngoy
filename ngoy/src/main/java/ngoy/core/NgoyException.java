@@ -37,7 +37,7 @@ public class NgoyException extends RuntimeException {
 		super(format(message, args), realException(cause));
 	}
 
-	private NgoyException(Throwable cause) {
+	protected NgoyException(Throwable cause) {
 		super(realException(cause));
 	}
 

@@ -52,6 +52,8 @@ public final class Debug {
 						.toPath();
 			}
 
+			Files.createDirectories(tempFile.getParent());
+
 			Files.write(tempFile, cu.getBytes(StandardCharsets.UTF_8));
 			System.out.println(format("ngoy.debug: template has been written to %s", tempFile));
 		} catch (IOException e) {

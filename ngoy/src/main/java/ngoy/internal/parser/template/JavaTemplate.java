@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
+import static ngoy.core.Util.escapeJava;
 import static ngoy.core.Util.getLine;
 import static ngoy.core.Util.isSet;
 import static ngoy.core.Util.primitiveToRefType;
@@ -35,6 +36,7 @@ import ngoy.core.Variable;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.IteratorWithVariables;
+import ngoy.core.internal.RenderException;
 import ngoy.core.internal.TemplateRender;
 import ngoy.core.internal.WithCtx;
 import ngoy.internal.parser.ClassDef;
@@ -48,7 +50,8 @@ import ngoy.internal.parser.ParserHandler;
 
 public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
-	private static final String EXPR_COMMENT_TAG = "//EXPR:::";
+	private static final String DELIM = ":::";
+	private static final String EXPR_COMMENT_TAG = "//EXPR".concat(DELIM);
 
 	public static class ExprComment {
 		public final String comment;
@@ -66,14 +69,17 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			return new ExprComment(line, "");
 		}
 		String s = line.substring(EXPR_COMMENT_TAG.length());
-		String delim = ":::";
-		int pos = s.indexOf(delim);
+		return getExprComment(s);
+	}
+
+	public static ExprComment getExprComment(String debugInfo) {
+		int pos = debugInfo.indexOf(DELIM);
 		String source = "";
 		if (pos >= 0) {
-			source = s.substring(0, pos);
-			s = s.substring(pos + delim.length());
+			source = debugInfo.substring(0, pos);
+			debugInfo = debugInfo.substring(pos + DELIM.length());
 		}
-		return new ExprComment(s, source);
+		return new ExprComment(debugInfo, source);
 	}
 
 	private static final String STRINGS = "$STRINGS$";
@@ -113,6 +119,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private String stringsVar;
 	private String stringsLocalVar;
+	private String lastExprVar;
 
 	private String sourcePosition;
 	private Map<String, Class<?>> pipesMap;
@@ -122,6 +129,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		out = new TextOutput(printer, this::getDepth, this::createStringRef, contentType);
 		stringsVar = createLocalVar("strings", false);
 		stringsLocalVar = createLocalVar("stringsLocal", false);
+		lastExprVar = createLocalVar("lastExpr", false);
 	}
 
 	private String createStringRef(String text) {
@@ -155,7 +163,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		$("private static final String[] ", stringsVar, "=new String[]{", STRINGS, "};");
 
-		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws Exception {");
+		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws ", RenderException.class, " {");
+		$("String ", lastExprVar, "=\"\";");
+		$("try{");
 		$(SET_PIPE_CTX);
 		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
 		addVariables();
@@ -189,6 +199,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void documentEnd() {
 		flushOut();
+		$("} catch (Exception __e) {"); // try
+		$(" throw new ", RenderException.class, "(__e, ", lastExprVar, ");");
+		$("}"); // catch
 		$("}"); // render method
 
 		$("}"); // class Renderer
@@ -526,10 +539,22 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		out.print(s, true, false);
 	}
 
+	private String[] getExprCommentPrint(String expr) {
+		String debugInfo = format("%s:::%s", sourcePosition, NEWLINE_PATTERN.matcher(expr)
+				.replaceAll(""));
+
+		return new String[] { format("%s=\"%s\"", lastExprVar, escapeJava(debugInfo)), debugInfo };
+	}
+
 	private void printExprComment(String expr) {
 		out.flush();
-		$(EXPR_COMMENT_TAG, sourcePosition, ":::", NEWLINE_PATTERN.matcher(expr)
-				.replaceAll(""));
+
+		String[] exprComment = getExprCommentPrint(expr);
+		// this is for runtime errors
+		$(exprComment[0], ";");
+
+		// this is for compile time errors
+		$(EXPR_COMMENT_TAG, exprComment[1]);
 	}
 
 	private void printOut(Object... s) {
@@ -542,8 +567,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	private void ifExprIsTrue(String expr) {
 		flushOut();
-		printExprComment(expr);
-		$("if(", prefixName(expr), ") {");
+		String exprComment = getExprCommentPrint(expr)[0];
+		$("if((", exprComment, ")!=null&&", prefixName(expr), ") {");
 	}
 
 	@Override

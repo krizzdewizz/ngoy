@@ -61,6 +61,7 @@ import ngoy.core.internal.Ctx;
 import ngoy.core.internal.Debug;
 import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.Output;
+import ngoy.core.internal.RenderException;
 import ngoy.core.internal.Resolver;
 import ngoy.core.internal.StyleUrlsDirective;
 import ngoy.core.internal.TemplateRender;
@@ -760,8 +761,9 @@ public class Ngoy<T> {
 		try {
 			ctx.setOut(out);
 			templateRenderer.render(ctx);
-		} catch (Exception e) {
-			throw wrap(e);
+		} catch (RenderException e) {
+			ExprComment exprComment = isSet(e.debugInfo) ? getExprComment(e.debugInfo) : new ExprComment("<unknown>", "");
+			throw new NgoyException(e.getCause(), "Runtime error in expression \"%s\": %s\nsource: %s", exprComment.comment, e.getMessage(), exprComment.sourcePosition);
 		} finally {
 			ctx.resetOut();
 		}
@@ -782,7 +784,7 @@ public class Ngoy<T> {
 			ExprComment exprComment = location == null ? new ExprComment("<unknown>", "") : getExprComment(code, location.getLineNumber());
 
 			String msg = getCompileExceptionMessageWithoutLocation(e);
-			throw new NgoyException("Compile error in \"%s\": %s\nsource: %s", exprComment.comment, msg, exprComment.sourcePosition);
+			throw new NgoyException("Compile error in expression \"%s\": %s\nsource: %s", exprComment.comment, msg, exprComment.sourcePosition);
 		}
 		return bodyEvaluator.getClazz();
 	}
