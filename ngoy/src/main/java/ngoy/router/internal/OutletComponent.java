@@ -7,12 +7,13 @@ import jodd.jerry.Jerry;
 import ngoy.core.Component;
 import ngoy.core.Inject;
 import ngoy.core.OnCompile;
+import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
 import ngoy.router.Route;
 import ngoy.router.Router;
 
 @Component(selector = "router-outlet", template = "<ng-content scope></ng-content>")
-public class OutletComponent implements OnCompile, OnInit {
+public class OutletComponent implements OnCompile, OnInit, OnDestroy {
 	@Inject
 	public Router router;
 
@@ -21,6 +22,11 @@ public class OutletComponent implements OnCompile, OnInit {
 	@Override
 	public void ngOnInit() {
 		activeRoute = router.getActiveRoute();
+	}
+
+	@Override
+	public void ngOnDestroy() {
+		router.clearRouteParams();
 	}
 
 	@Override
@@ -40,5 +46,4 @@ public class OutletComponent implements OnCompile, OnInit {
 		return component.getAnnotation(Component.class)
 				.selector();
 	}
-
 }

@@ -6,6 +6,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.function.Function;
 
 import ngoy.Ngoy;
 import ngoy.core.Inject;
@@ -18,6 +20,17 @@ public class SiteRenderer {
 
 	private static final String MAIN_CSS = "styles/main.css";
 
+	private static String defaultLinkRenderer(String routerLink) {
+		return routerLink;
+	}
+
+	private static String staticLinkRenderer(String routerLink) {
+		if (routerLink.startsWith("/")) {
+			routerLink = routerLink.substring(1);
+		}
+		return format("%s.html", routerLink.replace('/', '_'));
+	}
+
 	@Inject
 	@Optional
 	public Router router;
@@ -25,21 +38,35 @@ public class SiteRenderer {
 	@Inject
 	public StyleUrlsDirective styleUrlsDirective;
 
-	public void render(Ngoy<?> ngoy, Path folder, Runnable compile) {
-		if (router != null) {
-			renderRoutes(ngoy, folder, compile);
-			writeCss(folder);
-		} else {
-			renderPage(ngoy, folder.resolve("index.html"));
+	private Function<String, String> linkRenderer = SiteRenderer::defaultLinkRenderer;
+
+	public void render(Ngoy<?> ngoy, Path folder, List<String> routes, Runnable compile) {
+		try {
+			linkRenderer = SiteRenderer::staticLinkRenderer;
+			if (router != null) {
+				renderRoutes(ngoy, folder, routes, compile);
+				writeCss(folder);
+			} else {
+				renderPage(ngoy, folder.resolve("index.html"));
+			}
+		} finally {
+			linkRenderer = SiteRenderer::defaultLinkRenderer;
 		}
 	}
 
-	private void renderRoutes(Ngoy<?> ngoy, Path folder, Runnable compile) {
+	private void renderRoutes(Ngoy<?> ngoy, Path folder, List<String> routes, Runnable compile) {
 		styleUrlsDirective.config.href = MAIN_CSS;
 		try {
 			compile.run();
-			router.withActivatedRoutesDo(route -> {
-				String file = format("%s.html", route.getPath());
+			router.withRoutesDo(routes, path -> {
+				String baseHref = router.config.getBaseHref();
+				if (path.startsWith(baseHref)) {
+					path = path.substring(baseHref.length());
+				}
+				if (path.startsWith("/")) {
+					path = path.substring(1);
+				}
+				String file = toStaticLink(path);
 				renderPage(ngoy, folder.resolve(file));
 			});
 		} finally {
@@ -78,5 +105,9 @@ public class SiteRenderer {
 		} catch (Exception e) {
 			throw NgoyException.wrap(e);
 		}
+	}
+
+	public String toStaticLink(String routerLink) {
+		return linkRenderer.apply(routerLink);
 	}
 }

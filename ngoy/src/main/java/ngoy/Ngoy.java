@@ -613,14 +613,36 @@ public class Ngoy<T> {
 	/**
 	 * Renders the site/page to the given folder.
 	 * <p>
-	 * If a {@link RouterModule} is present, renders a page for each configured
-	 * route.
+	 * If a {@link RouterModule} is present, renders a page for each given or
+	 * configured route.
 	 *
-	 * @param folder target folder. Subdirectories are created as needed
+	 * @param folder     target folder. Subdirectories are created as needed
+	 * @param routePaths Paths to render a page for. If empty, renders a page for
+	 *                   all configured routes, except parametrized ones. Used to
+	 *                   render pages for several parametrized routes.
+	 *                   <p>
+	 *                   Given this route configuration:
+	 * 
+	 *                   <pre>
+	 *                   RouterConfig routerConfig = RouterConfig //
+	 *                   		.baseHref("/")
+	 *                   		.route("index", HomeCmp.class)
+	 *                   		.route("details/:id", DetailsCmp.class)
+	 *                   		.build();
+	 *                   </pre>
+	 * 
+	 *                   You can render several detail pages with:
+	 * 
+	 *                   <pre>
+	 *                   ngoy.renderSite(Paths.get("docs"), "/index", "/details/123", "/details/456");
+	 *                   </pre>
+	 *                   <p>
+	 *                   Paths should start with the configured
+	 *                   <code>baseHref()</code>.
 	 */
-	public void renderSite(Path folder) {
+	public void renderSite(Path folder, String... routePaths) {
 		injector.get(SiteRenderer.class)
-				.render(this, folder, () -> compile(template));
+				.render(this, folder, asList(routePaths), () -> compile(template));
 	}
 
 	private Ctx createRenderContext() {
@@ -777,6 +799,10 @@ public class Ngoy<T> {
 		Debug.writeTemplate(code);
 
 		ClassBodyEvaluator bodyEvaluator = new ClassBodyEvaluator();
+		bodyEvaluator.setClassName("ngoy.core.internal.XTemplate");
+		if (Debug.debug()) {
+			bodyEvaluator.setDebuggingInformation(true, true, true);
+		}
 		try {
 			bodyEvaluator.cook(code);
 		} catch (CompileException e) {
@@ -863,5 +889,14 @@ public class Ngoy<T> {
 		// directive name same as @Input
 		String raw = attrName.substring(1, attrName.length() - 1);
 		return node.is(format("[\\[%s\\]]", raw));
+	}
+
+	/**
+	 * Returns the injector.
+	 * 
+	 * @return Injector
+	 */
+	public Injector getInjector() {
+		return injector;
 	}
 }

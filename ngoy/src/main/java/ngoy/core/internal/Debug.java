@@ -23,7 +23,11 @@ public final class Debug {
 	public static void writeTemplate(String code) {
 
 		boolean localDebug = false;
+		// without the header, line numbers do not match janino's
+		// with the header, the java file can be easier inspected in the ide
+		boolean includeHeader = false;
 //		localDebug = true;
+//		includeHeader = true;
 
 		if (!debug() && !localDebug) {
 			return;
@@ -33,16 +37,18 @@ public final class Debug {
 			String pack = "ngoy.core.internal";
 			String clazz = "XTemplate";
 			String fileName = format("%s.java", clazz);
-			String cu = new CodeBuilder() {
-				@Override
-				protected void doCreate() {
-					$("package ", pack, ";");
-					$("public class ", clazz, "{");
-					$$(code);
-					$("}");
-				}
-			}.create()
-					.toString();
+			String cu = includeHeader //
+					? new CodeBuilder() {
+						@Override
+						protected void doCreate() {
+							$("package ", pack, ";");
+							$("public class ", clazz, "{");
+							$$(code);
+							$("}");
+						}
+					}.create()
+							.toString()
+					: code;
 
 			Path tempFile;
 			if (localDebug) {
