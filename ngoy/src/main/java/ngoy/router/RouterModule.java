@@ -4,9 +4,11 @@ import static ngoy.core.Provider.useValue;
 
 import ngoy.core.ModuleWithProviders;
 import ngoy.core.NgModule;
+import ngoy.core.Provide;
 import ngoy.router.internal.OutletComponent;
 
-@NgModule(declarations = { OutletComponent.class, RouterLinkDirective.class }, providers = { Router.class, RouteParams.class })
+@NgModule(declarations = { OutletComponent.class, RouterLinkDirective.class }, providers = { Router.class, RouteParams.class }, provide = {
+		@Provide(provide = ActiveRouteProvider.class, useClass = DefaultActiveRouteProvider.class) })
 public final class RouterModule {
 	private RouterModule() {
 	}

@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 
 import ngoy.core.Inject;
 import ngoy.core.NgoyException;
-import ngoy.core.Nullable;
 
 /**
  * The router determines the active route based on the current location and
@@ -14,16 +13,6 @@ import ngoy.core.Nullable;
  * @author krizz
  */
 public class Router {
-
-	private static class RouteWithParams {
-		private final int index;
-		private final RouteParams params;
-
-		private RouteWithParams(int index, RouteParams params) {
-			this.index = index;
-			this.params = params;
-		}
-	}
 
 	@Inject
 	public Location location;
@@ -34,8 +23,17 @@ public class Router {
 	@Inject
 	public RouteParams routeParams;
 
+	@Inject
+	public ActiveRouteProvider activeRouteProvider;
+
 	private Integer activeRouteOverride;
 
+	/**
+	 * Returns whether the given route is the active one.
+	 * 
+	 * @param route Route to test
+	 * @return true if active
+	 */
 	public boolean isActive(Route route) {
 		return getRoutes().indexOf(route) == getActiveRoute();
 	}
@@ -57,7 +55,7 @@ public class Router {
 				}
 			} else {
 				for (String path : paths) {
-					RouteWithParams route = findRoute(path);
+					ActiveRoute route = activeRouteProvider.getActiveRoute(path);
 					if (route == null) {
 						throw new NgoyException("Router error: cannot find route for path '%s'", path);
 					}
@@ -72,61 +70,17 @@ public class Router {
 		}
 	}
 
-	private boolean hasParams(Route route) {
-		return route.getPath()
-				.indexOf("/:") >= 0;
-	}
-
-	@Nullable
-	private RouteWithParams findRoute(String path) {
-		String base = config.getBaseHref();
-
-		if (base.length() > path.length() || !path.startsWith(base)) {
-			return null;
-		}
-
-		String sub = path.substring(base.length());
-		if (sub.isEmpty()) {
-			return null;
-		}
-
-		if (!base.equals("/")) {
-			sub = sub.substring(1); // remove slash
-		}
-
-		String[] subSplits = sub.split("/");
-
-		List<Route> routes = getRoutes();
-		for (int i = 0, n = routes.size(); i < n; i++) {
-			Route route = routes.get(i);
-			String[] splits = route.getPath()
-					.split("/");
-
-			if (splits[0].equals(subSplits[0])) {
-				RouteParams params = new RouteParams();
-				if (splits.length > 1) {
-					String param = splits[1];
-					if (param.startsWith(":")) {
-						param = param.substring(1);
-					}
-					String value = subSplits.length > 1 ? subSplits[1] : null;
-					params.put(param, value);
-				}
-
-				return new RouteWithParams(i, params);
-			}
-		}
-
-		return null;
-	}
-
+	/**
+	 * Returns the active route index based on {@link Location#getPath()}.
+	 * 
+	 * @return active route index or 0 if none found
+	 */
 	public int getActiveRoute() {
 		if (activeRouteOverride != null) {
 			return activeRouteOverride;
 		}
 
-		String path = location.getPath();
-		RouteWithParams route = findRoute(path);
+		ActiveRoute route = activeRouteProvider.getActiveRoute(location.getPath());
 		if (route != null) {
 			routeParams.putAll(route.params);
 			return route.index;
@@ -135,11 +89,24 @@ public class Router {
 		return 0;
 	}
 
+	/**
+	 * Returns all configured routes.
+	 * 
+	 * @return All configured routes
+	 */
 	public List<Route> getRoutes() {
 		return config.getRoutes();
 	}
 
+	/**
+	 * Clears the route parameters.
+	 */
 	public void clearRouteParams() {
 		routeParams.clear();
+	}
+
+	private boolean hasParams(Route route) {
+		return route.getPath()
+				.indexOf("/:") >= 0;
 	}
 }
