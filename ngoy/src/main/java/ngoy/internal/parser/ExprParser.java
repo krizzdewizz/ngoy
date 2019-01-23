@@ -24,6 +24,7 @@ import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.util.DeepCopier;
 
+import ngoy.common.RawPipe;
 import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
 import ngoy.core.Variable;
@@ -33,6 +34,7 @@ import ngoy.internal.parser.org.springframework.expression.ExpressionType;
 import ngoy.internal.parser.org.springframework.expression.ParserContext;
 import ngoy.internal.parser.org.springframework.expression.TemplateAwareExpressionParser;
 import ngoy.internal.parser.org.springframework.expression.TemplateParserContext;
+import ngoy.internal.parser.template.JavaTemplate;
 
 public class ExprParser {
 
@@ -51,7 +53,8 @@ public class ExprParser {
 		return s.replace(OR_ESCAPE, "||");
 	}
 
-	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes, Map<String, Variable<?>> variables, ClassDef[] outLastClassDef, Set<String> outMethodCalls) {
+	public static String prefixName(Class<?> clazz, Map<String, Class<?>> prefixes, String expr, String prefix, Set<String> excludes, Map<String, Variable<?>> variables, ClassDef[] outLastClassDef,
+			Set<String> outMethodCalls) {
 		Set<String> outCalls = outMethodCalls != null ? outMethodCalls : new HashSet<>();
 		return fieldAccessToGetter(clazz, prefixes, expr, variables, rvalue -> new Prefixer(prefix, excludes, outCalls).copyRvalue(rvalue), outLastClassDef);
 	}
@@ -78,7 +81,11 @@ public class ExprParser {
 				throw new ParseException("Pipe %s must implement %s", resolvedPipe.getName(), PipeTransform.class.getName());
 			}
 
-			e = format("$%s(%s%s)", pipe, e, params.isEmpty() ? "" : format(",%s", params));
+			if (resolvedPipe == RawPipe.class) {
+				e = format("$%s(%s,%s)", pipe, JavaTemplate.CTX_VAR, e);
+			} else {
+				e = format("$%s(%s%s)", pipe, e, params.isEmpty() ? "" : format(",%s", params));
+			}
 		}
 		return e;
 	}

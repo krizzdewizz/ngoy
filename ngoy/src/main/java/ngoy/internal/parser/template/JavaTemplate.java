@@ -38,7 +38,6 @@ import ngoy.core.internal.Ctx;
 import ngoy.core.internal.IteratorWithVariables;
 import ngoy.core.internal.RenderException;
 import ngoy.core.internal.TemplateRender;
-import ngoy.core.internal.WithCtx;
 import ngoy.internal.parser.ClassDef;
 import ngoy.internal.parser.ExprParser;
 import ngoy.internal.parser.ForOfDef;
@@ -85,7 +84,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private static final String STRINGS = "$STRINGS$";
 	private static final String PIPE_METHODS = "$PIPE_METHODS$";
 	private static final String SET_PIPES = "$SET_PIPES$";
-	private static final String SET_PIPE_CTX = "$SET_PIPE_CTX$";
 
 	private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\r|\\n");
 
@@ -99,8 +97,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 	}
 
-	static final String CTX_VAR = "__";
-	private static final Set<String> GLOBALS = new HashSet<>(asList("java", "Map", "List", "Set"));
+	public static final String CTX_VAR = "__";
+	private static final Set<String> GLOBALS = new HashSet<>(asList("java", "Map", "List", "Set", CTX_VAR));
 
 	private final TextOutput out;
 	private String textOverrideVar;
@@ -166,7 +164,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws ", RenderException.class, " {");
 		$("String ", lastExprVar, "=\"\";");
 		$("try{");
-		$(SET_PIPE_CTX);
 		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
 		addVariables();
 
@@ -251,38 +248,14 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}.create()
 				.toString();
 
-		String setPipeCtx = new CodeBuilder() {
-			@Override
-			protected void doCreate() {
-				for (String pipeFun : pipeCalls) {
-					Class<?> pipe = pipesMap.get(pipeFun);
-					if (!WithCtx.class.isAssignableFrom(pipe)) {
-						continue;
-					}
-					$("((", WithCtx.class, ")_", pipeFun, ").setCtx(", CTX_VAR, ");");
-				}
-			}
-		}.create()
-				.toString();
-
 		code = code.replace(PIPE_METHODS, pipeMethods)
-				.replace(SET_PIPES, setPipes)
-				.replace(SET_PIPE_CTX, setPipeCtx);
+				.replace(SET_PIPES, setPipes);
 	}
 
 	private Set<String> getPipeCalls() {
-
-		Set<String> pipeCalls = methodCalls.stream()
+		return methodCalls.stream()
 				.filter(it -> pipesMap.containsKey(it))
 				.collect(toSet());
-
-		pipesMap.entrySet()
-				.stream()
-				.filter(entry -> WithCtx.class.isAssignableFrom(entry.getValue()))
-				.map(Map.Entry::getKey)
-				.forEach(pipeCalls::add);
-
-		return pipeCalls;
 	}
 
 	@Override

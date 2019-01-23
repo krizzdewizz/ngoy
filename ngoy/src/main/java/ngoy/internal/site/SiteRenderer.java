@@ -1,6 +1,7 @@
 package ngoy.internal.site;
 
 import static java.lang.String.format;
+import static ngoy.core.NgoyException.wrap;
 
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -95,7 +96,7 @@ public class SiteRenderer {
 			ensureDirectory(cssFile);
 			Files.write(cssFile, styles.getBytes("UTF-8"));
 		} catch (Exception e) {
-			throw NgoyException.wrap(e);
+			throw wrap(e);
 		}
 	}
 
@@ -103,7 +104,7 @@ public class SiteRenderer {
 		try {
 			Files.createDirectories(file.getParent());
 		} catch (Exception e) {
-			throw NgoyException.wrap(e);
+			throw wrap(e);
 		}
 	}
 

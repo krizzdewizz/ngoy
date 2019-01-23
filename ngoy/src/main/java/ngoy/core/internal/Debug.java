@@ -23,11 +23,7 @@ public final class Debug {
 	public static void writeTemplate(String code) {
 
 		boolean localDebug = false;
-		// without the header, line numbers do not match janino's
-		// with the header, the java file can be easier inspected in the ide
-		boolean includeHeader = false;
 //		localDebug = true;
-//		includeHeader = true;
 
 		if (!debug() && !localDebug) {
 			return;
@@ -37,7 +33,10 @@ public final class Debug {
 			String pack = "ngoy.core.internal";
 			String clazz = "XTemplate";
 			String fileName = format("%s.java", clazz);
-			String cu = includeHeader //
+
+			// without the header, line numbers do not match janino's
+			// with the header, the java file can be easier inspected in the ide
+			String cu = localDebug //
 					? new CodeBuilder() {
 						@Override
 						protected void doCreate() {

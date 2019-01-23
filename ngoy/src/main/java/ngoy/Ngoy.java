@@ -799,7 +799,7 @@ public class Ngoy<T> {
 		Debug.writeTemplate(code);
 
 		ClassBodyEvaluator bodyEvaluator = new ClassBodyEvaluator();
-		bodyEvaluator.setClassName("ngoy.core.internal.XTemplate");
+		bodyEvaluator.setClassName("ngoy.core.internal.NgoyTemplate");
 		if (Debug.debug()) {
 			bodyEvaluator.setDebuggingInformation(true, true, true);
 		}
