@@ -8,9 +8,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.common.cmp.CmpTest.PersonCmp;
@@ -47,8 +45,8 @@ public class ForOfTest extends ANgoyTest {
 
 	@Test
 	public void testForOf() {
-		assertThat(render(CmpForOf.class, useValue(TestService.class, personService))).isEqualTo(
-				"<person pi=\"0\" pf=\"true\" pl=\"false\" pe=\"true\" po=\"false\">hello: peter</person><person pi=\"1\" pf=\"false\" pl=\"false\" pe=\"false\" po=\"true\">hello: paul</person><person pi=\"2\" pf=\"false\" pl=\"true\" pe=\"true\" po=\"false\">hello: mary</person>");
+		assertThat(render(CmpForOf.class, useValue(TestService.class, personService)))
+				.isEqualTo("<person pi=\"0\" pf=\"true\" pl=\"false\" pe=\"true\" po=\"false\">hello: peter</person><person pi=\"1\" pf=\"false\" pl=\"false\" pe=\"false\" po=\"true\">hello: paul</person><person pi=\"2\" pf=\"false\" pl=\"true\" pe=\"true\" po=\"false\">hello: mary</person>");
 	}
 
 	//
@@ -72,9 +70,6 @@ public class ForOfTest extends ANgoyTest {
 			return null;
 		}
 	}
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Test
 	public void testNullIterator() {

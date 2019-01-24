@@ -7,9 +7,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
@@ -106,9 +104,6 @@ public class FieldAccessTest extends ANgoyTest {
 	}
 
 	//
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Component(selector = "", template = "<b *ngFor='let p of s'></b>")
 	public static class NotIterableCmp {

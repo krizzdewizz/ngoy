@@ -2,9 +2,7 @@ package ngoy.core.internal;
 
 import static org.hamcrest.CoreMatchers.containsString;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
@@ -21,9 +19,6 @@ public class InvalidSyntaxTest extends ANgoyTest {
 	@NgModule(declarations = { CmpNested.class })
 	public static class CmpBinding {
 	}
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Test
 	public void testBinding() {

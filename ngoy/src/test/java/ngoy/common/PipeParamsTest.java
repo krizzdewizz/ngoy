@@ -3,9 +3,7 @@ package ngoy.common;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
@@ -15,9 +13,6 @@ import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
 
 public class PipeParamsTest extends ANgoyTest {
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Pipe("myPipe")
 	public static class MyPipe implements PipeTransform {
@@ -74,7 +69,7 @@ public class PipeParamsTest extends ANgoyTest {
 	public void testFuncCallMissingArg() {
 		expectedEx.expect(NgoyException.class);
 		expectedEx.expectMessage(containsString("No applicable constructor/method"));
-//		expectedEx.expectMessage(containsString("$myPipe"));
+		// expectedEx.expectMessage(containsString("$myPipe"));
 		render(FuncCallMissingArgCmp.class);
 	}
 
@@ -89,7 +84,7 @@ public class PipeParamsTest extends ANgoyTest {
 	public void testUnknownPipe() {
 		expectedEx.expect(NgoyException.class);
 		expectedEx.expectMessage(containsString("A method named \"$unknownPipe\" is not declared"));
-//		expectedEx.expectMessage(containsString("unknownPipe"));
+		// expectedEx.expectMessage(containsString("unknownPipe"));
 		render(UnknownPipeCmp.class);
 	}
 }

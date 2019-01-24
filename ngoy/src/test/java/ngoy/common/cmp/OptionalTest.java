@@ -3,9 +3,7 @@ package ngoy.common.cmp;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
@@ -15,9 +13,6 @@ import ngoy.core.Optional;
 import ngoy.service.TestService;
 
 public class OptionalTest extends ANgoyTest {
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Component(selector = "test", template = "{{ service == null }}")
 	public static class Cmp {

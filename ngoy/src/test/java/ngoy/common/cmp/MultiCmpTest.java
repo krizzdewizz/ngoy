@@ -2,9 +2,7 @@ package ngoy.common.cmp;
 
 import static org.hamcrest.CoreMatchers.containsString;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
@@ -25,9 +23,6 @@ public class MultiCmpTest extends ANgoyTest {
 	@NgModule(declarations = { PersonCmp.class, Person2Cmp.class })
 	public static class Cmp {
 	}
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Test
 	public void test() {

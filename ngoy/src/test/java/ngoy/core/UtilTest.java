@@ -16,7 +16,6 @@ import ngoy.core.UtilTest.Inner.Sub$Inner;
 import ngoy.core.UtilTest.Inner.SubInner;
 
 public class UtilTest {
-
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

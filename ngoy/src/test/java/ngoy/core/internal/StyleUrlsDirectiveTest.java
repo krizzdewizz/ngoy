@@ -3,9 +3,7 @@ package ngoy.core.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
@@ -39,9 +37,6 @@ public class StyleUrlsDirectiveTest extends ANgoyTest {
 	@NgModule(declarations = { ACmp.class, BCmp.class })
 	public static class CmpUseExistingStyleElement {
 	}
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	//
 

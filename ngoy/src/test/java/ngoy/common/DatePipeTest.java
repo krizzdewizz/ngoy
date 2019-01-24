@@ -10,9 +10,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.Ngoy.Builder;
@@ -100,9 +98,6 @@ public class DatePipeTest extends ANgoyTest {
 	}
 
 	//
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Component(selector = "", template = "{{ dateString | date }}")
 	public static class WrongTypeCmp {

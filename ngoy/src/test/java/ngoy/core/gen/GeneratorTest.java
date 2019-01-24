@@ -20,10 +20,10 @@ import ngoy.core.Util;
 
 public class GeneratorTest {
 
-	private static final String TEST_VERSION = "1.0.0-rc3";
-
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
+
+	private static final String TEST_VERSION = "1.0.0-rc3";
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
@@ -145,7 +145,7 @@ public class GeneratorTest {
 		Path fldr = folder.newFolder()
 				.toPath();
 
-//		fldr = new File("d:/downloads/qbert/a");
+		// fldr = new File("d:/downloads/qbert/a");
 
 		generator.project(genModel, fldr);
 

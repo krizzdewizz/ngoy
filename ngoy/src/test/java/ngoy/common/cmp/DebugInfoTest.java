@@ -2,18 +2,13 @@ package ngoy.common.cmp;
 
 import static org.hamcrest.CoreMatchers.containsString;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.NgoyException;
 
 public class DebugInfoTest extends ANgoyTest {
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Component(selector = "", templateUrl = "debug-info.component.html")
 	public static class TestCmp {

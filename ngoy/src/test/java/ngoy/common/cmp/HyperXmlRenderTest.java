@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import hyperxml.Html;
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
+import ngoy.hyperml.Html;
 
 public class HyperXmlRenderTest extends ANgoyTest {
 
