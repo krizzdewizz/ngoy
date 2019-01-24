@@ -156,13 +156,13 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		$(PIPE_METHODS);
 
-		$("private Renderer(", Injector.class, " injector) {");
+		$("private Renderer(", Injector.class, " injector){");
 		$(SET_PIPES);
 		$("}");
 
 		$("private static final String[] ", stringsVar, "=new String[]{", STRINGS, "};");
 
-		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws ", RenderException.class, " {");
+		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws ", RenderException.class, "{");
 		$("String ", lastExprVar, "=\"\";");
 		$("try{");
 		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
@@ -173,15 +173,15 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	}
 
 	private void addApiHelpers() {
-		$("private static <K,V> ", Map.class, "<K,V> Map(Object...pairs) {");
+		$("private static <K,V> ", Map.class, "<K,V> Map(Object...pairs){");
 		$(" return ", Ctx.class, ".<K,V>Map(pairs);");
 		$("}");
 
-		$("private static <T> ", List.class, " List(T...items) {");
+		$("private static <T> ", List.class, " List(T...items){");
 		$(" return ", Ctx.class, ".<T>List(items);");
 		$("}");
 
-		$("private static <T> ", Set.class, " Set(T...items) {");
+		$("private static <T> ", Set.class, " Set(T...items){");
 		$(" return ", Ctx.class, ".<T>Set(items);");
 		$("}");
 	}
@@ -197,7 +197,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void documentEnd() {
 		flushOut();
-		$("} catch (Exception __e) {"); // try
+		$("} catch (Exception __e){"); // try
 		$(" throw new ", RenderException.class, "(__e, ", lastExprVar, ");");
 		$("}"); // catch
 		$("}"); // render method
@@ -231,7 +231,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			protected void doCreate() {
 				for (String pipeFun : pipeCalls) {
 					$("private static ", PipeTransform.class, " _", pipeFun, ";");
-					$("private static Object ", pipeFun, "(Object obj, Object... args) {");
+					$("private static Object ", pipeFun, "(Object obj, Object... args){");
 					$("  return _", pipeFun, ".transform(obj, args);");
 					$("}");
 				}
@@ -359,7 +359,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		printExprComment(expr);
 		$("final Object ", evalResultVar, "=", prefixName(expr), ";");
 
-		$("if(", evalResultVar, "!=null) {");
+		$("if(", evalResultVar, "!=null){");
 		printOut(" ", name, "=\"");
 		flushOut();
 		out.printEscaped(evalResultVar);
@@ -405,7 +405,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			printExprComment(expr);
 			$("final Object ", switchVar, "=", prefixName(expr), ";");
 			printExprComment(switchFirstCase);
-			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase), ")) {");
+			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase), ")){");
 			switchHadElseIf.push(true);
 		} else {
 			switchVar = "";
@@ -421,25 +421,25 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		String switchVar = switchVars.peek();
 		if (switchVar.isEmpty()) {
-			$("} else ");
+			$("}else ");
 			ifExprIsTrue(expr);
 		} else {
 			if (switchHadElseIf.peek()) {
-				$("} else ");
+				$("}else ");
 			} else {
 				switchHadElseIf.pop();
 				switchHadElseIf.push(true);
 			}
 
 			printExprComment(expr);
-			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(expr), ")) {");
+			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(expr), ")){");
 		}
 	}
 
 	@Override
 	public void elementConditionalElse() {
 		flushOut();
-		$("} else {");
+		$("}else{");
 	}
 
 	@Override
@@ -488,7 +488,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		String iterVar = createLocalVar("iter");
 		printExprComment(origListName);
-		$("for (final ", IteratorWithVariables.class, " ", iterVar, "=new ", IteratorWithVariables.class, "(", listName, "); ", iterVar, ".hasNext();) {");
+		$("for (final ", IteratorWithVariables.class, " ", iterVar, "=new ", IteratorWithVariables.class, "(", listName, "); ", iterVar, ".hasNext();){");
 		$(itemTypeClazz, " ", itemName, "=(", itemTypeClazz, ")", iterVar, ".next();");
 
 		Set<Entry<ForOfVariable, String>> entries = variables.entrySet();
@@ -542,7 +542,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private void ifExprIsTrue(String expr) {
 		flushOut();
 		String exprComment = getExprCommentPrint(expr)[0];
-		$("if((", exprComment, ")!=null&&", prefixName(expr), ") {");
+		$("if((", exprComment, ")!=null&&(", prefixName(expr), ")){");
 	}
 
 	@Override
@@ -574,14 +574,16 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	@Override
 	public void componentEnd() {
-		CmpVar cmpVar = cmpVars.pop();
 		flushOut();
-		if (OnDestroy.class.isAssignableFrom(cmpVar.cmpClass)) {
-			$("((", OnDestroy.class, ")", cmpVar.name, ").ngOnDestroy();");
-		}
-
+		
+		CmpVar cmpVar = cmpVars.pop();
+		
 		if (OnRender.class.isAssignableFrom(cmpVar.cmpClass)) {
 			$("((", OnRender.class, ")", cmpVar.name, ").ngOnRenderEnd(", CTX_VAR, ".getOut());");
+		}
+		
+		if (OnDestroy.class.isAssignableFrom(cmpVar.cmpClass)) {
+			$("((", OnDestroy.class, ")", cmpVar.name, ").ngOnDestroy();");
 		}
 
 		$("}");
@@ -624,10 +626,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 				String ex = prefixName(expr);
 				if (forStyles) {
 					if (clazz.equals("ngStyle")) {
-						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()) {");
+						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()){");
 						String valueVar = createLocalVar("styleValue");
 						$("final Object ", valueVar, "=", "entry.getValue();");
-						$("  if(", valueVar, "!= null && !", valueVar, ".toString().isEmpty()) {");
+						$("  if(", valueVar, "!= null && !", valueVar, ".toString().isEmpty()){");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$(listVar, ".append(entry.getKey()).append(':').append(", valueVar, ");");
 						$("  }");
@@ -640,7 +642,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						String exVar = createLocalVar("expr");
 						printExprComment(ex);
 						$("final Object ", exVar, "=", ex, ";");
-						$("if(", exVar, "!=null && !", exVar, ".toString().isEmpty()) {");
+						$("if(", exVar, "!=null && !", exVar, ".toString().isEmpty()){");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$(listVar, ".append(\"", clazz, "\").append(':').append(", exVar, ");");
 						if (!unit.isEmpty()) {
@@ -650,15 +652,15 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 					}
 				} else {
 					if (clazz.equals("ngClass")) {
-						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()) {");
-						$("  if((Boolean)entry.getValue()) {");
+						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()){");
+						$("  if((Boolean)entry.getValue()){");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$(listVar, ".append(entry.getKey());");
 						$("  }");
 						$("}");
 					} else {
 						printExprComment(ex);
-						$("if(", ex, ") {");
+						$("if(", ex, "){");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$(listVar, ".append(\"", clazz, "\");");
 						$("}");
@@ -667,7 +669,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			}
 		}
 
-		$("if(", listVar, ".length()>0) {");
+		$("if(", listVar, ".length()>0){");
 		printOut(" ", attrName, "=\"");
 		flushOut();
 		printOutExpr(listVar);
