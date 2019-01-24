@@ -29,6 +29,7 @@ import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
+import ngoy.core.OnRender;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
 import ngoy.core.Util;
@@ -565,6 +566,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		if (OnInit.class.isAssignableFrom(cmpRef.clazz)) {
 			$("((", OnInit.class, ")", cmpVar, ").ngOnInit();");
 		}
+
+		if (OnRender.class.isAssignableFrom(cmpRef.clazz)) {
+			$("((", OnRender.class, ")", cmpVar, ").ngOnRender(", CTX_VAR, ".getOut());");
+		}
 	}
 
 	@Override
@@ -574,6 +579,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		if (OnDestroy.class.isAssignableFrom(cmpVar.cmpClass)) {
 			$("((", OnDestroy.class, ")", cmpVar.name, ").ngOnDestroy();");
 		}
+
+		if (OnRender.class.isAssignableFrom(cmpVar.cmpClass)) {
+			$("((", OnRender.class, ")", cmpVar.name, ").ngOnRenderEnd(", CTX_VAR, ".getOut());");
+		}
+
 		$("}");
 	}
 

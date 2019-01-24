@@ -51,6 +51,7 @@ import ngoy.core.ModuleWithProviders;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
+import ngoy.core.Output;
 import ngoy.core.Pipe;
 import ngoy.core.Provide;
 import ngoy.core.Provider;
@@ -60,12 +61,10 @@ import ngoy.core.internal.CoreInternalModule;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.Debug;
 import ngoy.core.internal.DefaultInjector;
-import ngoy.core.internal.Output;
 import ngoy.core.internal.RenderException;
 import ngoy.core.internal.Resolver;
 import ngoy.core.internal.StyleUrlsDirective;
 import ngoy.core.internal.TemplateRender;
-import ngoy.core.internal.WriterOutput;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.parser.template.JavaTemplate;
 import ngoy.internal.parser.template.JavaTemplate.ExprComment;
@@ -684,7 +683,7 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(Writer out) {
-		render(createRenderContext(), new WriterOutput(out));
+		render(createRenderContext(), new Output(out));
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

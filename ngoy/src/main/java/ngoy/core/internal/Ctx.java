@@ -12,6 +12,7 @@ import java.util.Set;
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
+import ngoy.core.Output;
 import ngoy.core.Variable;
 
 public class Ctx {
@@ -42,6 +43,10 @@ public class Ctx {
 		if (obj != null) {
 			out.write(obj.toString());
 		}
+	}
+
+	public Output getOut() {
+		return out;
 	}
 
 	public void setOut(Output out) {
