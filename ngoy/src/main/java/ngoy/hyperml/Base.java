@@ -78,10 +78,6 @@ public abstract class Base<T extends Base<?>> {
 		}
 	}
 
-	protected abstract boolean isVoidElement(String name);
-
-	protected abstract boolean escapeText();
-
 	/**
 	 * If given as last argument to {@link #$(String, Object...)}, will call
 	 * {@link #$()} just after starting the element (auto-end). Resembles XML
@@ -89,6 +85,14 @@ public abstract class Base<T extends Base<?>> {
 	 * <code>$("x", $)</code>.
 	 */
 	public static final Object $ = new Object();
+
+	private static String toString(Object obj) {
+		return obj == null ? null : String.valueOf(obj);
+	}
+
+	protected abstract boolean isVoidElement(String name);
+
+	protected abstract boolean escapeText();
 
 	/**
 	 * The underlying handler.
@@ -100,10 +104,6 @@ public abstract class Base<T extends Base<?>> {
 	 * instead of <code>Stack</code> because synch is not needed.
 	 */
 	protected final LinkedList<String> stack;
-
-	private static String toString(Object obj) {
-		return obj == null ? null : String.valueOf(obj);
-	}
 
 	public Base() {
 		stack = new LinkedList<String>();
@@ -174,7 +174,6 @@ public abstract class Base<T extends Base<?>> {
 	public T text(Object... texts) {
 		int nTexts = texts.length;
 		boolean hasEnd = nTexts > 0 && texts[nTexts - 1] == $;
-
 		boolean escapeText = escapeText();
 		for (int i = 0, n = hasEnd ? nTexts - 1 : nTexts; i < n; i++) {
 			handler.text(texts[i].toString(), escapeText);
@@ -269,7 +268,7 @@ public abstract class Base<T extends Base<?>> {
 	/**
 	 * The current handler.
 	 * 
-	 * @return andler, non-null during <code>build()</code> calls.
+	 * @return handler, non-null during <code>build()</code> calls.
 	 */
 	public Handler getHandler() {
 		return handler;
