@@ -123,7 +123,7 @@ public class Html extends Base<Html> {
 	}
 
 	/**
-	 * Returns a space delimited style list for the given map.
+	 * Returns a semicolon delimited style list for the given map.
 	 * <p>
 	 * Entry key is the style name, which is added to the list if the entry value
 	 * evaluates to a non-null, non-empty string.
@@ -142,7 +142,7 @@ public class Html extends Base<Html> {
 	 * </pre>
 	 * 
 	 * @param styleValuePairs [Object, Object] pairs
-	 * @return class list
+	 * @return style list
 	 */
 	public String styles(Map<?, ?> styleValuePairs) {
 		StringBuilder sb = new StringBuilder();
@@ -162,7 +162,7 @@ public class Html extends Base<Html> {
 	}
 
 	/**
-	 * Returns a space delimited style list for the given pairs.
+	 * Returns a semicolon delimited style list for the given pairs.
 	 * <p>
 	 * First element is the style name (Object), which is added to the list if the
 	 * second element, the style's value (Object) evaluates to a non-null, non-empty
@@ -177,8 +177,8 @@ public class Html extends Base<Html> {
 	 * </pre>
 	 * 
 	 * 
-	 * @param classBooleanPairs [Object, Boolean] pairs
-	 * @return class list
+	 * @param styleValuePairs [Object, Object] pairs
+	 * @return style list
 	 */
 	public String styles(Object... styleValuePairs) {
 		StringBuilder sb = new StringBuilder();
