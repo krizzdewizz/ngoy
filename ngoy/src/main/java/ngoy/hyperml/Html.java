@@ -13,7 +13,8 @@ import java.util.Set;
  */
 public class Html extends Base<Html> {
 
-	private static final Set<String> VOID_ELEMENTS = new HashSet<>(Arrays.asList("area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"));
+	private static final Set<String> VOID_ELEMENTS = new HashSet<>(
+			Arrays.asList("area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"));
 
 	@Override
 	protected boolean isVoidElement(String name) {
@@ -35,11 +36,9 @@ public class Html extends Base<Html> {
 	/**
 	 * Outputs a CSS style declaration as a {@link #text(Object...)} call.
 	 * 
-	 * @param selector
-	 *            The selector
-	 * @param propertyValuePairs
-	 *            css property/value pairs such as
-	 *            <code>["color", "red", "display", "none"]</code>
+	 * @param selector           The selector
+	 * @param propertyValuePairs css property/value pairs such as
+	 *                           <code>["color", "red", "display", "none"]</code>
 	 */
 	public Html css(String selector, Object... propertyValuePairs) {
 		StringBuilder sb = new StringBuilder();
@@ -59,8 +58,8 @@ public class Html extends Base<Html> {
 	/**
 	 * Returns a space delimited class list for the given map.
 	 * <p>
-	 * Entry key is the class name, which is added to the list if the entry
-	 * value evaluates to true.
+	 * Entry key is the class name, which is added to the list if the entry value
+	 * evaluates to true.
 	 * <p>
 	 * Example:
 	 * 
@@ -75,8 +74,7 @@ public class Html extends Base<Html> {
 	 * &lt;a class="peter mary"&gt;&lt;/a&gt
 	 * </pre>
 	 * 
-	 * @param classBooleanPairs
-	 *            [Object, Boolean] pairs
+	 * @param classBooleanPairs [Object, Boolean] pairs
 	 * @return class list
 	 */
 	public String classes(Map<? extends Object, Boolean> classBooleanPairs) {
@@ -95,8 +93,8 @@ public class Html extends Base<Html> {
 	/**
 	 * Returns a space delimited class list for the given pairs.
 	 * <p>
-	 * First element is the class name (Object), which is added to the list if
-	 * the second element (Boolean) evaluates to true.
+	 * First element is the class name (Object), which is added to the list if the
+	 * second element (Boolean) evaluates to true.
 	 * <p>
 	 * Example:
 	 * 
@@ -107,8 +105,7 @@ public class Html extends Base<Html> {
 	 * </pre>
 	 * 
 	 * 
-	 * @param classBooleanPairs
-	 *            [Object, Boolean] pairs
+	 * @param classBooleanPairs [Object, Boolean] pairs
 	 * @return class list
 	 */
 	public String classes(Object... classBooleanPairs) {
@@ -128,8 +125,8 @@ public class Html extends Base<Html> {
 	/**
 	 * Returns a space delimited style list for the given map.
 	 * <p>
-	 * Entry key is the style name, which is added to the list if the entry
-	 * value evaluates to a non-null, non-empty string.
+	 * Entry key is the style name, which is added to the list if the entry value
+	 * evaluates to a non-null, non-empty string.
 	 * <p>
 	 * Example:
 	 * 
@@ -144,8 +141,7 @@ public class Html extends Base<Html> {
 	 * &lt;a style="background-color:red;display:none"&gt;&lt;/a&gt
 	 * </pre>
 	 * 
-	 * @param styleValuePairs
-	 *            [Object, Object] pairs
+	 * @param styleValuePairs [Object, Object] pairs
 	 * @return class list
 	 */
 	public String styles(Map<?, ?> styleValuePairs) {
@@ -168,9 +164,9 @@ public class Html extends Base<Html> {
 	/**
 	 * Returns a space delimited style list for the given pairs.
 	 * <p>
-	 * First element is the style name (Object), which is added to the list if
-	 * the second element, the style's value (Object) evaluates to a non-null,
-	 * non-empty string.
+	 * First element is the style name (Object), which is added to the list if the
+	 * second element, the style's value (Object) evaluates to a non-null, non-empty
+	 * string.
 	 * <p>
 	 * Example:
 	 * 
@@ -181,8 +177,7 @@ public class Html extends Base<Html> {
 	 * </pre>
 	 * 
 	 * 
-	 * @param classBooleanPairs
-	 *            [Object, Boolean] pairs
+	 * @param classBooleanPairs [Object, Boolean] pairs
 	 * @return class list
 	 */
 	public String styles(Object... styleValuePairs) {
@@ -205,19 +200,19 @@ public class Html extends Base<Html> {
 	// begin generated code
 
 	/**
-	 * The <code>_blank</code> attribute.
+	 * The <code>_blank</code> enumeration.
 	 */
 	public static final String _blank = "_blank";
 	/**
-	 * The <code>_parent</code> attribute.
+	 * The <code>_parent</code> enumeration.
 	 */
 	public static final String _parent = "_parent";
 	/**
-	 * The <code>_self</code> attribute.
+	 * The <code>_self</code> enumeration.
 	 */
 	public static final String _self = "_self";
 	/**
-	 * The <code>_top</code> attribute.
+	 * The <code>_top</code> enumeration.
 	 */
 	public static final String _top = "_top";
 	/**
@@ -225,7 +220,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String abbr = "abbr";
 	/**
-	 * The <code>above</code> attribute.
+	 * The <code>above</code> enumeration.
 	 */
 	public static final String above = "above";
 	/**
@@ -249,23 +244,23 @@ public class Html extends Base<Html> {
 	 */
 	public static final String align = "align";
 	/**
-	 * The <code>all</code> attribute.
+	 * The <code>all</code> enumeration.
 	 */
 	public static final String all = "all";
 	/**
-	 * The <code>allow-forms</code> attribute.
+	 * The <code>allow-forms</code> enumeration.
 	 */
 	public static final String allowForms = "allow-forms";
 	/**
-	 * The <code>allow-same-origin</code> attribute.
+	 * The <code>allow-same-origin</code> enumeration.
 	 */
 	public static final String allowSameOrigin = "allow-same-origin";
 	/**
-	 * The <code>allow-scripts</code> attribute.
+	 * The <code>allow-scripts</code> enumeration.
 	 */
 	public static final String allowScripts = "allow-scripts";
 	/**
-	 * The <code>allow-top-navigation</code> attribute.
+	 * The <code>allow-top-navigation</code> enumeration.
 	 */
 	public static final String allowTopNavigation = "allow-top-navigation";
 	/**
@@ -273,11 +268,11 @@ public class Html extends Base<Html> {
 	 */
 	public static final String alt = "alt";
 	/**
-	 * The <code>any</code> attribute.
+	 * The <code>any</code> enumeration.
 	 */
 	public static final String any = "any";
 	/**
-	 * The <code>application/x-www-form-urlencoded</code> attribute.
+	 * The <code>application/x-www-form-urlencoded</code> enumeration.
 	 */
 	public static final String applicationXWwwFormUrlencoded = "application/x-www-form-urlencoded";
 	/**
@@ -289,7 +284,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String async = "async";
 	/**
-	 * The <code>auto</code> attribute.
+	 * The <code>auto</code> enumeration.
 	 */
 	public static final String auto = "auto";
 	/**
@@ -309,11 +304,11 @@ public class Html extends Base<Html> {
 	 */
 	public static final String axis = "axis";
 	/**
-	 * The <code>baseline</code> attribute.
+	 * The <code>baseline</code> enumeration.
 	 */
 	public static final String baseline = "baseline";
 	/**
-	 * The <code>below</code> attribute.
+	 * The <code>below</code> enumeration.
 	 */
 	public static final String below = "below";
 	/**
@@ -321,19 +316,19 @@ public class Html extends Base<Html> {
 	 */
 	public static final String border = "border";
 	/**
-	 * The <code>bottom</code> attribute.
+	 * The <code>bottom</code> enumeration.
 	 */
 	public static final String bottom = "bottom";
 	/**
-	 * The <code>box</code> attribute.
+	 * The <code>box</code> enumeration.
 	 */
 	public static final String box = "box";
 	/**
-	 * The <code>button</code> attribute.
+	 * The <code>button</code> enumeration.
 	 */
 	public static final String button = "button";
 	/**
-	 * The <code>captions</code> attribute.
+	 * The <code>captions</code> enumeration.
 	 */
 	public static final String captions = "captions";
 	/**
@@ -345,7 +340,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String cellspacing = "cellspacing";
 	/**
-	 * The <code>center</code> attribute.
+	 * The <code>center</code> enumeration.
 	 */
 	public static final String center = "center";
 	/**
@@ -353,7 +348,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String challenge = "challenge";
 	/**
-	 * The <code>chapters</code> attribute.
+	 * The <code>chapters</code> enumeration.
 	 */
 	public static final String chapters = "chapters";
 	/**
@@ -369,7 +364,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String charset = "charset";
 	/**
-	 * The <code>checkbox</code> attribute.
+	 * The <code>checkbox</code> enumeration.
 	 */
 	public static final String checkbox = "checkbox";
 	/**
@@ -377,7 +372,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String checked = "checked";
 	/**
-	 * The <code>circle</code> attribute.
+	 * The <code>circle</code> enumeration.
 	 */
 	public static final String circle = "circle";
 	/**
@@ -401,15 +396,15 @@ public class Html extends Base<Html> {
 	 */
 	public static final String codetype = "codetype";
 	/**
-	 * The <code>col</code> attribute.
+	 * The <code>col</code> enumeration.
 	 */
 	public static final String col = "col";
 	/**
-	 * The <code>colgroup</code> attribute.
+	 * The <code>colgroup</code> enumeration.
 	 */
 	public static final String colgroup = "colgroup";
 	/**
-	 * The <code>color</code> attribute.
+	 * The <code>color</code> enumeration.
 	 */
 	public static final String color = "color";
 	/**
@@ -421,7 +416,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String colspan = "colspan";
 	/**
-	 * The <code>command</code> attribute.
+	 * The <code>command</code> enumeration.
 	 */
 	public static final String command = "command";
 	/**
@@ -429,11 +424,11 @@ public class Html extends Base<Html> {
 	 */
 	public static final String content = "content";
 	/**
-	 * The <code>content-language</code> attribute.
+	 * The <code>content-language</code> enumeration.
 	 */
 	public static final String contentLanguage = "content-language";
 	/**
-	 * The <code>content-type</code> attribute.
+	 * The <code>content-type</code> enumeration.
 	 */
 	public static final String contentType = "content-type";
 	/**
@@ -441,7 +436,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String contenteditable = "contenteditable";
 	/**
-	 * The <code>context</code> attribute.
+	 * The <code>context</code> enumeration.
 	 */
 	public static final String context = "context";
 	/**
@@ -457,7 +452,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String coords = "coords";
 	/**
-	 * The <code>copy</code> attribute.
+	 * The <code>copy</code> enumeration.
 	 */
 	public static final String copy = "copy";
 	/**
@@ -465,7 +460,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String data = "data";
 	/**
-	 * The <code>date</code> attribute.
+	 * The <code>date</code> enumeration.
 	 */
 	public static final String date = "date";
 	/**
@@ -473,7 +468,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String datetime = "datetime";
 	/**
-	 * The <code>datetime-local</code> attribute.
+	 * The <code>datetime-local</code> enumeration.
 	 */
 	public static final String datetimeLocal = "datetime-local";
 	/**
@@ -485,7 +480,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String defaultt = "default";
 	/**
-	 * The <code>default-style</code> attribute.
+	 * The <code>default-style</code> enumeration.
 	 */
 	public static final String defaultStyle = "default-style";
 	/**
@@ -493,7 +488,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String defer = "defer";
 	/**
-	 * The <code>descriptions</code> attribute.
+	 * The <code>descriptions</code> enumeration.
 	 */
 	public static final String descriptions = "descriptions";
 	/**
@@ -517,7 +512,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String dropzone = "dropzone";
 	/**
-	 * The <code>email</code> attribute.
+	 * The <code>email</code> enumeration.
 	 */
 	public static final String email = "email";
 	/**
@@ -525,11 +520,11 @@ public class Html extends Base<Html> {
 	 */
 	public static final String enctype = "enctype";
 	/**
-	 * The <code>false</code> attribute.
+	 * The <code>false</code> enumeration.
 	 */
 	public static final String falsee = "false";
 	/**
-	 * The <code>file</code> attribute.
+	 * The <code>file</code> enumeration.
 	 */
 	public static final String file = "file";
 	/**
@@ -565,15 +560,15 @@ public class Html extends Base<Html> {
 	 */
 	public static final String frame = "frame";
 	/**
-	 * The <code>get</code> attribute.
+	 * The <code>get</code> enumeration.
 	 */
 	public static final String get = "get";
 	/**
-	 * The <code>groups</code> attribute.
+	 * The <code>groups</code> enumeration.
 	 */
 	public static final String groups = "groups";
 	/**
-	 * The <code>hard</code> attribute.
+	 * The <code>hard</code> enumeration.
 	 */
 	public static final String hard = "hard";
 	/**
@@ -601,7 +596,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String hreflang = "hreflang";
 	/**
-	 * The <code>hsides</code> attribute.
+	 * The <code>hsides</code> enumeration.
 	 */
 	public static final String hsides = "hsides";
 	/**
@@ -617,7 +612,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String id = "id";
 	/**
-	 * The <code>image</code> attribute.
+	 * The <code>image</code> enumeration.
 	 */
 	public static final String image = "image";
 	/**
@@ -625,7 +620,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String ismap = "ismap";
 	/**
-	 * The <code>justify</code> attribute.
+	 * The <code>justify</code> enumeration.
 	 */
 	public static final String justify = "justify";
 	/**
@@ -645,15 +640,15 @@ public class Html extends Base<Html> {
 	 */
 	public static final String lang = "lang";
 	/**
-	 * The <code>left</code> attribute.
+	 * The <code>left</code> enumeration.
 	 */
 	public static final String left = "left";
 	/**
-	 * The <code>lhs</code> attribute.
+	 * The <code>lhs</code> enumeration.
 	 */
 	public static final String lhs = "lhs";
 	/**
-	 * The <code>link</code> attribute.
+	 * The <code>link</code> enumeration.
 	 */
 	public static final String link = "link";
 	/**
@@ -673,7 +668,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String low = "low";
 	/**
-	 * The <code>ltr</code> attribute.
+	 * The <code>ltr</code> enumeration.
 	 */
 	public static final String ltr = "ltr";
 	/**
@@ -697,7 +692,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String mediagroup = "mediagroup";
 	/**
-	 * The <code>metadata</code> attribute.
+	 * The <code>metadata</code> enumeration.
 	 */
 	public static final String metadata = "metadata";
 	/**
@@ -705,7 +700,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String method = "method";
 	/**
-	 * The <code>middle</code> attribute.
+	 * The <code>middle</code> enumeration.
 	 */
 	public static final String middle = "middle";
 	/**
@@ -713,15 +708,15 @@ public class Html extends Base<Html> {
 	 */
 	public static final String min = "min";
 	/**
-	 * The <code>month</code> attribute.
+	 * The <code>month</code> enumeration.
 	 */
 	public static final String month = "month";
 	/**
-	 * The <code>move</code> attribute.
+	 * The <code>move</code> enumeration.
 	 */
 	public static final String move = "move";
 	/**
-	 * The <code>multipart/form-data</code> attribute.
+	 * The <code>multipart/form-data</code> enumeration.
 	 */
 	public static final String multipartFormData = "multipart/form-data";
 	/**
@@ -741,7 +736,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String nohref = "nohref";
 	/**
-	 * The <code>none</code> attribute.
+	 * The <code>none</code> enumeration.
 	 */
 	public static final String none = "none";
 	/**
@@ -749,19 +744,19 @@ public class Html extends Base<Html> {
 	 */
 	public static final String novalidate = "novalidate";
 	/**
-	 * The <code>number</code> attribute.
+	 * The <code>number</code> enumeration.
 	 */
 	public static final String number = "number";
 	/**
-	 * The <code>object</code> attribute.
+	 * The <code>object</code> enumeration.
 	 */
 	public static final String object = "object";
 	/**
-	 * The <code>off</code> attribute.
+	 * The <code>off</code> enumeration.
 	 */
 	public static final String off = "off";
 	/**
-	 * The <code>on</code> attribute.
+	 * The <code>on</code> enumeration.
 	 */
 	public static final String on = "on";
 	/**
@@ -1037,7 +1032,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String optimum = "optimum";
 	/**
-	 * The <code>password</code> attribute.
+	 * The <code>password</code> enumeration.
 	 */
 	public static final String password = "password";
 	/**
@@ -1049,11 +1044,11 @@ public class Html extends Base<Html> {
 	 */
 	public static final String placeholder = "placeholder";
 	/**
-	 * The <code>poly</code> attribute.
+	 * The <code>poly</code> enumeration.
 	 */
 	public static final String poly = "poly";
 	/**
-	 * The <code>post</code> attribute.
+	 * The <code>post</code> enumeration.
 	 */
 	public static final String post = "post";
 	/**
@@ -1069,11 +1064,11 @@ public class Html extends Base<Html> {
 	 */
 	public static final String profile = "profile";
 	/**
-	 * The <code>pubdate</code> attribute.
+	 * The <code>pubdate</code> enumeration.
 	 */
 	public static final String pubdate = "pubdate";
 	/**
-	 * The <code>radio</code> attribute.
+	 * The <code>radio</code> enumeration.
 	 */
 	public static final String radio = "radio";
 	/**
@@ -1081,7 +1076,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String radiogroup = "radiogroup";
 	/**
-	 * The <code>range</code> attribute.
+	 * The <code>range</code> enumeration.
 	 */
 	public static final String range = "range";
 	/**
@@ -1089,15 +1084,15 @@ public class Html extends Base<Html> {
 	 */
 	public static final String readonly = "readonly";
 	/**
-	 * The <code>rect</code> attribute.
+	 * The <code>rect</code> enumeration.
 	 */
 	public static final String rect = "rect";
 	/**
-	 * The <code>ref</code> attribute.
+	 * The <code>ref</code> enumeration.
 	 */
 	public static final String ref = "ref";
 	/**
-	 * The <code>refresh</code> attribute.
+	 * The <code>refresh</code> enumeration.
 	 */
 	public static final String refresh = "refresh";
 	/**
@@ -1109,7 +1104,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String required = "required";
 	/**
-	 * The <code>reset</code> attribute.
+	 * The <code>reset</code> enumeration.
 	 */
 	public static final String reset = "reset";
 	/**
@@ -1121,19 +1116,19 @@ public class Html extends Base<Html> {
 	 */
 	public static final String reversed = "reversed";
 	/**
-	 * The <code>rhs</code> attribute.
+	 * The <code>rhs</code> enumeration.
 	 */
 	public static final String rhs = "rhs";
 	/**
-	 * The <code>right</code> attribute.
+	 * The <code>right</code> enumeration.
 	 */
 	public static final String right = "right";
 	/**
-	 * The <code>row</code> attribute.
+	 * The <code>row</code> enumeration.
 	 */
 	public static final String row = "row";
 	/**
-	 * The <code>rowgroup</code> attribute.
+	 * The <code>rowgroup</code> enumeration.
 	 */
 	public static final String rowgroup = "rowgroup";
 	/**
@@ -1145,11 +1140,11 @@ public class Html extends Base<Html> {
 	 */
 	public static final String rowspan = "rowspan";
 	/**
-	 * The <code>rsa</code> attribute.
+	 * The <code>rsa</code> enumeration.
 	 */
 	public static final String rsa = "rsa";
 	/**
-	 * The <code>rtl</code> attribute.
+	 * The <code>rtl</code> enumeration.
 	 */
 	public static final String rtl = "rtl";
 	/**
@@ -1177,7 +1172,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String seamless = "seamless";
 	/**
-	 * The <code>search</code> attribute.
+	 * The <code>search</code> enumeration.
 	 */
 	public static final String search = "search";
 	/**
@@ -1185,7 +1180,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String selected = "selected";
 	/**
-	 * The <code>set-cookie</code> attribute.
+	 * The <code>set-cookie</code> enumeration.
 	 */
 	public static final String setCookie = "set-cookie";
 	/**
@@ -1201,7 +1196,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String sizes = "sizes";
 	/**
-	 * The <code>soft</code> attribute.
+	 * The <code>soft</code> enumeration.
 	 */
 	public static final String soft = "soft";
 	/**
@@ -1241,11 +1236,11 @@ public class Html extends Base<Html> {
 	 */
 	public static final String style = "style";
 	/**
-	 * The <code>submit</code> attribute.
+	 * The <code>submit</code> enumeration.
 	 */
 	public static final String submit = "submit";
 	/**
-	 * The <code>subtitles</code> attribute.
+	 * The <code>subtitles</code> enumeration.
 	 */
 	public static final String subtitles = "subtitles";
 	/**
@@ -1261,19 +1256,19 @@ public class Html extends Base<Html> {
 	 */
 	public static final String target = "target";
 	/**
-	 * The <code>tel</code> attribute.
+	 * The <code>tel</code> enumeration.
 	 */
 	public static final String tel = "tel";
 	/**
-	 * The <code>text</code> attribute.
+	 * The <code>text</code> enumeration.
 	 */
 	public static final String text = "text";
 	/**
-	 * The <code>text/plain</code> attribute.
+	 * The <code>text/plain</code> enumeration.
 	 */
 	public static final String textPlain = "text/plain";
 	/**
-	 * The <code>time</code> attribute.
+	 * The <code>time</code> enumeration.
 	 */
 	public static final String time = "time";
 	/**
@@ -1281,15 +1276,15 @@ public class Html extends Base<Html> {
 	 */
 	public static final String title = "title";
 	/**
-	 * The <code>toolbar</code> attribute.
+	 * The <code>toolbar</code> enumeration.
 	 */
 	public static final String toolbar = "toolbar";
 	/**
-	 * The <code>top</code> attribute.
+	 * The <code>top</code> enumeration.
 	 */
 	public static final String top = "top";
 	/**
-	 * The <code>true</code> attribute.
+	 * The <code>true</code> enumeration.
 	 */
 	public static final String truee = "true";
 	/**
@@ -1297,7 +1292,7 @@ public class Html extends Base<Html> {
 	 */
 	public static final String type = "type";
 	/**
-	 * The <code>url</code> attribute.
+	 * The <code>url</code> enumeration.
 	 */
 	public static final String url = "url";
 	/**
@@ -1317,15 +1312,15 @@ public class Html extends Base<Html> {
 	 */
 	public static final String valuetype = "valuetype";
 	/**
-	 * The <code>void</code> attribute.
+	 * The <code>void</code> enumeration.
 	 */
 	public static final String voidd = "void";
 	/**
-	 * The <code>vsides</code> attribute.
+	 * The <code>vsides</code> enumeration.
 	 */
 	public static final String vsides = "vsides";
 	/**
-	 * The <code>week</code> attribute.
+	 * The <code>week</code> enumeration.
 	 */
 	public static final String week = "week";
 	/**

@@ -27,42 +27,84 @@ public class HtmlGen {
 
 	private static final Set<String> KEYWORDS = new HashSet<>(asList("class", "true", "false", "default", "for", "void", "char"));
 
+	static class Item implements Comparable<Item> {
+		final String name;
+		final String type;
+
+		public Item(String type, String name) {
+			this.name = name;
+			this.type = type;
+		}
+
+		@Override
+		public int compareTo(Item o) {
+			return name.compareTo(o.name);
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((name == null) ? 0 : name.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Item other = (Item) obj;
+			if (name == null) {
+				if (other.name != null)
+					return false;
+			} else if (!name.equals(other.name))
+				return false;
+			return true;
+		}
+	}
+
 	public static void main(String[] args) throws Exception {
-		Set<String> allAttrs = new HashSet<>();
-		Set<String> allElements = new HashSet<>();
+		Set<Item> allAttrs = new HashSet<>();
+		Set<Item> allElements = new HashSet<>();
 
 		collect("xhtml5.xsd", allAttrs, allElements);
 		collect("xhtml1-strict.xsd", allAttrs, allElements);
 
-		List<String> attrList = new ArrayList<>(allAttrs);
+		List<Item> attrList = new ArrayList<>(allAttrs);
 		Collections.sort(attrList);
 
-		List<String> elementList = new ArrayList<>(allElements);
+		List<Item> elementList = new ArrayList<>(allElements);
 		Collections.sort(elementList);
 
 		String code = new CodeBuilder() {
 			@Override
 			protected void doCreate() {
-				for (String attr : attrList) {
-					if (attr.isEmpty() || attr.equals("1") || attr.equalsIgnoreCase("a") || attr.equalsIgnoreCase("i")) {
+				for (Item it : attrList) {
+					String name = it.name;
+					if (name.isEmpty() || name.equals("1") || name.equalsIgnoreCase("a") || name.equalsIgnoreCase("i")) {
 						continue;
 					}
 					$("/**");
-					$(" * The <code>", attr, "</code> attribute.");
+					$(" * The <code>", name, "</code> ", it.type, ".");
 					$(" */");
-					$("public static final String ", toName(attr), " = \"", attr, "\";");
+					$("public static final String ", toName(name), " = \"", name, "\";");
 				}
 
-				for (String el : elementList) {
-					if (el.isEmpty()) {
+				for (Item a : elementList) {
+					String name = a.name;
+					if (name.isEmpty()) {
 						continue;
 					}
 					$("/**");
-					$(" * The <code>", el, "</code> element.");
+					$(" * The <code>", name, "</code> element.");
 					$(" * @return this");
 					$(" */");
-					$("public Html ", toName(el), "(Object...params) {");
-					$("return $(\"", el, "\", params);");
+					$("public Html ", toName(name), "(Object...params) {");
+					$("return $(\"", name, "\", params);");
 					$("}");
 				}
 			}
@@ -72,7 +114,7 @@ public class HtmlGen {
 		System.out.println(code);
 	}
 
-	private static void collect(String xsd, Set<String> allAttrs, Set<String> allElements) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+	private static void collect(String xsd, Set<Item> allAttrs, Set<Item> allElements) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
 		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = builderFactory.newDocumentBuilder();
 		Document xmlDocument = builder.parse(HtmlGen.class.getResourceAsStream(xsd));
@@ -82,21 +124,21 @@ public class HtmlGen {
 
 		NodeList attrs = (NodeList) xPath.compile("//*[name() = 'xs:attribute']/@name")
 				.evaluate(xmlDocument, XPathConstants.NODESET);
-		addToSet(attrs, allAttrs);
+		addToSet("attribute", attrs, allAttrs);
 
 		NodeList enums = (NodeList) xPath.compile("//*[name() = 'xs:enumeration']/@value")
 				.evaluate(xmlDocument, XPathConstants.NODESET);
-		addToSet(enums, allAttrs);
+		addToSet("enumeration", enums, allAttrs);
 
 		NodeList els = (NodeList) xPath.compile("//*[name() = 'xs:element']/@name")
 				.evaluate(xmlDocument, XPathConstants.NODESET);
-		addToSet(els, allElements);
+		addToSet("", els, allElements);
 	}
 
-	private static void addToSet(NodeList attrs, Set<String> allAttrs) {
+	private static void addToSet(String type, NodeList attrs, Set<Item> allAttrs) {
 		for (int i = 0, n = attrs.getLength(); i < n; i++) {
-			allAttrs.add(attrs.item(i)
-					.getNodeValue());
+			allAttrs.add(new Item(type, attrs.item(i)
+					.getNodeValue()));
 		}
 	}
 
