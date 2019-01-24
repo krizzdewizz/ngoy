@@ -8,6 +8,7 @@ import java.io.Writer;
 import java.util.LinkedList;
 
 import ngoy.core.NgoyException;
+import ngoy.core.Output;
 
 /**
  * Base class for XML/HTML.
@@ -118,6 +119,18 @@ public abstract class Base<T extends Base<?>> {
 	 */
 	public void build(Writer out) {
 		build(new WriterHandler(out));
+	}
+
+	/**
+	 * Builds the xml by transforming it to the given output.
+	 * <p>
+	 * May be called several times.
+	 * 
+	 * @param out
+	 *            destination
+	 */
+	public void build(Output out) {
+		build(out.getWriter());
 	}
 
 	public void build(Handler handler) {

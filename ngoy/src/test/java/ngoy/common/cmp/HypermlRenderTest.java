@@ -5,12 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import ngoy.ANgoyTest;
+import ngoy.common.AHtmlComponent;
 import ngoy.core.Component;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
 import ngoy.hyperml.Html;
 
-public class HyperXmlRenderTest extends ANgoyTest {
+public class HypermlRenderTest extends ANgoyTest {
 
 	@Component(selector = "", template = "abc")
 	public static class TestCmp implements OnRender {
@@ -33,7 +34,7 @@ public class HyperXmlRenderTest extends ANgoyTest {
 
 		@Override
 		public void ngOnRender(Output output) {
-			html.build(output.getWriter());
+			html.build(output);
 		}
 	}
 
@@ -45,14 +46,9 @@ public class HyperXmlRenderTest extends ANgoyTest {
 	//
 
 	@Component(selector = "", template = "abc")
-	public static class TestSubclassCmp extends Html implements OnRender {
+	public static class TestSubclassCmp extends AHtmlComponent {
 
 		private int[] ints = new int[] { 1, 2, 3 };
-
-		@Override
-		public void ngOnRender(Output output) {
-			build(output.getWriter());
-		}
 
 		@Override
 		protected void create() {
