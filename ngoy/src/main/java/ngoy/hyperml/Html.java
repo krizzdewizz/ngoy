@@ -2,6 +2,8 @@ package ngoy.hyperml;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -54,7 +56,154 @@ public class Html extends Base<Html> {
 		return this;
 	}
 
+	/**
+	 * Returns a space delimited class list for the given map.
+	 * <p>
+	 * Entry key is the class name, which is added to the list if the entry
+	 * value evaluates to true.
+	 * <p>
+	 * Example:
+	 * 
+	 * <pre>
+	 * Map&lt;String, Boolean&gt; classes = new HashMap&lt;&gt;();
+	* classes.put(&quot;peter&quot;, true);
+	* classes.put(&quot;paul&quot;, false);
+	* classes.put(&quot;mary&quot;, Boolean.TRUE);
+	*
+	* a(classs, classes(classes), $);	
+	* 
+	 * &lt;a class="peter mary"&gt;&lt;/a&gt
+	 * </pre>
+	 * 
+	 * @param classBooleanPairs
+	 *            [Object, Boolean] pairs
+	 * @return class list
+	 */
+	public String classes(Map<? extends Object, Boolean> classBooleanPairs) {
+		StringBuilder sb = new StringBuilder();
+		for (Entry<? extends Object, Boolean> entry : classBooleanPairs.entrySet()) {
+			if (entry.getValue()) {
+				if (sb.length() > 0) {
+					sb.append(' ');
+				}
+				sb.append(entry.getKey());
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Returns a space delimited class list for the given pairs.
+	 * <p>
+	 * First element is the class name (Object), which is added to the list if
+	 * the second element (Boolean) evaluates to true.
+	 * <p>
+	 * Example:
+	 * 
+	 * <pre>
+	 * a(classs, classes("peter", true, "paul", false, "mary", Boolean.TRUE), $);
+	 * 
+	 * &lt;a class="peter mary"&gt;&lt;/a&gt
+	 * </pre>
+	 * 
+	 * 
+	 * @param classBooleanPairs
+	 *            [Object, Boolean] pairs
+	 * @return class list
+	 */
+	public String classes(Object... classBooleanPairs) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0, n = classBooleanPairs.length; i < n; i += 2) {
+			Boolean pred = (Boolean) classBooleanPairs[i + 1];
+			if (pred) {
+				if (sb.length() > 0) {
+					sb.append(' ');
+				}
+				sb.append(classBooleanPairs[i]);
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Returns a space delimited style list for the given map.
+	 * <p>
+	 * Entry key is the style name, which is added to the list if the entry
+	 * value evaluates to a non-null, non-empty string.
+	 * <p>
+	 * Example:
+	 * 
+	 * <pre>
+	 * Map&lt;String, String&gt; styles = new HashMap&lt;&gt;();
+	 * styles.put(&quot;background-color&quot;, &quot;red&quot;);
+	 * styles.put(&quot;color&quot;, null);
+	 * styles.put(&quot;display&quot;, &quot;none&quot;);
+	 *
+	 * a(style, styles(styles), $);
+	 * 
+	 * &lt;a style="background-color:red;display:none"&gt;&lt;/a&gt
+	 * </pre>
+	 * 
+	 * @param styleValuePairs
+	 *            [Object, Object] pairs
+	 * @return class list
+	 */
+	public String styles(Map<?, ?> styleValuePairs) {
+		StringBuilder sb = new StringBuilder();
+		for (Entry<?, ?> entry : styleValuePairs.entrySet()) {
+			Object value = entry.getValue();
+			if (value != null && !value.toString()
+					.isEmpty()) {
+				if (sb.length() > 0) {
+					sb.append(';');
+				}
+				sb.append(entry.getKey());
+				sb.append(':');
+				sb.append(value);
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Returns a space delimited style list for the given pairs.
+	 * <p>
+	 * First element is the style name (Object), which is added to the list if
+	 * the second element, the style's value (Object) evaluates to a non-null,
+	 * non-empty string.
+	 * <p>
+	 * Example:
+	 * 
+	 * <pre>
+	 * a(style, styles("background-color", "red", "color", null, "display", "none"), $);
+	 * 
+	 * &lt;a style="background-color:red;display:none"&gt;&lt;/a&gt
+	 * </pre>
+	 * 
+	 * 
+	 * @param classBooleanPairs
+	 *            [Object, Boolean] pairs
+	 * @return class list
+	 */
+	public String styles(Object... styleValuePairs) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0, n = styleValuePairs.length; i < n; i += 2) {
+			Object value = styleValuePairs[i + 1];
+			if (value != null && !value.toString()
+					.isEmpty()) {
+				if (sb.length() > 0) {
+					sb.append(';');
+				}
+				sb.append(styleValuePairs[i]);
+				sb.append(':');
+				sb.append(value);
+			}
+		}
+		return sb.toString();
+	}
+
 	// begin generated code
+
 	/**
 	 * The <code>_blank</code> attribute.
 	 */

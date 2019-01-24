@@ -34,7 +34,7 @@ abstract public class AbstractXmlTest {
 
 			Diff myDiff = new Diff(expected, actual);
 			if (!myDiff.similar()) {
-				XMLTestCase.assertEquals(myDiff.toString(), "expected=" + expected, "actual=" + actual);
+				XMLTestCase.assertEquals(myDiff.toString(), expected, actual);
 			}
 		} finally {
 			XMLUnit.setIgnoreAttributeOrder(oldIgnoreWhitespace);
