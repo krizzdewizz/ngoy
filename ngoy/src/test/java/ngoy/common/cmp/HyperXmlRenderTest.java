@@ -18,18 +18,17 @@ public class HyperXmlRenderTest extends ANgoyTest {
 		private int[] ints = new int[] { 1, 2, 3 };
 
 		private Html html = new Html() {
-			/* @formatter:off */
+			@Override
 			protected void create() {
-				$("div", classs, "title");
+				div(classs, "title");
 				{
 					for (int i : ints) {
-						$("span").text("hello:", i, $);
+						span().text("hello:", i, $);
 					}
 					text("<>");
 				}
 				$(); // div
 			}
-			/* @formatter:on */
 		};
 
 		@Override
@@ -41,5 +40,35 @@ public class HyperXmlRenderTest extends ANgoyTest {
 	@Test
 	public void test() {
 		assertThat(render(TestCmp.class)).isEqualTo("<div class=\"title\"><span>hello:1</span><span>hello:2</span><span>hello:3</span>&lt;&gt;</div>abc");
+	}
+
+	//
+
+	@Component(selector = "", template = "abc")
+	public static class TestSubclassCmp extends Html implements OnRender {
+
+		private int[] ints = new int[] { 1, 2, 3 };
+
+		@Override
+		public void ngOnRender(Output output) {
+			build(output.getWriter());
+		}
+
+		@Override
+		protected void create() {
+			div(classs, "title");
+			{
+				for (int i : ints) {
+					span().text("hello:", i, $);
+				}
+				text("<>");
+			}
+			$(); // div
+		}
+	}
+
+	@Test
+	public void testSubclass() {
+		assertThat(render(TestSubclassCmp.class)).isEqualTo("<div class=\"title\"><span>hello:1</span><span>hello:2</span><span>hello:3</span>&lt;&gt;</div>abc");
 	}
 }

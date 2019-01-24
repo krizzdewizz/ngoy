@@ -63,6 +63,7 @@ public class CliTest {
 		resetOut();
 		Writer outt = new OutputStreamWriter(out, StandardCharsets.UTF_8);
 		new Cli() {
+			@Override
 			protected ngoy.core.gen.Cli createGenCli() {
 				return genCli != null ? genCli : super.createGenCli();
 			}

@@ -55,7 +55,7 @@ public class ExprParserTest {
 	public void testSpelParser() {
 		ExpressionWithPipesParser exprParser = new ExpressionWithPipesParser(null);
 
-		Expression e = (Expression) exprParser.parseExpression("a{{'\n'}}b", ExprParser.TEMPLATE_CONTEXT);
+		Expression e = exprParser.parseExpression("a{{'\n'}}b", ExprParser.TEMPLATE_CONTEXT);
 
 		Expression[] exs = e.expressions;
 		assertThat(exs).hasSize(3);

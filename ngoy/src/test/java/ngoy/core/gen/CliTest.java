@@ -36,6 +36,7 @@ public class CliTest {
 		cwd = folder.newFolder()
 				.toPath();
 		cli = new Cli() {
+			@Override
 			protected Path getCwd() {
 				return cwd;
 			}
