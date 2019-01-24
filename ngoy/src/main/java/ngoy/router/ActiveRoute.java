@@ -4,7 +4,7 @@ package ngoy.router;
  * The currently active route based on {@link Location#getPath()}.
  * 
  * @author krizz
- * @see RouteResolver
+ * @see ActiveRouteProvider
  */
 public class ActiveRoute {
 	/**

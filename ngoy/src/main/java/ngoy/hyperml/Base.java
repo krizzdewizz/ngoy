@@ -196,7 +196,6 @@ public abstract class Base<T extends Base<?>> {
 	 *            starting the element (auto-end). If the length of the array is
 	 *            odd, the last element designates the value for the element.
 	 *            May be empty. An attribute name may be namespace-prefixed.
-	 * @see #$$(String, String, Object...)
 	 */
 	public T $(String name, Object... params) {
 		handler.startElementHead(name);
