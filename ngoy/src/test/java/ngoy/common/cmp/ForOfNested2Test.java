@@ -39,7 +39,7 @@ public class ForOfNested2Test extends ANgoyTest {
 		}
 
 		@Override
-		public void ngOnInit() {
+		public void onInit() {
 			selectedPerson = getPersons().get(1);
 		}
 	}

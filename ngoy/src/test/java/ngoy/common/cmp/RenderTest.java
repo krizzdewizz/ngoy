@@ -15,12 +15,12 @@ public class RenderTest extends ANgoyTest {
 	public static class TestCmp implements OnRender {
 
 		@Override
-		public void ngOnRender(Output output) {
+		public void onRender(Output output) {
 			output.write("äöü");
 		}
 
 		@Override
-		public void ngOnRenderEnd(Output output) {
+		public void onRenderEnd(Output output) {
 			output.write("the end");
 		}
 	}

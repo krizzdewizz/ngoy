@@ -24,7 +24,7 @@ public class HostBindingAttrTest extends ANgoyTest {
 		public Object xValue;
 
 		@Override
-		public void ngOnInit() {
+		public void onInit() {
 			xValue = service.value;
 		}
 	}

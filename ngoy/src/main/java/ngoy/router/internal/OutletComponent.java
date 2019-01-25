@@ -20,17 +20,17 @@ public class OutletComponent implements OnCompile, OnInit, OnDestroy {
 	public int activeRoute;
 
 	@Override
-	public void ngOnInit() {
+	public void onInit() {
 		activeRoute = router.getActiveRoute();
 	}
 
 	@Override
-	public void ngOnDestroy() {
+	public void onDestroy() {
 		router.clearRouteParams();
 	}
 
 	@Override
-	public void ngOnCompile(Jerry el, String componentClass) {
+	public void onCompile(Jerry el, String componentClass) {
 		Jerry container = appendChild(el, createElement("ng-container", el));
 		int i = 0;
 		container.attr("[ngSwitch]", "activeRoute");

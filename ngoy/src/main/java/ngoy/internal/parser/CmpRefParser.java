@@ -104,6 +104,7 @@ public class CmpRefParser {
 
 			if (parser.inlineComponent(el)) {
 				parser.handler.componentStart(ref);
+				parser.handler.componentContentStart(ref);
 				parser.cmpElements.add(el);
 			} else {
 				if (!hadElementHead) {
@@ -118,6 +119,7 @@ public class CmpRefParser {
 				List<String[]> sNames = new ArrayList<>();
 				addHostAttributeBindings(parser, ref.clazz, excludeBindings, cNames, aNames, sNames);
 				parser.handler.elementHeadEnd();
+				parser.handler.componentContentStart(ref);
 			}
 
 			acceptCmpRef(el, ref);

@@ -2,7 +2,7 @@ package ngoy.hyperml;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -257,7 +257,7 @@ public class HtmlTest extends AbstractXmlTest {
 		};
 
 		String result = createXmlContent(xml);
-		assertEquals(".small{width:12px}", result);
+		assertEquals(".small{width:12px;}", result);
 	}
 
 	@Test
@@ -269,7 +269,7 @@ public class HtmlTest extends AbstractXmlTest {
 		};
 
 		String result = createXmlContent(xml);
-		assertEquals(".small{color:red;width:12px;display:none}", result);
+		assertEquals(".small{color:red;width:12px;display:none;}", result);
 	}
 
 	@Test
@@ -281,7 +281,7 @@ public class HtmlTest extends AbstractXmlTest {
 		};
 
 		String result = createXmlContent(xml);
-		assertEquals(".small{width:12px;height:13em;display:none}", result);
+		assertEquals(".small{width:12px;height:13em;display:none;}", result);
 	}
 
 	@Test
@@ -295,7 +295,7 @@ public class HtmlTest extends AbstractXmlTest {
 		};
 
 		String result = createXmlContent(xml);
-		assertEquals("body{color:red}a{color:green;display:none}.small{width:12px}", result);
+		assertEquals("body{color:red;}a{color:green;display:none;}.small{width:12px;}", result);
 	}
 
 	@Test
@@ -321,7 +321,7 @@ public class HtmlTest extends AbstractXmlTest {
 		};
 
 		String result = createXmlContent(xml);
-		assertEquals("body{color:red;background-color:cyan;disabled:false;width:1%}body a{color:red}a{white-space:nowrap}", result);
+		assertEquals("body{color:red;background-color:cyan;disabled:false;width:1%;}body a{color:red;}a{white-space:nowrap;}", result);
 	}
 
 	@Test

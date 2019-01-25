@@ -43,6 +43,8 @@ public interface ParserHandler {
 
 	void componentStart(CmpRef cmpRef);
 
+	void componentContentStart(CmpRef cmpRef);
+
 	void componentEnd();
 
 	void ngContentStart();
@@ -152,6 +154,10 @@ public interface ParserHandler {
 		@Override
 		public void setSourcePosition(String sourcePosition) {
 		}
+
+		@Override
+		public void componentContentStart(CmpRef cmpRef) {
+		}
 	}
 
 	class Delegate implements ParserHandler {
@@ -244,6 +250,11 @@ public interface ParserHandler {
 		@Override
 		public void componentStart(CmpRef cmpRef) {
 			target.componentStart(cmpRef);
+		}
+
+		@Override
+		public void componentContentStart(CmpRef cmpRef) {
+			target.componentContentStart(cmpRef);
 		}
 
 		@Override

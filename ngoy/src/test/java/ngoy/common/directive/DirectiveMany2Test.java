@@ -17,7 +17,7 @@ public class DirectiveMany2Test extends ANgoyTest {
 	public static class ADirective implements OnCompile {
 
 		@Override
-		public void ngOnCompile(Jerry el, String componentClass) {
+		public void onCompile(Jerry el, String componentClass) {
 			el.attr("a-attr", "a");
 		}
 	}
@@ -26,7 +26,7 @@ public class DirectiveMany2Test extends ANgoyTest {
 	public static class BDirective implements OnCompile {
 
 		@Override
-		public void ngOnCompile(Jerry el, String componentClass) {
+		public void onCompile(Jerry el, String componentClass) {
 			el.attr("b-attr", "b");
 		}
 	}

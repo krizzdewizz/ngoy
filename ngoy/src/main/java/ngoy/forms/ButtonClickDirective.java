@@ -20,7 +20,7 @@ import ngoy.core.dom.XDom;
 public class ButtonClickDirective implements OnCompile {
 
 	@Override
-	public void ngOnCompile(Jerry el, String componentClass) {
+	public void onCompile(Jerry el, String componentClass) {
 		Attribute clickAttr = XDom.getAttributes(el)
 				.stream()
 				.filter(a -> a.getName()

@@ -564,26 +564,30 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	public void componentStart(CmpRef cmpRef) {
 		cmpVars.push(new CmpVar(cmpVar, cmpRef.clazz));
 		if (OnInit.class.isAssignableFrom(cmpRef.clazz)) {
-			$("((", OnInit.class, ")", cmpVar, ").ngOnInit();");
+			$("((", OnInit.class, ")", cmpVar, ").onInit();");
 		}
+	}
 
+	@Override
+	public void componentContentStart(CmpRef cmpRef) {
+		flushOut();
 		if (OnRender.class.isAssignableFrom(cmpRef.clazz)) {
-			$("((", OnRender.class, ")", cmpVar, ").ngOnRender(", CTX_VAR, ".getOut());");
+			$("((", OnRender.class, ")", cmpVar, ").onRender(", CTX_VAR, ".getOut());");
 		}
 	}
 
 	@Override
 	public void componentEnd() {
 		flushOut();
-		
+
 		CmpVar cmpVar = cmpVars.pop();
-		
+
 		if (OnRender.class.isAssignableFrom(cmpVar.cmpClass)) {
-			$("((", OnRender.class, ")", cmpVar.name, ").ngOnRenderEnd(", CTX_VAR, ".getOut());");
+			$("((", OnRender.class, ")", cmpVar.name, ").onRenderEnd(", CTX_VAR, ".getOut());");
 		}
-		
+
 		if (OnDestroy.class.isAssignableFrom(cmpVar.cmpClass)) {
-			$("((", OnDestroy.class, ")", cmpVar.name, ").ngOnDestroy();");
+			$("((", OnDestroy.class, ")", cmpVar.name, ").onDestroy();");
 		}
 
 		$("}");

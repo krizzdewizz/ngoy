@@ -22,6 +22,7 @@ import ngoy.core.Directive;
 import ngoy.core.Inject;
 import ngoy.core.NgoyException;
 import ngoy.core.OnCompile;
+import ngoy.core.OnCompileStyles;
 import ngoy.core.Optional;
 
 @Directive(selector = "html")
@@ -47,7 +48,7 @@ public class StyleUrlsDirective implements OnCompile {
 	public Config config = new Config(null, false);
 
 	@Override
-	public void ngOnCompile(Jerry el, String componentClass) {
+	public void onCompile(Jerry el, String componentClass) {
 		try {
 			String styles = getStyles();
 
@@ -111,6 +112,12 @@ public class StyleUrlsDirective implements OnCompile {
 
 		for (String style : cmp.styles()) {
 			styles.add(addPrefix(style, selector));
+		}
+
+		if (OnCompileStyles.class.isAssignableFrom(clazz)) {
+			OnCompileStyles compileStyle = (OnCompileStyles) resolver.getInjector()
+					.get(clazz);
+			styles.add(compileStyle.onCompileStyles());
 		}
 
 		return styles;

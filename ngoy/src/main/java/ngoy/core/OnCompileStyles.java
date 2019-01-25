@@ -1,7 +1,5 @@
 package ngoy.core;
 
-import jodd.jerry.Jerry;
-
 /**
  * Compile lifecycle hook.
  * <p>
@@ -11,7 +9,7 @@ import jodd.jerry.Jerry;
  * 
  * @author krizz
  */
-public interface OnCompile {
+public interface OnCompileStyles {
 	/**
 	 * @param el
 	 *            The element of the component/directive. Change this element
@@ -19,5 +17,5 @@ public interface OnCompile {
 	 * @param componentClass
 	 *            Component class
 	 */
-	void onCompile(Jerry el, String componentClass);
+	String onCompileStyles();
 }

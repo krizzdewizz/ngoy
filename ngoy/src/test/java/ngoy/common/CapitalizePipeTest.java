@@ -48,7 +48,7 @@ public class CapitalizePipeTest extends ANgoyTest {
 		public CapitalizePipe pipe;
 
 		@Override
-		public void ngOnInit() {
+		public void onInit() {
 			pipe.localeProvider = null;
 		}
 	}

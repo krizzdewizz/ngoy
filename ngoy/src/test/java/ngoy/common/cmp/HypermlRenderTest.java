@@ -7,6 +7,7 @@ import org.junit.Test;
 import ngoy.ANgoyTest;
 import ngoy.common.AHtmlComponent;
 import ngoy.core.Component;
+import ngoy.core.NgModule;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
 import ngoy.hyperml.Html;
@@ -33,7 +34,7 @@ public class HypermlRenderTest extends ANgoyTest {
 		};
 
 		@Override
-		public void ngOnRender(Output output) {
+		public void onRender(Output output) {
 			html.build(output);
 		}
 	}
@@ -45,13 +46,23 @@ public class HypermlRenderTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "", template = "abc")
+	@Component(selector = "", template = "<html><head></head><x></x></html>")
+	@NgModule(declarations = { TestSubclassCmp.class })
+	public static class TestSubclassAppCmp {
+	}
+
+	@Component(selector = "x")
 	public static class TestSubclassCmp extends AHtmlComponent {
 
 		private int[] ints = new int[] { 1, 2, 3 };
 
 		@Override
-		protected void create() {
+		protected void styles() {
+			css("a", color, "red");
+		}
+
+		@Override
+		protected void template() {
 			div(classs, "title");
 			{
 				for (int i : ints) {
@@ -65,6 +76,6 @@ public class HypermlRenderTest extends ANgoyTest {
 
 	@Test
 	public void testSubclass() {
-		assertThat(render(TestSubclassCmp.class)).isEqualTo("<div class=\"title\"><span>hello:1</span><span>hello:2</span><span>hello:3</span>&lt;&gt;</div>abc");
+		assertThat(render(TestSubclassAppCmp.class)).isEqualTo("<html><head><style type=\"text/css\">a{color:red;}</style></head><x><div class=\"title\"><span>hello:1</span><span>hello:2</span><span>hello:3</span>&lt;&gt;</div></x></html>");
 	}
 }

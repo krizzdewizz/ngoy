@@ -24,7 +24,7 @@ public class HostBindingClassTest extends ANgoyTest {
 		public boolean ok;
 
 		@Override
-		public void ngOnInit() {
+		public void onInit() {
 			ok = okService.ok;
 		}
 	}

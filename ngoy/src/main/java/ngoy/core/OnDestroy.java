@@ -6,11 +6,11 @@ package ngoy.core;
  * A component or directive may implement this interface to cleanup after
  * itself.
  * <p>
- * {@link #ngOnDestroy()} is called in the rendering phase when the component
+ * {@link #onDestroy()} is called in the rendering phase when the component
  * gets out of scope.
  * 
  * @author krizz
  */
 public interface OnDestroy {
-	void ngOnDestroy();
+	void onDestroy();
 }

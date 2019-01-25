@@ -36,7 +36,7 @@ public class FormComponent implements OnInit {
 	public AppRoot appRoot;
 
 	@Override
-	public void ngOnInit() {
+	public void onInit() {
 		formInputs.clear();
 		formAction = null;
 

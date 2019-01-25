@@ -27,12 +27,12 @@ public class LifecycleTest extends ANgoyTest {
 		public Service service;
 
 		@Override
-		public void ngOnInit() {
+		public void onInit() {
 			service.init();
 		}
 
 		@Override
-		public void ngOnDestroy() {
+		public void onDestroy() {
 			service.destroy();
 		}
 	}

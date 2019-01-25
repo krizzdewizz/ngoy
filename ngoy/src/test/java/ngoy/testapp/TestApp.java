@@ -22,7 +22,7 @@ public class TestApp implements OnInit {
 	public boolean show = true;
 
 	@Override
-	public void ngOnInit() {
+	public void onInit() {
 		persons = personService.getPersons();
 	}
 }

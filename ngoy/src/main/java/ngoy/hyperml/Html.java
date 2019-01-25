@@ -45,8 +45,7 @@ public class Html extends HtmlBase<Html> {
 		}
 	}
 
-	private static final Set<String> VOID_ELEMENTS = new HashSet<>(
-			Arrays.asList("area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"));
+	private static final Set<String> VOID_ELEMENTS = new HashSet<>(Arrays.asList("area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"));
 
 	@Override
 	protected boolean isVoidElement(String name) {
@@ -67,14 +66,15 @@ public class Html extends HtmlBase<Html> {
 	}
 
 	private boolean inCss;
-	private boolean hadCssStyle;
 
 	/**
 	 * Outputs a CSS style declaration as a {@link #text(Object...)} call.
 	 * 
-	 * @param selector The selector
-	 * @param pairs    css style/value pairs such as
-	 *                 <code>["color", "red", "display", "none"]</code>
+	 * @param selector
+	 *            The selector
+	 * @param pairs
+	 *            css style/value pairs such as
+	 *            <code>["color", "red", "display", "none"]</code>
 	 */
 	public Html css(String selector, Object... styleValuePairs) {
 		if (inCss) {
@@ -87,18 +87,15 @@ public class Html extends HtmlBase<Html> {
 		}
 
 		text(selector, "{");
-		cssStyles(pairs);
+		cssBlockStyles(pairs);
 		text("}");
 
 		return this;
 	}
 
-	private Html cssStyles(Object[] pairs) {
+	private Html cssBlockStyles(Object[] pairs) {
 		for (int i = 0, n = pairs.length; i < n; i += 2) {
-			if (i > 0) {
-				text(";");
-			}
-			text(pairs[i], ":", pairs[i + 1]);
+			text(pairs[i], ":", pairs[i + 1], ";");
 		}
 		return this;
 	}
@@ -106,7 +103,7 @@ public class Html extends HtmlBase<Html> {
 	@Override
 	public Html $() {
 		if (inCss) {
-			hadCssStyle = inCss = false;
+			inCss = false;
 			return text("}");
 		}
 		return super.$();
@@ -118,12 +115,7 @@ public class Html extends HtmlBase<Html> {
 			List<Object> pairs = new ArrayList<>();
 			pairs.add(name);
 			pairs.addAll(asList(params));
-			if (hadCssStyle) {
-				text(";");
-			} else {
-				hadCssStyle = true;
-			}
-			return cssStyles(checkPairs(mergeUnits(pairs.toArray())));
+			return cssBlockStyles(checkPairs(mergeUnits(pairs.toArray())));
 		}
 		return super.$(name, params);
 	}
@@ -162,8 +154,8 @@ public class Html extends HtmlBase<Html> {
 	/**
 	 * Returns a space delimited class list for the given map.
 	 * <p>
-	 * Entry key is the class name, which is added to the list if the entry value
-	 * evaluates to true.
+	 * Entry key is the class name, which is added to the list if the entry
+	 * value evaluates to true.
 	 * <p>
 	 * Example:
 	 * 
@@ -178,7 +170,8 @@ public class Html extends HtmlBase<Html> {
 	 * &lt;a class="peter mary"&gt;&lt;/a&gt
 	 * </pre>
 	 * 
-	 * @param classBooleanPairs [String, Boolean] pairs
+	 * @param classBooleanPairs
+	 *            [String, Boolean] pairs
 	 * @return class list
 	 */
 	public String classes(Map<String, Boolean> classBooleanPairs) {
@@ -197,8 +190,8 @@ public class Html extends HtmlBase<Html> {
 	/**
 	 * Returns a space delimited class list for the given pairs.
 	 * <p>
-	 * First element is the class name (Object), which is added to the list if the
-	 * second element (Boolean) evaluates to true.
+	 * First element is the class name (Object), which is added to the list if
+	 * the second element (Boolean) evaluates to true.
 	 * <p>
 	 * Example:
 	 * 
@@ -208,9 +201,12 @@ public class Html extends HtmlBase<Html> {
 	 * &lt;a class="peter mary"&gt;&lt;/a&gt
 	 * </pre>
 	 * 
-	 * @param clazz     first class
-	 * @param include   whether to include clazz in the list
-	 * @param morePairs [Object, Boolean] pairs
+	 * @param clazz
+	 *            first class
+	 * @param include
+	 *            whether to include clazz in the list
+	 * @param morePairs
+	 *            [Object, Boolean] pairs
 	 * @return class list
 	 */
 	public String classes(Object clazz, boolean include, Object... morePairs) {
@@ -234,8 +230,8 @@ public class Html extends HtmlBase<Html> {
 	/**
 	 * Returns a semicolon delimited style list for the given map.
 	 * <p>
-	 * Entry key is the style name, which is added to the list if the entry value
-	 * evaluates to a non-null, non-empty string.
+	 * Entry key is the style name, which is added to the list if the entry
+	 * value evaluates to a non-null, non-empty string.
 	 * <p>
 	 * Example:
 	 * 
@@ -250,7 +246,8 @@ public class Html extends HtmlBase<Html> {
 	 * &lt;a style="background-color:red;display:none"&gt;&lt;/a&gt
 	 * </pre>
 	 * 
-	 * @param styleValuePairs [String, Object] pairs
+	 * @param styleValuePairs
+	 *            [String, Object] pairs
 	 * @return style list
 	 */
 	public String styles(Map<String, ?> styleValuePairs) {
@@ -271,9 +268,9 @@ public class Html extends HtmlBase<Html> {
 	/**
 	 * Returns a semicolon delimited style list for the given pairs.
 	 * <p>
-	 * First element is the style name (Object), which is added to the list if the
-	 * second element, the style's value (Object) evaluates to a non-null, non-empty
-	 * string.
+	 * First element is the style name (Object), which is added to the list if
+	 * the second element, the style's value (Object) evaluates to a non-null,
+	 * non-empty string.
 	 * <p>
 	 * Example:
 	 * 
@@ -283,19 +280,22 @@ public class Html extends HtmlBase<Html> {
 	 * &lt;a style="background-color:red;display:none"&gt;&lt;/a&gt
 	 * </pre>
 	 * 
-	 * @param style     first style may include a unit separated with a dot, which
-	 *                  is appended to the value.
-	 *                  <p>
-	 *                  Example:
+	 * @param style
+	 *            first style may include a unit separated with a dot, which is
+	 *            appended to the value.
+	 *            <p>
+	 *            Example:
 	 * 
-	 *                  <pre>
+	 *            <pre>
 	 *                  a(style, styles("height.px", 20), $);
 	 *                  
 	 *                  &lt;a style="height:20px"&gt;&lt;/a&gt
-	 *                  </pre>
+	 *            </pre>
 	 * 
-	 * @param value     first value
-	 * @param morePairs [String, Object] pairs
+	 * @param value
+	 *            first value
+	 * @param morePairs
+	 *            [String, Object] pairs
 	 * @return style list
 	 */
 	public String styles(String style, Object value, Object... morePairs) {

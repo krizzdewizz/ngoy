@@ -157,7 +157,8 @@ public class Parser {
 	}
 
 	/**
-	 * @param resolver if null, uses {@link Resolver#DEFAULT}
+	 * @param resolver
+	 *            if null, uses {@link Resolver#DEFAULT}
 	 */
 	public Parser(@Nullable Resolver resolver) {
 		this.cmpRefParser = new CmpRefParser(this);
@@ -188,6 +189,7 @@ public class Parser {
 		CmpRef appRef = new CmpRef(resolver.getAppClass(), "", false);
 		this.handler.componentStartInput(appRef, true, emptyList());
 		this.handler.componentStart(appRef);
+		this.handler.componentContentStart(appRef);
 		accept(nodes);
 		this.handler.componentEnd();
 		this.handler.documentEnd();
@@ -211,7 +213,7 @@ public class Parser {
 
 		if (getNodeName(el).equals(NG_TEMPLATE)) {
 			// may the component/directive has changed the node name in
-			// ngOnCompile()
+			// onCompile()
 			return;
 		}
 
@@ -316,7 +318,7 @@ public class Parser {
 			Object cmp = injector.get(cmpRef.clazz);
 
 			if (cmp instanceof OnCompile) {
-				((OnCompile) cmp).ngOnCompile(el, topClass);
+				((OnCompile) cmp).onCompile(el, topClass);
 			}
 		}
 	}

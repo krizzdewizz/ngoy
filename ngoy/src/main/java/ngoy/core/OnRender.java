@@ -15,14 +15,14 @@ public interface OnRender {
 	 * 
 	 * @param output Output to write contents to
 	 */
-	void ngOnRender(Output output);
+	void onRender(Output output);
 
 	/**
 	 * Called after the component's content is rendered.
 	 * 
 	 * @param output Output to write contents to
 	 */
-	default void ngOnRenderEnd(Output output) {
+	default void onRenderEnd(Output output) {
 		// noop
 	}
 }

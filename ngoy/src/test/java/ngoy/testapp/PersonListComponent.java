@@ -13,6 +13,6 @@ public class PersonListComponent implements OnInit {
 	public List<Person> persons;
 
 	@Override
-	public void ngOnInit() {
+	public void onInit() {
 	}
 }
