@@ -217,7 +217,19 @@ public class XmlTest extends AbstractXmlTest {
 	}
 
 	@Test
-	public void testAttrWithNullText() throws Exception {
+	public void testAttrWithEmptyValue() throws Exception {
+		Xml xml = new Xml() {
+			protected void create() {
+				$("content", "attr", "", $);
+			}
+		};
+
+		String result = createXmlContent(xml);
+		myAssertXMLEqual("<content/>", result);
+	}
+
+	@Test
+	public void testWithNullText() throws Exception {
 		Xml xml = new Xml() {
 			protected void create() {
 				$("content", null, $);

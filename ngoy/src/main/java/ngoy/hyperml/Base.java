@@ -17,7 +17,6 @@ import ngoy.core.Output;
  * @param <T>
  */
 public abstract class Base<T extends Base<?>> {
-
 	public interface Handler {
 		void startElementHead(String name);
 
@@ -80,9 +79,8 @@ public abstract class Base<T extends Base<?>> {
 
 	/**
 	 * If given as last argument to {@link #$(String, Object...)}, will call
-	 * {@link #$()} just after starting the element (auto-end). Resembles XML
-	 * short closing of tags like <code>&lt;x/&gt;</code> --&gt;
-	 * <code>$("x", $)</code>.
+	 * {@link #$()} just after starting the element (auto-end). Resembles XML short
+	 * closing of tags like <code>&lt;x/&gt;</code> --&gt; <code>$("x", $)</code>.
 	 */
 	public static final Object $ = new Object();
 
@@ -100,8 +98,8 @@ public abstract class Base<T extends Base<?>> {
 	private Handler handler;
 
 	/**
-	 * Stack of element names started so far. Using <code>LinkedList</code>
-	 * instead of <code>Stack</code> because synch is not needed.
+	 * Stack of element names started so far. Using <code>LinkedList</code> instead
+	 * of <code>Stack</code> because synch is not needed.
 	 */
 	protected final LinkedList<String> stack;
 
@@ -114,8 +112,7 @@ public abstract class Base<T extends Base<?>> {
 	 * <p>
 	 * May be called several times.
 	 * 
-	 * @param out
-	 *            destination
+	 * @param out destination
 	 */
 	public void build(Writer out) {
 		build(new WriterHandler(out));
@@ -126,8 +123,7 @@ public abstract class Base<T extends Base<?>> {
 	 * <p>
 	 * May be called several times.
 	 * 
-	 * @param out
-	 *            destination
+	 * @param out destination
 	 */
 	public void build(Output out) {
 		build(out.getWriter());
@@ -152,8 +148,7 @@ public abstract class Base<T extends Base<?>> {
 	/**
 	 * Checks that the name stack is empty upon endDocument().
 	 * 
-	 * @throws HyperXmlException
-	 *             if the name stack is not empty
+	 * @throws HyperXmlException if the name stack is not empty
 	 */
 	private void checkStack() {
 		if (stack.isEmpty()) {
@@ -167,9 +162,8 @@ public abstract class Base<T extends Base<?>> {
 	/**
 	 * Outputs the given text using a <code>character()</code> call.
 	 * 
-	 * @param texts
-	 *            The text to output. The last item may be {@link #$}, in which
-	 *            case the element is ended.
+	 * @param texts The text to output. The last item may be {@link #$}, in which
+	 *              case the element is ended.
 	 */
 	public T text(Object... texts) {
 		int nTexts = texts.length;
@@ -182,19 +176,17 @@ public abstract class Base<T extends Base<?>> {
 	}
 
 	/**
-	 * Starts an element, its attributes and an optional value. If the last
-	 * argument is <code>$</code>, will call {@link #$(String, Object...)} w/o
-	 * parameters, just after starting the element (auto-end).
+	 * Starts an element, its attributes and an optional value. If the last argument
+	 * is <code>$</code>, will call {@link #$(String, Object...)} w/o parameters,
+	 * just after starting the element (auto-end).
 	 * 
-	 * @param name
-	 *            The name of the element
-	 * @param params
-	 *            attribute [name, value] pairs, optionally followed by a single
-	 *            value.If the last argument is <code>$</code>, will call
-	 *            {@link #$(String, Object...)} w/o parameters, just after
-	 *            starting the element (auto-end). If the length of the array is
-	 *            odd, the last element designates the value for the element.
-	 *            May be empty. An attribute name may be namespace-prefixed.
+	 * @param name   The name of the element
+	 * @param params attribute [name, value] pairs, optionally followed by a single
+	 *               value.If the last argument is <code>$</code>, will call
+	 *               {@link #$(String, Object...)} w/o parameters, just after
+	 *               starting the element (auto-end). If the length of the array is
+	 *               odd, the last element designates the value for the element. May
+	 *               be empty. An attribute name may be namespace-prefixed.
 	 */
 	public T $(String name, Object... params) {
 		handler.startElementHead(name);
@@ -227,7 +219,7 @@ public abstract class Base<T extends Base<?>> {
 				}
 				for (int i = 0; i < nParams; i += 2) {
 					String attrValue = toString(params[i + 1]);
-					if (attrValue != null) {
+					if (attrValue != null && !attrValue.isEmpty()) {
 						String attrName = toString(params[i]);
 						handler.attribute(attrName, attrValue);
 					}
