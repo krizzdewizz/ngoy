@@ -11,21 +11,21 @@ import ngoy.core.NgModule;
 import ngoy.core.OnInit;
 import ngoy.hyperml.HtmlComponent;
 
-public class HypermlHostBindingClassTest extends ANgoyTest {
+public class HostBindingStyleTest extends ANgoyTest {
 	@Component(selector = "x")
 	public static class XCmp extends HtmlComponent implements OnInit {
 
-		@HostBinding("class.xtitle")
-		public boolean title;
+		@HostBinding("style.color")
+		public String color;
 
-		@HostBinding("class.cool")
-		public boolean getCool() {
-			return true;
+		@HostBinding("style.display")
+		public String getDisplay() {
+			return "grid";
 		}
 
-		@HostBinding("class.none")
-		public boolean getNone() {
-			return false;
+		@HostBinding("style.none")
+		public Object getNone() {
+			return null;
 		}
 
 		@Override
@@ -35,7 +35,7 @@ public class HypermlHostBindingClassTest extends ANgoyTest {
 
 		@Override
 		public void onInit() {
-			title = true;
+			color = "red";
 		}
 	}
 
@@ -45,12 +45,12 @@ public class HypermlHostBindingClassTest extends ANgoyTest {
 
 		@Override
 		protected void template() {
-			$("x", classs, "honk xs-9", $);
+			$("x", style, "white-space: nowrap; border:none", $);
 		}
 	}
 
 	@Test
 	public void testApp() {
-		assertThat(render(TestAppCmp.class)).isEqualTo("<x class=\"honk xs-9 xtitle cool\">hello</x>");
+		assertThat(render(TestAppCmp.class)).isEqualTo("<x style=\"white-space: nowrap; border:none;color:red;display:grid\">hello</x>");
 	}
 }

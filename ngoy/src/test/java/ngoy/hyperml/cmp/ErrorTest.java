@@ -12,7 +12,7 @@ import ngoy.core.NgoyException;
 import ngoy.core.OnRender;
 import ngoy.hyperml.HtmlComponent;
 
-public class HtmlComponentErrorTest extends ANgoyTest {
+public class ErrorTest extends ANgoyTest {
 
 	@Component(selector = "x")
 	public static class NonOnRenderCmp {

@@ -10,7 +10,7 @@ import ngoy.core.Input;
 import ngoy.core.NgModule;
 import ngoy.hyperml.HtmlComponent;
 
-public class HtmlComponentNestedTest extends ANgoyTest {
+public class NestedTest extends ANgoyTest {
 
 	@Component(selector = "", template = "<html><x></x></html>")
 	@NgModule(declarations = { XCmp.class, YCmp.class })

@@ -11,7 +11,7 @@ import ngoy.core.NgModule;
 import ngoy.core.OnInit;
 import ngoy.hyperml.HtmlComponent;
 
-public class HypermlHostBindingAttrTest extends ANgoyTest {
+public class HostBindingAttrTest extends ANgoyTest {
 	@Component(selector = "x")
 	public static class XCmp extends HtmlComponent implements OnInit {
 

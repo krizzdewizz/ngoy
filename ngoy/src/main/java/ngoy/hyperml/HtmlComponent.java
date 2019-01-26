@@ -9,18 +9,14 @@ import ngoy.core.OnRender;
 import ngoy.core.Output;
 
 /**
- * Base class for template-less components using {@link Html}.
+ * Base class for code-only components using {@link Html}.
  * 
  * @author christian.oetterli
  *
  */
 public abstract class HtmlComponent extends Html implements OnRender, OnCompileStyles {
 
-	private static enum Mode {
-		TEMPLATE, STYLES
-	}
-
-	private Mode mode;
+	private Runnable renderer;
 
 	@Inject
 	public Injector injector;
@@ -33,22 +29,22 @@ public abstract class HtmlComponent extends Html implements OnRender, OnCompileS
 	@Override
 	public void onRender(Output output) {
 		try {
-			mode = Mode.TEMPLATE;
+			renderer = this::template;
 			build(output);
 		} finally {
-			mode = null;
+			renderer = null;
 		}
 	}
 
 	@Override
 	public String onCompileStyles() {
 		try {
-			mode = Mode.STYLES;
+			renderer = this::styles;
 			StringWriter sw = new StringWriter();
 			build(sw);
 			return sw.toString();
 		} finally {
-			mode = null;
+			renderer = null;
 		}
 	}
 
@@ -59,13 +55,6 @@ public abstract class HtmlComponent extends Html implements OnRender, OnCompileS
 
 	@Override
 	protected void create() {
-		switch (mode) {
-		case TEMPLATE:
-			template();
-			break;
-		case STYLES:
-			styles();
-			break;
-		}
+		renderer.run();
 	}
 }
