@@ -1,11 +1,12 @@
-package ngoy.common;
+package ngoy.hyperml;
 
 import java.io.StringWriter;
 
+import ngoy.core.Inject;
+import ngoy.core.Injector;
 import ngoy.core.OnCompileStyles;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
-import ngoy.hyperml.Html;
 
 /**
  * Base class for template-less components using {@link Html}.
@@ -20,6 +21,14 @@ public abstract class AHtmlComponent extends Html implements OnRender, OnCompile
 	}
 
 	private Mode mode;
+
+	@Inject
+	public Injector injector;
+
+	@Override
+	protected Injector getInjector() {
+		return injector;
+	}
 
 	@Override
 	public void onRender(Output output) {

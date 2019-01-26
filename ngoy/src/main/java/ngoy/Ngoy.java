@@ -496,7 +496,7 @@ public class Ngoy<T> {
 		all.addAll(pipeDecls.values());
 		all.addAll(rootProviders);
 
-		injector = new DefaultInjector(cmpDeclsSet, injectors.toArray(new Injector[injectors.size()]), all.toArray(new Provider[all.size()]));
+		injector = new DefaultInjector(cmpDeclsSet, getSelectorToCmpDecls(cmpDeclsSet), injectors.toArray(new Injector[injectors.size()]), all.toArray(new Provider[all.size()]));
 
 		initAppInstance(rootProviders);
 
@@ -504,6 +504,21 @@ public class Ngoy<T> {
 			injector.get(TranslateService.class)
 					.setBundle(translateBundle);
 		}
+	}
+
+	private Map<Object, Object> getSelectorToCmpDecls(Set<Class<?>> cmpDecls) {
+		Map<Object, Object> all = new HashMap<>();
+		for (Class<?> cmpDecl : cmpDecls) {
+			Component cmp = cmpDecl.getAnnotation(Component.class);
+			if (cmp == null) {
+				continue;
+			}
+
+			String selector = cmp.selector();
+			all.put(selector, cmpDecl);
+			all.put(cmpDecl, selector);
+		}
+		return all;
 	}
 
 	@SuppressWarnings("unchecked")

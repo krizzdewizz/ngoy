@@ -52,9 +52,11 @@ public class DefaultInjector implements Injector {
 	private final Injector[] moreInjectors;
 	private final Set<Class<?>> cmpDecls;
 	private final Map<Class<?>, Factory> factories = new HashMap<>();
+	private final Map<Object, Object> selectorToCmpDecls;
 
-	public DefaultInjector(Set<Class<?>> cmpDecls, Injector[] more, Provider... providers) {
+	public DefaultInjector(Set<Class<?>> cmpDecls, Map<Object, Object> selectorToCmpDecls, Injector[] more, Provider... providers) {
 		this.cmpDecls = cmpDecls;
+		this.selectorToCmpDecls = selectorToCmpDecls;
 		this.moreInjectors = more;
 		Map<Class<?>, Provider> all = new LinkedHashMap<>();
 		for (Provider p : providers) {
@@ -62,6 +64,18 @@ public class DefaultInjector implements Injector {
 		}
 		all.put(Injector.class, useValue(Injector.class, this));
 		this.providers = all;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T getNewCmp(String selector) {
+		Class<?> decl = (Class<?>) selectorToCmpDecls.get(selector);
+		return decl == null ? null : (T) getNew(decl);
+	}
+
+	@Override
+	public String getCmpSelector(Class<?> cmpClass) {
+		return (String) selectorToCmpDecls.get(cmpClass);
 	}
 
 	@Override

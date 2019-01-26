@@ -1,15 +1,15 @@
-package ngoy.common.cmp;
+package ngoy.hyperml.cmp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
 import ngoy.ANgoyTest;
-import ngoy.common.AHtmlComponent;
 import ngoy.core.Component;
 import ngoy.core.NgModule;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
+import ngoy.hyperml.AHtmlComponent;
 import ngoy.hyperml.Html;
 
 public class HypermlRenderTest extends ANgoyTest {

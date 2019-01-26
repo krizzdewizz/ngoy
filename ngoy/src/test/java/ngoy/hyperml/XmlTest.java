@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import org.junit.Test;
 
 import ngoy.core.NgoyException;
+import ngoy.hyperml.base.BaseMl;
 
 /**
  * @author krizzdewizz
@@ -15,6 +16,7 @@ public class XmlTest extends AbstractXmlTest {
 
 	public void testSingleDocElem() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("xml", $);
 			}
@@ -26,6 +28,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testSingleDocElemWithValue() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("xml", "hello world!", $);
 			}
@@ -37,6 +40,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testSmallestPossibleXml() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("a", $);
 			}
@@ -48,6 +52,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testSingleDocElemWithSingleAttribute() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("xml", "content-type", "text/css", $);
 			}
@@ -59,6 +64,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testSingleDocElemWithSingleAttributeAndValue() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("xml", "content-type", "text/css", "the value", $);
 			}
@@ -70,6 +76,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testSingleDocElemWithManyAttributes() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("xml", "border", 1, "width", "100%", "enabled", true, $);
 			}
@@ -81,6 +88,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testSingleDocElemWithManyAttributesAndValue() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("xml", "border", 1, "width", "100%", "enabled", true, "value is here", $);
 			}
@@ -92,6 +100,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testNested() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("xml");
 				{
@@ -115,6 +124,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testMore453() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("page");
 				{
@@ -136,7 +146,7 @@ public class XmlTest extends AbstractXmlTest {
 	public void testMore453abcx() throws Exception {
 		StringWriter out = new StringWriter();
 		Xml x = new Xml();
-		x.setHandler(createContentHandler(out));
+		x.writer = out;
 		x.$("page");
 		{
 			x.$("body");
@@ -155,11 +165,11 @@ public class XmlTest extends AbstractXmlTest {
 	public void testTextWithEnd() throws Exception {
 		StringWriter out = new StringWriter();
 		Xml x = new Xml();
-		x.setHandler(createContentHandler(out));
+		x.writer = out;
 		/* @formatter:off */
 		x.$("page")
 				.$("body")
-				.text("abc", 1, Xml.$)
+				.text("abc", 1, BaseMl.$)
 				.$();
 		/* @formatter:on */
 
@@ -171,11 +181,11 @@ public class XmlTest extends AbstractXmlTest {
 	public void testTextOnlyEnd() throws Exception {
 		StringWriter out = new StringWriter();
 		Xml x = new Xml();
-		x.setHandler(createContentHandler(out));
+		x.writer = out;
 		/* @formatter:off */
 		x.$("page")
 				.$("body")
-				.text(Xml.$)
+				.text(BaseMl.$)
 				.$();
 		/* @formatter:on */
 
@@ -186,6 +196,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testMore453abc() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("page");
 				{
@@ -207,6 +218,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testAttrWithNullValue() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("content", "attr", null, $);
 			}
@@ -219,6 +231,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testAttrWithEmptyValue() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("content", "attr", "", $);
 			}
@@ -231,6 +244,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testWithNullText() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("content", null, $);
 			}
@@ -243,6 +257,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testFailTooManyEnds() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("content", null, $);
 				$();
@@ -258,6 +273,7 @@ public class XmlTest extends AbstractXmlTest {
 	@Test
 	public void testFailTooFewEnds() throws Exception {
 		Xml xml = new Xml() {
+			@Override
 			protected void create() {
 				$("content");
 			}

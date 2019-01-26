@@ -1,7 +1,9 @@
 package ngoy.hyperml;
 
+import ngoy.hyperml.base.XmlBase;
+
 /**
- * Writes arbitrary xml with only the method {@link #$(String, Object...)}.
+ * Writes arbitrary xml with only the method {@link #$(Object, Object...)}.
  * <p>
  * <code>$()</code> expects its parameters as follows:
  * <p>
@@ -29,14 +31,5 @@ package ngoy.hyperml;
  * 
  * @author krizzdewizz
  */
-public class Xml extends Base<Xml> {
-	@Override
-	protected boolean isVoidElement(String name) {
-		return false;
-	}
-
-	@Override
-	protected boolean escapeText() {
-		return true;
-	}
+public class Xml extends XmlBase<Xml> {
 }

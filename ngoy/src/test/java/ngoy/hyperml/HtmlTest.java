@@ -19,6 +19,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testDoc() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				html();
 				{
@@ -38,6 +39,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void noEscapeInScriptAndStyle() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				html();
 				{
@@ -64,6 +66,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void noEndForVoidElements() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				html();
 				{
@@ -83,6 +86,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void noEndForVoidElementsCheck() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				html();
 				{
@@ -105,6 +109,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void classes() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				a(classs, classes("peter", true, "paul", false, "mary", Boolean.TRUE), $);
 			}
@@ -116,6 +121,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void classesMap() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				Map<String, Boolean> classes = new LinkedHashMap<>();
 				classes.put("peter", true);
@@ -132,6 +138,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void styles() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				a(style, styles("background-color", "red", "color", null, "display", "none"), $);
 			}
@@ -143,6 +150,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void stylesMap() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				Map<String, Object> styles = new LinkedHashMap<>();
 				styles.put("background-color", "red");
@@ -159,6 +167,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testEmptyClassList() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				$("content", classs, classes("a", false), $);
 			}
@@ -171,6 +180,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testEmptyStyleList() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				$("content", style, styles("color", ""), $);
 			}
@@ -183,6 +193,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testWithUnit() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				a(style, styles("height.px", 20, "font-size.rem", 12), $);
 			}
@@ -195,6 +206,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testWithUnitInstance() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				a(style, styles("height", 20, px, "font-size", 12, rem), $);
 			}
@@ -207,6 +219,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testWithUnitMap() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				Map<String, Object> styles = new LinkedHashMap<>();
 				styles.put("height.px", 20);
@@ -223,6 +236,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testCssOddLength() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				css("body", color);
 			}
@@ -237,6 +251,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testCssOddLength2() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				css("body", color, "red", display);
 			}
@@ -251,6 +266,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testUnit() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				css(".small", width, 12, px);
 			}
@@ -263,6 +279,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testUnit2() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				css(".small", color, "red", width, 12, px, display, none);
 			}
@@ -275,6 +292,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testUnit3() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				css(".small", width, 12, px, height, 13, em, display, none);
 			}
@@ -287,6 +305,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testCss() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				css("body", color, "red");
 				css("a", color, "green", display, none);
@@ -301,6 +320,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testCssBlock() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				css("body");
 				{
@@ -327,6 +347,7 @@ public class HtmlTest extends AbstractXmlTest {
 	@Test
 	public void testCssBlockNestedInvalid() throws Exception {
 		Html xml = new Html() {
+			@Override
 			protected void create() {
 				css("");
 				css("");

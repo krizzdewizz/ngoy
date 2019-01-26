@@ -1,12 +1,19 @@
 package ngoy.internal.parser;
 
 import static java.lang.String.format;
+import static ngoy.core.NgoyException.wrap;
+import static ngoy.core.Util.isSet;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import jodd.jerry.Jerry;
@@ -31,19 +38,85 @@ public class Inputs {
 	private Inputs() {
 	}
 
+	public interface ReflectInput {
+		void apply(Object instance, Object value) throws Throwable;
+	}
+
+	public static Map<String, ReflectInput> fieldInputs(Class<?> clazz) {
+		Map<String, ReflectInput> map = new HashMap<>();
+		Lookup lookup = MethodHandles.lookup();
+		withFieldInputs(clazz, (field, input) -> {
+			MethodHandle setter = lookup.unreflectSetter(field);
+			ReflectInput ri = (instance, value) -> setter.invoke(instance, value);
+			map.put(field.getName(), ri);
+			String alias = input.value();
+			if (isSet(alias)) {
+				map.put(alias, ri);
+			}
+		});
+
+		withMethodInputs(clazz, (meth, input) -> {
+			MethodHandle methHandle = lookup.unreflect(meth);
+			ReflectInput ri = (instance, value) -> methHandle.invoke(instance, value);
+			map.put(fieldName(meth.getName()), ri);
+			String alias = input.value();
+			if (isSet(alias)) {
+				map.put(alias, ri);
+			}
+		});
+		return map;
+	}
+
+	public interface InputCallback<T> {
+		void run(T fieldOrMethod, Input input) throws Exception;
+	}
+
+	public static void withFieldInputs(Class<?> clazz, InputCallback<Field> cb) {
+		try {
+			for (Field field : clazz.getFields()) {
+				Input input = field.getAnnotation(Input.class);
+				if (input == null) {
+					continue;
+				}
+
+				int mods = field.getModifiers();
+				if (Modifier.isStatic(mods) || Modifier.isFinal(mods)) {
+					throw new NgoyException("@Input annotated field must be public, non-final, non-static: %s.%s", clazz.getName(), field.getName());
+				}
+				cb.run(field, input);
+			}
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
+	public static void withMethodInputs(Class<?> clazz, InputCallback<Method> cb) {
+		try {
+			for (Method meth : clazz.getMethods()) {
+				Input input = meth.getAnnotation(Input.class);
+				if (input == null) {
+					continue;
+				}
+
+				int mods = meth.getModifiers();
+				if (Modifier.isStatic(mods)) {
+					throw new NgoyException("@Input annotated method must be public, non-static: %s.%s", clazz.getName(), meth.getName());
+				}
+
+				if (meth.getParameterCount() != 1) {
+					throw new ParseException("@Input annotated method must have exactly one parameter: %s.%s", clazz.getName(), meth.getName());
+				}
+
+				cb.run(meth, input);
+			}
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
 	public static List<CmpInput> cmpInputs(Jerry el, Class<?> clazz, Set<String> excludeBindings) {
 		List<CmpInput> result = new ArrayList<>();
-		for (Field field : clazz.getFields()) {
-			Input input = field.getAnnotation(Input.class);
-			if (input == null) {
-				continue;
-			}
-
-			int mods = field.getModifiers();
-			if (Modifier.isStatic(mods) || Modifier.isFinal(mods)) {
-				throw new NgoyException("@Input annotated field must be public, non-final, non-static: %s.%s", clazz.getName(), field.getName());
-			}
-
+		withFieldInputs(clazz, (field, input) -> {
 			String fieldName = field.getName();
 			String binding = input.value();
 			if (binding.isEmpty()) {
@@ -52,23 +125,9 @@ public class Inputs {
 
 			addInput(InputType.FIELD, ValueType.TEXT, result, el, binding, fieldName, excludeBindings);
 			addInput(InputType.FIELD, ValueType.EXPR, result, el, binding, fieldName, excludeBindings);
-		}
+		});
 
-		for (Method meth : clazz.getMethods()) {
-			Input input = meth.getAnnotation(Input.class);
-			if (input == null) {
-				continue;
-			}
-
-			int mods = meth.getModifiers();
-			if (Modifier.isStatic(mods)) {
-				throw new NgoyException("@Input annotated method must be public, non-static: %s.%s", clazz.getName(), meth.getName());
-			}
-
-			if (meth.getParameterCount() != 1) {
-				throw new ParseException("@Input annotated method must have exactly one parameter: %s.%s", clazz.getName(), meth.getName());
-			}
-
+		withMethodInputs(clazz, (meth, input) -> {
 			String methodName = meth.getName();
 			String binding = input.value();
 			if (binding.isEmpty()) {
@@ -77,7 +136,7 @@ public class Inputs {
 
 			addInput(InputType.METHOD, ValueType.TEXT, result, el, binding, methodName, excludeBindings);
 			addInput(InputType.METHOD, ValueType.EXPR, result, el, binding, methodName, excludeBindings);
-		}
+		});
 		return result;
 	}
 

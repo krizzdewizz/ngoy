@@ -1,13 +1,11 @@
-package ngoy.hyperml;
-
-import ngoy.hyperml.Html.Unit;
+package ngoy.hyperml.base;
 
 /**
  * Generated HTML Elements and attributes.
  * 
  * @author krizz
  */
-abstract class HtmlBase<T extends HtmlBase<?>> extends Base<T> {
+public abstract class HtmlCore<T extends HtmlCore<?>> extends BaseMl<T> {
 
 	/**
 	 * The <code>_blank</code> enumeration.

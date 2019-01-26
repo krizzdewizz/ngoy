@@ -1,21 +1,18 @@
 package ngoy.core;
 
 /**
- * Compile lifecycle hook.
+ * Compile css styles lifecycle hook.
  * <p>
- * When the template is parsed/compiled, a component or directive implementing
- * this interface has the opportunity to alter the template's
- * <code>subtree</code> before the parser/compiler sees it.
+ * Implementors can add css styles to the html document upon compilation.
  * 
  * @author krizz
  */
 public interface OnCompileStyles {
 	/**
-	 * @param el
-	 *            The element of the component/directive. Change this element
-	 *            and it's subtree to alter/extend the template
-	 * @param componentClass
-	 *            Component class
+	 * Called upon compilation of a html document - nNot called at 'runtime'.ot
+	 * called at 'runtime'.
+	 * 
+	 * @return css style declarations to add to the document
 	 */
 	String onCompileStyles();
 }
