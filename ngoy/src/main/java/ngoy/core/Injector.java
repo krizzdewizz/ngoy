@@ -44,15 +44,4 @@ public interface Injector {
 	default <T> T getNewCmp(String selector) {
 		return null;
 	};
-
-	/**
-	 * Returns the selector of the given component class.
-	 * 
-	 * @param componentClass Component class
-	 * @return selector or null if none
-	 */
-	@Nullable
-	default String getCmpSelector(Class<?> componentClass) {
-		return null;
-	};
 }

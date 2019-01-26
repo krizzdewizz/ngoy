@@ -9,14 +9,19 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
+import ngoy.core.OnDestroy;
+import ngoy.core.OnInit;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
-import ngoy.internal.parser.Inputs.ReflectInput;
+import ngoy.core.cot.CmpReflectInfo;
+import ngoy.core.cot.CmpReflectInfoCache;
+import ngoy.core.cot.ReflectBinding;
+import ngoy.core.cot.ReflectClassBinding;
+import ngoy.core.cot.ReflectInput;
 
 /**
  * Base class for XML/HTML.
@@ -29,9 +34,23 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	@SuppressWarnings("serial")
 	private static class ParamsWithInit extends ArrayList<Object> {
 		Consumer<?> init;
+		Object classList;
+		Object styleList;
 
 		ParamsWithInit(Object... all) {
-			for (Object it : all) {
+			for (int i = 0, n = all.length; i < n; i++) {
+				Object it = all[i];
+				boolean isName = i == 0;
+				if (isName && "class".equals(it)) {
+					classList = all[i + 1];
+					i++;
+					continue;
+				}
+				if (isName && "style".equals(it)) {
+					styleList = all[i + 1];
+					i++;
+					continue;
+				}
 				if (it instanceof Consumer<?>) {
 					init = (Consumer<?>) it;
 				} else {
@@ -43,13 +62,11 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 
 	private static class CmpInstance {
 		final OnRender cmp;
-		final String selector;
-		final Map<String, ReflectInput> inputs;
+		final CmpReflectInfo info;
 
-		CmpInstance(OnRender cmp, String selector, Map<String, ReflectInput> inputs) {
+		CmpInstance(OnRender cmp, CmpReflectInfo info) {
 			this.cmp = cmp;
-			this.selector = selector;
-			this.inputs = inputs;
+			this.info = info;
 		}
 	}
 
@@ -234,7 +251,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 
 		CmpInstance cmp = handleCmp(nameOrClass, paramsWithInit.init);
 
-		String name = cmp != null ? cmp.selector : nameOrClass.toString();
+		String name = cmp != null ? cmp.info.selector : nameOrClass.toString();
 
 		_startElementHead(name);
 
@@ -274,6 +291,10 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 			}
 		}
 
+		writeHostAttributeBindings(cmp);
+		writeHostClassBindings(cmp, paramsWithInit.classList);
+		writeHostStyleBindings(cmp, paramsWithInit.styleList);
+
 		_endElementHead();
 
 		if (cmp != null) {
@@ -300,6 +321,83 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 		return _this();
 	}
 
+	private void writeHostClassBindings(CmpInstance cmp, Object classList) {
+		String existing = classList == null ? "" : classList.toString();
+		if (cmp == null && existing.isEmpty()) {
+			return;
+		}
+		StringBuilder sb = new StringBuilder(existing);
+		if (cmp != null) {
+			for (ReflectClassBinding cb : cmp.info.classBindings) {
+				try {
+					if (cb.getValue(cmp.cmp)) {
+						if (sb.length() > 0) {
+							sb.append(' ');
+						}
+						sb.append(cb.name);
+					}
+				} catch (Throwable e) {
+					throw new NgoyException(e, "Error while setting component host binding %s.%s: %s", cmp.cmp.getClass()
+							.getName(), cb.name, e.getMessage());
+				}
+			}
+		}
+
+		if (sb.length() > 0) {
+			_attribute("class", sb.toString());
+		}
+	}
+
+	private void writeHostStyleBindings(CmpInstance cmp, Object styleList) {
+		String existing = styleList == null ? "" : styleList.toString();
+		if (cmp == null && existing.isEmpty()) {
+			return;
+		}
+		StringBuilder sb = new StringBuilder(existing);
+		if (cmp != null) {
+			for (ReflectBinding b : cmp.info.styleBindings) {
+				try {
+					Object value = b.getValue(cmp.cmp);
+					if (value != null && !value.toString()
+							.isEmpty()) {
+						if (sb.length() > 0) {
+							sb.append(';');
+						}
+						sb.append(b.name);
+						sb.append(':');
+						sb.append(value);
+					}
+				} catch (Throwable e) {
+					throw new NgoyException(e, "Error while setting component host binding %s.%s: %s", cmp.cmp.getClass()
+							.getName(), b.name, e.getMessage());
+				}
+			}
+		}
+
+		if (sb.length() > 0) {
+			_attribute("style", sb.toString());
+		}
+	}
+
+	private void writeHostAttributeBindings(CmpInstance cmp) {
+		if (cmp == null) {
+			return;
+		}
+
+		for (ReflectBinding binding : cmp.info.attrBindings) {
+			try {
+				Object attrValue = binding.getValue(cmp.cmp);
+				if (attrValue != null && !attrValue.toString()
+						.isEmpty()) {
+					_attribute(binding.name, attrValue.toString());
+				}
+			} catch (Throwable e) {
+				throw new NgoyException(e, "Error while setting component host binding %s.%s: %s", cmp.cmp.getClass()
+						.getName(), binding.name, e.getMessage());
+			}
+		}
+	}
+
 	private String attrName(Object name) {
 		if (name == null) {
 			throw new NgoyException("attribute name must not be null");
@@ -316,7 +414,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	 *         of cmp
 	 */
 	private boolean applyInput(CmpInstance cmp, String attrName, Object attrValue) {
-		ReflectInput input = cmp.inputs.get(attrName);
+		ReflectInput input = cmp.info.inputs.get(attrName);
 		if (input == null) {
 			return false;
 		}
@@ -339,15 +437,18 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 		Object cmp = null;
 		String selector;
 		Class<?> cmpClass = null;
+		CmpReflectInfo cmpInfo = null;
 		if (nameOrClass instanceof Class<?>) {
 			cmpClass = (Class<?>) nameOrClass;
+			cmpInfo = CmpReflectInfoCache.INSTANCE.getInfo(cmpClass);
 			cmp = injector.getNew(cmpClass);
-			selector = injector.getCmpSelector(cmpClass);
+			selector = cmpInfo.selector;
 		} else {
 			selector = nameOrClass.toString();
 			cmp = injector.getNewCmp(selector);
 			if (cmp != null) {
 				cmpClass = cmp.getClass();
+				cmpInfo = CmpReflectInfoCache.INSTANCE.getInfo(cmpClass);
 			}
 		}
 
@@ -366,7 +467,11 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 			initt.accept(cmp);
 		}
 
-		return new CmpInstance((OnRender) cmp, selector, InputsCache.INSTANCE.getInputs(cmpClass));
+		if (cmp instanceof OnInit) {
+			((OnInit) cmp).onInit();
+		}
+
+		return new CmpInstance((OnRender) cmp, cmpInfo);
 	}
 
 	/**
@@ -392,6 +497,10 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 
 	protected void componentEnd(OnRender cmp) {
 		cmp.onRenderEnd(out);
+
+		if (cmp instanceof OnDestroy) {
+			((OnDestroy) cmp).onDestroy();
+		}
 	}
 
 	@SuppressWarnings("unchecked")

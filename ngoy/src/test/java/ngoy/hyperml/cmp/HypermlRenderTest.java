@@ -9,7 +9,7 @@ import ngoy.core.Component;
 import ngoy.core.NgModule;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
-import ngoy.hyperml.AHtmlComponent;
+import ngoy.hyperml.HtmlComponent;
 import ngoy.hyperml.Html;
 
 public class HypermlRenderTest extends ANgoyTest {
@@ -52,13 +52,18 @@ public class HypermlRenderTest extends ANgoyTest {
 	}
 
 	@Component(selector = "x")
-	public static class TestSubclassCmp extends AHtmlComponent {
+	public static class TestSubclassCmp extends HtmlComponent {
 
 		private int[] ints = new int[] { 1, 2, 3 };
 
 		@Override
 		protected void styles() {
 			css("a", color, "red");
+			css("body");
+			{
+				$(backgroundColor, "blue");
+			}
+			$();
 		}
 
 		@Override
@@ -76,6 +81,7 @@ public class HypermlRenderTest extends ANgoyTest {
 
 	@Test
 	public void testSubclass() {
-		assertThat(render(TestSubclassAppCmp.class)).isEqualTo("<html><head><style type=\"text/css\">a{color:red;}</style></head><x><div class=\"title\"><span>hello:1</span><span>hello:2</span><span>hello:3</span>&lt;&gt;</div></x></html>");
+		assertThat(render(TestSubclassAppCmp.class)).isEqualTo(
+				"<html><head><style type=\"text/css\">a{color:red;}body{background-color:blue;}</style></head><x><div class=\"title\"><span>hello:1</span><span>hello:2</span><span>hello:3</span>&lt;&gt;</div></x></html>");
 	}
 }

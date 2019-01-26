@@ -14,7 +14,7 @@ import ngoy.core.Output;
  * @author christian.oetterli
  *
  */
-public abstract class AHtmlComponent extends Html implements OnRender, OnCompileStyles {
+public abstract class HtmlComponent extends Html implements OnRender, OnCompileStyles {
 
 	private static enum Mode {
 		TEMPLATE, STYLES

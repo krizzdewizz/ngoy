@@ -8,7 +8,7 @@ import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
-import ngoy.hyperml.AHtmlComponent;
+import ngoy.hyperml.HtmlComponent;
 
 public class HtmlComponentNestedTest extends ANgoyTest {
 
@@ -18,7 +18,7 @@ public class HtmlComponentNestedTest extends ANgoyTest {
 	}
 
 	@Component(selector = "y")
-	public static class YCmp extends AHtmlComponent {
+	public static class YCmp extends HtmlComponent {
 
 		@Input
 		public String title;
@@ -37,7 +37,7 @@ public class HtmlComponentNestedTest extends ANgoyTest {
 	}
 
 	@Component(selector = "x")
-	public static class XCmp extends AHtmlComponent {
+	public static class XCmp extends HtmlComponent {
 		@Override
 		protected void template() {
 			div();
@@ -66,7 +66,7 @@ public class HtmlComponentNestedTest extends ANgoyTest {
 	}
 
 	@Component(selector = "q")
-	public static class XInitWithAttrsCmp extends AHtmlComponent {
+	public static class XInitWithAttrsCmp extends HtmlComponent {
 		@Override
 		protected void template() {
 			div();

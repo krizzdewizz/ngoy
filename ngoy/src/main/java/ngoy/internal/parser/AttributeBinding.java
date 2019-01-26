@@ -15,10 +15,10 @@ import ngoy.core.HostBinding;
 
 public class AttributeBinding {
 
-	private static final String BINDING_CLASS = "class.";
-	private static final String BINDING_ATTR = "attr.";
+	public static final String BINDING_CLASS = "class.";
+	public static final String BINDING_ATTR = "attr.";
 	private static final String BINDING_TEXT = "ngText";
-	private static final String BINDING_STYLE = "style.";
+	public static final String BINDING_STYLE = "style.";
 
 	private static void addAttributeBinding(Parser parser, String name, String expr, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames,
 			List<String[]> targetStyleNames) {

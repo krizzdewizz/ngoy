@@ -2,18 +2,12 @@ package ngoy.internal.parser;
 
 import static java.lang.String.format;
 import static ngoy.core.NgoyException.wrap;
-import static ngoy.core.Util.isSet;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import jodd.jerry.Jerry;
@@ -24,7 +18,7 @@ public class Inputs {
 
 	private static final String SET_PREFIX = "set";
 
-	static String fieldName(String setter) {
+	public static String fieldName(String setter) {
 		if (setter.startsWith(SET_PREFIX)) {
 			String right = setter.substring(SET_PREFIX.length());
 			if (right.isEmpty()) {
@@ -36,35 +30,6 @@ public class Inputs {
 	}
 
 	private Inputs() {
-	}
-
-	public interface ReflectInput {
-		void apply(Object instance, Object value) throws Throwable;
-	}
-
-	public static Map<String, ReflectInput> fieldInputs(Class<?> clazz) {
-		Map<String, ReflectInput> map = new HashMap<>();
-		Lookup lookup = MethodHandles.lookup();
-		withFieldInputs(clazz, (field, input) -> {
-			MethodHandle setter = lookup.unreflectSetter(field);
-			ReflectInput ri = (instance, value) -> setter.invoke(instance, value);
-			map.put(field.getName(), ri);
-			String alias = input.value();
-			if (isSet(alias)) {
-				map.put(alias, ri);
-			}
-		});
-
-		withMethodInputs(clazz, (meth, input) -> {
-			MethodHandle methHandle = lookup.unreflect(meth);
-			ReflectInput ri = (instance, value) -> methHandle.invoke(instance, value);
-			map.put(fieldName(meth.getName()), ri);
-			String alias = input.value();
-			if (isSet(alias)) {
-				map.put(alias, ri);
-			}
-		});
-		return map;
 	}
 
 	public interface InputCallback<T> {

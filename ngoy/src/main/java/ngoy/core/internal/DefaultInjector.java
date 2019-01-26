@@ -74,11 +74,6 @@ public class DefaultInjector implements Injector {
 	}
 
 	@Override
-	public String getCmpSelector(Class<?> cmpClass) {
-		return (String) selectorToCmpDecls.get(cmpClass);
-	}
-
-	@Override
 	public <T> T get(Class<T> clazz) {
 		return getInternal(clazz, new HashSet<>(), false);
 	}
