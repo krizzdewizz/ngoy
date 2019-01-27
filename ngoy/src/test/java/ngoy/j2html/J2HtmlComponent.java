@@ -14,6 +14,7 @@ import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
+import ngoy.core.internal.Ctx;
 import ngoy.core.reflect.CmpReflectInfo;
 import ngoy.core.reflect.CmpReflectInfoCache;
 import ngoy.core.reflect.ReflectBinding;
@@ -56,7 +57,7 @@ public abstract class J2HtmlComponent implements OnRender {
 			OnRender render = (OnRender) cmp;
 
 			StringWriter sw = new StringWriter();
-			Output out = new Output(sw);
+			Output out = new Ctx(injector, sw);
 			render.onRender(out);
 			render.onRenderEnd(out);
 

@@ -51,11 +51,11 @@ import ngoy.core.ModuleWithProviders;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
-import ngoy.core.Output;
 import ngoy.core.Pipe;
 import ngoy.core.Provide;
 import ngoy.core.Provider;
 import ngoy.core.cli.Cli;
+import ngoy.core.internal.AppClassResolver;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.CoreInternalModule;
 import ngoy.core.internal.Ctx;
@@ -64,6 +64,7 @@ import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.RenderException;
 import ngoy.core.internal.Resolver;
 import ngoy.core.internal.StyleUrlsDirective;
+import ngoy.core.internal.TemplateCompiler;
 import ngoy.core.internal.TemplateRender;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.parser.template.JavaTemplate;
@@ -495,6 +496,7 @@ public class Ngoy<T> {
 				});
 		all.addAll(pipeDecls.values());
 		all.addAll(rootProviders);
+		all.add(useValue(TemplateCompiler.class, (template, clazz) -> compileTemplate(template, clazz, new AppClassResolver(clazz, resolver))));
 
 		injector = new DefaultInjector(cmpDeclsSet, getSelectorToCmpDecls(cmpDeclsSet), injectors.toArray(new Injector[injectors.size()]), all.toArray(new Provider[all.size()]));
 
@@ -659,8 +661,8 @@ public class Ngoy<T> {
 				.render(this, folder, asList(routePaths), () -> compile(template));
 	}
 
-	private Ctx createRenderContext() {
-		Ctx ctx = new Ctx(injector);
+	private Ctx createRenderContext(Writer out) {
+		Ctx ctx = new Ctx(injector, out);
 
 		if (context != null) {
 			ctx.setVariables(context.getVariables());
@@ -698,7 +700,7 @@ public class Ngoy<T> {
 	 * @param out To where to write the app to
 	 */
 	public void render(Writer out) {
-		render(createRenderContext(), new Output(out));
+		render(createRenderContext(out));
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -783,29 +785,30 @@ public class Ngoy<T> {
 	}
 
 	private void compile(String template) {
+		templateRenderer = compileTemplate(template, appClass, resolver);
+	}
+
+	private TemplateRender compileTemplate(String template, Class<?> clazz, Resolver resolver) {
 		try {
 			Parser parser = createParser(resolver, config);
-			Class<?> templateClass = compileTemplate(parser, template != null ? template : getTemplate(appClass));
-			templateRenderer = (TemplateRender) templateClass.getMethod("createRenderer", Injector.class)
+			Class<?> templateClass = compileTemplate(parser, template != null ? template : getTemplate(clazz));
+			return (TemplateRender) templateClass.getMethod("createRenderer", Injector.class)
 					.invoke(null, resolver.getInjector());
 		} catch (Exception e) {
 			throw wrap(e);
 		}
 	}
 
-	private void render(Ctx ctx, Output out) {
+	private void render(Ctx ctx) {
 		try {
-			ctx.setOut(out);
-			templateRenderer.render(ctx);
+			templateRenderer.render(ctx, appInstance);
 		} catch (RenderException e) {
 			ExprComment exprComment = isSet(e.debugInfo) ? getExprComment(e.debugInfo) : new ExprComment("<unknown>", "");
 			throw new NgoyException(e.getCause(), "Runtime error in expression \"%s\": %s\nsource: %s", exprComment.comment, e.getMessage(), exprComment.sourcePosition);
-		} finally {
-			ctx.resetOut();
 		}
 	}
 
-	protected Class<?> compileTemplate(Parser parser, String template) {
+	private Class<?> compileTemplate(Parser parser, String template) {
 		JavaTemplate tpl = new JavaTemplate(getContentType(config), context != null ? context.getVariables() : emptyMap());
 		parser.parse(template, tpl);
 		String code = tpl.toString();

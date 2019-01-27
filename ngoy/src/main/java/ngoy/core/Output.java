@@ -1,7 +1,5 @@
 package ngoy.core;
 
-import static ngoy.core.NgoyException.wrap;
-
 import java.io.Writer;
 
 /**
@@ -9,13 +7,7 @@ import java.io.Writer;
  * 
  * @author krizz
  */
-public class Output {
-	private final Writer writer;
-
-	public Output(Writer writer) {
-		this.writer = writer;
-	}
-
+public interface Output {
 	/**
 	 * Writes the given string to the output.
 	 * <p>
@@ -23,15 +15,7 @@ public class Output {
 	 * 
 	 * @param string String to write
 	 */
-	public void write(String string) {
-		try {
-			writer.write(string);
-		} catch (Exception e) {
-			throw wrap(e);
-		}
-	}
+	void write(String string);
 
-	public Writer getWriter() {
-		return writer;
-	}
+	Writer getWriter();
 }

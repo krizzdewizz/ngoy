@@ -13,7 +13,7 @@ public class FlattenTest extends ANgoyTest {
 	public static class TestAppCmp extends HtmlComponent {
 
 		@Override
-		protected void template() {
+		protected void content() {
 			$("x", attr("title", "hello"), list(attr("a", "aval"), attr("b", "bval"), attr("_not_", ""), attr("_not_2_", null)), $);
 		}
 	}

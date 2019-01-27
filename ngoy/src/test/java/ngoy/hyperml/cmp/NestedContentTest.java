@@ -22,7 +22,7 @@ public class NestedContentTest extends ANgoyTest {
 		}
 
 		@Override
-		protected void template() {
+		protected void content() {
 			$("header");
 			{
 				if (headerContent != null) {
@@ -56,7 +56,7 @@ public class NestedContentTest extends ANgoyTest {
 		}
 
 		@Override
-		protected void template() {
+		protected void content() {
 			$(XCmp.class, x -> x.init(this::myHeader, this::myFooter), $);
 		}
 	}

@@ -67,7 +67,7 @@ public class HypermlRenderTest extends ANgoyTest {
 		}
 
 		@Override
-		protected void template() {
+		protected void content() {
 			div(classs, "title");
 			{
 				for (int i : ints) {

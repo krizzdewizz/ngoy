@@ -98,6 +98,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 	}
 
+	private static final String CMP_INSTANCE_VAR = "__cmpInstance__";
 	public static final String CTX_VAR = "__";
 	private static final Set<String> GLOBALS = new HashSet<>(asList("java", "Map", "List", "Set", CTX_VAR));
 
@@ -162,7 +163,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		$("private static final String[] ", stringsVar, "=new String[]{", STRINGS, "};");
 
-		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws ", RenderException.class, "{");
+		$("public void render(", Ctx.class, " ", CTX_VAR, ", Object ", CMP_INSTANCE_VAR, ") throws ", RenderException.class, "{");
 		$("String ", lastExprVar, "=\"\";");
 		$("try{");
 		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
@@ -550,8 +551,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		Class<?> cmpClass = cmpRef.clazz;
 
 		cmpVar = createLocalVar(cmpRef.clazz.getSimpleName());
-		String cmpCall = appRoot ? "cmp" : "cmpNew";
-		$("final ", cmpClass, " ", cmpVar, "=(", cmpClass, ")", CTX_VAR, ".", cmpCall, "(", cmpClass, ".class);");
+		if (appRoot) {
+			$("final ", cmpClass, " ", cmpVar, "=(", cmpClass, ")", CMP_INSTANCE_VAR, ";");
+		} else {
+			$("final ", cmpClass, " ", cmpVar, "=(", cmpClass, ")", CTX_VAR, ".cmpNew(", cmpClass, ".class);");
+		}
 		$("{");
 
 		// testForOfNested2
@@ -572,7 +576,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	public void componentContentStart(CmpRef cmpRef) {
 		flushOut();
 		if (OnRender.class.isAssignableFrom(cmpRef.clazz)) {
-			$("((", OnRender.class, ")", cmpVar, ").onRender(", CTX_VAR, ".getOut());");
+			$("((", OnRender.class, ")", cmpVar, ").onRender(", CTX_VAR, ");");
 		}
 	}
 
@@ -583,7 +587,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		CmpVar cmpVar = cmpVars.pop();
 
 		if (OnRender.class.isAssignableFrom(cmpVar.cmpClass)) {
-			$("((", OnRender.class, ")", cmpVar.name, ").onRenderEnd(", CTX_VAR, ".getOut());");
+			$("((", OnRender.class, ")", cmpVar.name, ").onRenderEnd(", CTX_VAR, ");");
 		}
 
 		if (OnDestroy.class.isAssignableFrom(cmpVar.cmpClass)) {

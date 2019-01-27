@@ -9,34 +9,9 @@ import ngoy.core.Component;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
-import ngoy.core.OnRender;
 import ngoy.hyperml.HtmlComponent;
 
 public class ErrorTest extends ANgoyTest {
-
-	@Component(selector = "x")
-	public static class NonOnRenderCmp {
-	}
-
-	@Component(selector = "")
-	@NgModule(declarations = { NonOnRenderCmp.class })
-	public static class TestAppCmp extends HtmlComponent {
-
-		@Override
-		protected void template() {
-			$("x", $);
-		}
-	}
-
-	@Test
-	public void errorNotOnRender() {
-		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString(String.format("must be an instance of %s", OnRender.class.getName())));
-		expectedEx.expectMessage(containsString(NonOnRenderCmp.class.getName()));
-		render(TestAppCmp.class);
-	}
-
-	//
 
 	@Component(selector = "x")
 	public static class WrongInputCmp extends HtmlComponent {
@@ -44,7 +19,7 @@ public class ErrorTest extends ANgoyTest {
 		public int age;
 
 		@Override
-		protected void template() {
+		protected void content() {
 		}
 	}
 
@@ -52,7 +27,7 @@ public class ErrorTest extends ANgoyTest {
 	@NgModule(declarations = { WrongInputCmp.class })
 	public static class TestAppWrongInputTypeCmp extends HtmlComponent {
 		@Override
-		protected void template() {
+		protected void content() {
 			$("x", "age", "not-a-int", $);
 		}
 	}
@@ -71,7 +46,7 @@ public class ErrorTest extends ANgoyTest {
 	@Component(selector = "")
 	public static class TestAppNullAttributeNameCmp extends HtmlComponent {
 		@Override
-		protected void template() {
+		protected void content() {
 			span(null, "value", $);
 		}
 	}
@@ -88,7 +63,7 @@ public class ErrorTest extends ANgoyTest {
 	@Component(selector = "")
 	public static class TestAppEmptyAttributeNameCmp extends HtmlComponent {
 		@Override
-		protected void template() {
+		protected void content() {
 			span("", "value", $);
 		}
 	}

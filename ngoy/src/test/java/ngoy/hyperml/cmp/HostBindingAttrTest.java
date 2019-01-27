@@ -24,7 +24,7 @@ public class HostBindingAttrTest extends ANgoyTest {
 		}
 
 		@Override
-		protected void template() {
+		protected void content() {
 			text("hello");
 		}
 
@@ -39,7 +39,7 @@ public class HostBindingAttrTest extends ANgoyTest {
 	public static class TestAppCmp extends HtmlComponent {
 
 		@Override
-		protected void template() {
+		protected void content() {
 			$("x", $);
 		}
 	}

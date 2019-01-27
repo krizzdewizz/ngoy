@@ -31,7 +31,7 @@ public class NestedTest extends ANgoyTest {
 		}
 
 		@Override
-		protected void template() {
+		protected void content() {
 			text("M:", title, age == 0 ? null : age);
 		}
 	}
@@ -39,7 +39,7 @@ public class NestedTest extends ANgoyTest {
 	@Component(selector = "x")
 	public static class XCmp extends HtmlComponent {
 		@Override
-		protected void template() {
+		protected void content() {
 			div();
 			{
 				$(YCmp.class, $);
@@ -68,7 +68,7 @@ public class NestedTest extends ANgoyTest {
 	@Component(selector = "q")
 	public static class XInitWithAttrsCmp extends HtmlComponent {
 		@Override
-		protected void template() {
+		protected void content() {
 			div();
 			{
 				$(YCmp.class, "title", "hello", "age", 21, $);

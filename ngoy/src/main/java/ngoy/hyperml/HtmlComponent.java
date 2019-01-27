@@ -22,14 +22,14 @@ public abstract class HtmlComponent extends Html implements OnRender, OnCompileS
 	public Injector injector;
 
 	@Override
-	protected Injector getInjector() {
+	protected Injector injector() {
 		return injector;
 	}
 
 	@Override
 	public void onRender(Output output) {
 		try {
-			renderer = this::template;
+			renderer = this::content;
 			build(output);
 		} finally {
 			renderer = null;
@@ -51,7 +51,7 @@ public abstract class HtmlComponent extends Html implements OnRender, OnCompileS
 	protected void styles() {
 	}
 
-	abstract protected void template();
+	abstract protected void content();
 
 	@Override
 	protected void create() {

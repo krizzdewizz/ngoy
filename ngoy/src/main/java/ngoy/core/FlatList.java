@@ -21,8 +21,7 @@ public class FlatList {
 	 * <li>If the item is an array, iterable or stream, adds those items to the
 	 * list.</li>
 	 * <li>If the item is a {@link Map} adds its entries to the list</li>
-	 * <li>If the item is a {@link Map.Entry} adds its key and value to the
-	 * list</li>
+	 * <li>If the item is a {@link Entry} adds its key and value to the list</li>
 	 * </ul>
 	 * Except for Map/Entry, the algorithm is perfomed recursively.
 	 * <p>
@@ -53,11 +52,11 @@ public class FlatList {
 		} else if (it instanceof Iterable) {
 			add(list, ((Iterable<?>) it).iterator());
 		} else if (it instanceof Map) {
-			for (Map.Entry<?, ?> e : ((Map<?, ?>) it).entrySet()) {
+			for (Entry<?, ?> e : ((Map<?, ?>) it).entrySet()) {
 				add(list, e);
 			}
-		} else if (it instanceof Map.Entry) {
-			Map.Entry<?, ?> e = (Entry<?, ?>) it;
+		} else if (it instanceof Entry) {
+			Entry<?, ?> e = (Entry<?, ?>) it;
 			// do not flatten
 			list.add(e.getKey());
 			list.add(e.getValue());

@@ -1,8 +1,10 @@
 package ngoy.core.internal;
 
 import static java.util.Arrays.asList;
+import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.escapeHtmlXml;
 
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,14 +17,15 @@ import ngoy.core.Nullable;
 import ngoy.core.Output;
 import ngoy.core.Variable;
 
-public class Ctx {
+public class Ctx implements Output {
 
 	private final Injector injector;
-	private Output out;
+	private final Writer writer;
 	private Map<String, Variable<?>> variables = new HashMap<>();
 
-	public Ctx(Injector injector) {
+	public Ctx(Injector injector, Writer out) {
 		this.injector = injector;
+		this.writer = out;
 	}
 
 	public Object cmpNew(Class<?> clazz) {
@@ -35,26 +38,14 @@ public class Ctx {
 
 	public void pe(@Nullable Object obj) {
 		if (obj != null) {
-			out.write(escapeHtmlXml(obj.toString()));
+			write(escapeHtmlXml(obj.toString()));
 		}
 	}
 
 	public void p(@Nullable Object obj) {
 		if (obj != null) {
-			out.write(obj.toString());
+			write(obj.toString());
 		}
-	}
-
-	public Output getOut() {
-		return out;
-	}
-
-	public void setOut(Output out) {
-		this.out = out;
-	}
-
-	public void resetOut() {
-		this.out = null;
 	}
 
 	public Map<String, Variable<?>> getVariables() {
@@ -90,5 +81,18 @@ public class Ctx {
 	@SafeVarargs
 	public static <T> Set<T> Set(T... items) {
 		return new HashSet<T>(List(items));
+	}
+
+	public void write(String string) {
+		try {
+			writer.write(string);
+		} catch (Exception e) {
+			throw wrap(e);
+		}
+	}
+
+	@Override
+	public Writer getWriter() {
+		return writer;
 	}
 }

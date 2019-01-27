@@ -20,6 +20,10 @@ import ngoy.core.OnInit;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
 import ngoy.core.Pair;
+import ngoy.core.internal.Ctx;
+import ngoy.core.internal.TemplateCompiler;
+import ngoy.core.internal.TemplateRender;
+import ngoy.core.internal.TemplateRenderCache;
 import ngoy.core.reflect.CmpReflectInfo;
 import ngoy.core.reflect.CmpReflectInfoCache;
 import ngoy.core.reflect.ReflectBinding;
@@ -63,11 +67,13 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	}
 
 	private static class CmpInstance {
-		final OnRender cmp;
+		final Object cmp;
+		final OnRender render;
 		final CmpReflectInfo info;
 
-		CmpInstance(OnRender cmp, CmpReflectInfo info) {
+		CmpInstance(Object cmp, OnRender render, CmpReflectInfo info) {
 			this.cmp = cmp;
+			this.render = render;
 			this.info = info;
 		}
 	}
@@ -125,7 +131,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	/**
 	 * Must be overriden to return non-null when components are used.
 	 */
-	protected Injector getInjector() {
+	protected Injector injector() {
 		return null;
 	}
 
@@ -319,7 +325,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 		_endElementHead();
 
 		if (cmp != null) {
-			componentStart(cmp.cmp);
+			componentStart(cmp);
 		}
 
 		if (!voidElement) {
@@ -331,7 +337,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 			stack.add(name);
 
 			if (cmp != null) {
-				stack.add(cmp.cmp);
+				stack.add(cmp);
 			}
 		}
 
@@ -347,7 +353,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 		ReflectBinding.eval(cmpp, cmp == null ? null : cmp.info.classBindings, "class", params.classList, this::_attribute);
 		ReflectBinding.eval(cmpp, cmp == null ? null : cmp.info.styleBindings, "style", params.styleList, this::_attribute);
 		if (cmp != null) {
-			ReflectBinding.eval(cmp.cmp, cmp.info.attrBindings, "", null, this::_attribute);
+			ReflectBinding.eval(cmpp, cmp.info.attrBindings, "", null, this::_attribute);
 		}
 	}
 
@@ -382,7 +388,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	}
 
 	private CmpInstance handleCmp(Object nameOrClass, Consumer<?> init) {
-		Injector injector = getInjector();
+		Injector injector = injector();
 		if (injector == null) {
 			return null;
 		}
@@ -409,9 +415,19 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 			return null;
 		}
 
-		if (!(cmp instanceof OnRender)) {
-			throw new NgoyException("Component must be an instance of %s: %s", OnRender.class.getName(), cmp.getClass()
-					.getName());
+		OnRender render;
+
+		if (cmp instanceof OnRender) {
+			render = (OnRender) cmp;
+		} else {
+			TemplateRender templateRender = TemplateRenderCache.INSTANCE.getTemplateRender(cmpClass, clazz -> {
+				TemplateCompiler compiler = injector().get(TemplateCompiler.class);
+				return compiler.compile(null, clazz);
+			});
+
+			Object cmpp = cmp;
+
+			render = out -> templateRender.render(new Ctx(injector, out.getWriter()), cmpp);
 		}
 
 		if (init != null) {
@@ -424,7 +440,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 			((OnInit) cmp).onInit();
 		}
 
-		return new CmpInstance((OnRender) cmp, cmpInfo);
+		return new CmpInstance(cmp, render, cmpInfo);
 	}
 
 	/**
@@ -435,8 +451,8 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 			throw new NgoyException("Too many calls to $().");
 		}
 		Object name = stack.removeLast();
-		if (name instanceof OnRender) {
-			componentEnd((OnRender) name);
+		if (name instanceof CmpInstance) {
+			componentEnd((CmpInstance) name);
 			$(); // end host element
 		} else {
 			_endElement(name.toString());
@@ -444,12 +460,12 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 		return _this();
 	}
 
-	private void componentStart(OnRender cmp) {
-		cmp.onRender(out);
+	private void componentStart(CmpInstance cmp) {
+		cmp.render.onRender(out);
 	}
 
-	protected void componentEnd(OnRender cmp) {
-		cmp.onRenderEnd(out);
+	protected void componentEnd(CmpInstance cmp) {
+		cmp.render.onRenderEnd(out);
 
 		if (cmp instanceof OnDestroy) {
 			((OnDestroy) cmp).onDestroy();

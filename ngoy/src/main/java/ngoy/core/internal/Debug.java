@@ -20,10 +20,14 @@ public final class Debug {
 		return Boolean.getBoolean("ngoy.debug");
 	}
 
+	private static int templateIndex = 0;
+
 	public static void writeTemplate(String code) {
 
 		boolean localDebug = false;
+		boolean incrTemplateIndex = false;
 //		localDebug = true;
+//		incrTemplateIndex = true;
 
 		if (!debug() && !localDebug) {
 			return;
@@ -32,6 +36,13 @@ public final class Debug {
 		try {
 			String pack = "ngoy.core.internal";
 			String clazz = "XTemplate";
+
+			if (incrTemplateIndex) {
+				clazz += (templateIndex++);
+			}
+
+			String clazzz = clazz;
+
 			String fileName = format("%s.java", clazz);
 
 			// without the header, line numbers do not match janino's
@@ -41,7 +52,7 @@ public final class Debug {
 						@Override
 						protected void doCreate() {
 							$("package ", pack, ";");
-							$("public class ", clazz, "{");
+							$("public class ", clazzz, "{");
 							$$(code);
 							$("}");
 						}
