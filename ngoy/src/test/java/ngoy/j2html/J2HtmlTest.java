@@ -34,7 +34,7 @@ public class J2HtmlTest extends ANgoyTest {
 		}
 
 		@Override
-		protected DomContent template() {
+		protected DomContent content() {
 			return new Text(String.valueOf(age));
 		}
 	}
@@ -43,7 +43,7 @@ public class J2HtmlTest extends ANgoyTest {
 	@NgModule(declarations = { XCmp.class })
 	public static class TestAppCmp extends J2HtmlComponent {
 		@Override
-		protected DomContent template() {
+		protected DomContent content() {
 			return div(cmp(XCmp.class, c -> c.age = 21).attr("q", "more"));
 		}
 	}

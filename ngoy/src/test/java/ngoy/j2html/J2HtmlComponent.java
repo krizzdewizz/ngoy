@@ -22,7 +22,7 @@ import ngoy.core.reflect.ReflectBinding;
 /**
  * Base class for code-only components using j2html.
  * 
- * @author christian.oetterli
+ * @author krizz
  */
 public abstract class J2HtmlComponent implements OnRender {
 
@@ -47,7 +47,7 @@ public abstract class J2HtmlComponent implements OnRender {
 		DomContent content;
 
 		if (cmp instanceof J2HtmlComponent) {
-			content = ((J2HtmlComponent) cmp).template();
+			content = ((J2HtmlComponent) cmp).content();
 		} else {
 			if (!(cmp instanceof OnRender)) {
 				throw new NgoyException("Component must be an instance of %s or %s: %s", J2HtmlComponent.class.getName(), OnRender.class.getName(), cmp.getClass()
@@ -76,22 +76,20 @@ public abstract class J2HtmlComponent implements OnRender {
 		return hostEl.with(content);
 	}
 
-	private void writeHostBindings(Object cmp, CmpReflectInfo info, ContainerTag host) {
-		ReflectBinding.eval(cmp, info.classBindings, "class", null, host::attr);
-		ReflectBinding.eval(cmp, info.styleBindings, "style", null, host::attr);
-		if (cmp != null) {
-			ReflectBinding.eval(cmp, info.attrBindings, "", null, host::attr);
-		}
+	private void writeHostBindings(Object cmp, CmpReflectInfo info, ContainerTag hostEl) {
+		ReflectBinding.eval(cmp, info.classBindings, "class", null, hostEl::attr);
+		ReflectBinding.eval(cmp, info.styleBindings, "style", null, hostEl::attr);
+		ReflectBinding.eval(cmp, info.attrBindings, "", null, hostEl::attr);
 	}
 
 	@Override
 	public void onRender(Output output) {
 		try {
-			template().render(output.getWriter());
+			content().render(output.getWriter());
 		} catch (IOException e) {
 			throw new RuntimeException("Error while rendering j2html DOM", e);
 		}
 	}
 
-	abstract protected DomContent template();
+	abstract protected DomContent content();
 }

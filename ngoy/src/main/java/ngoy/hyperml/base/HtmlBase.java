@@ -1,6 +1,7 @@
 package ngoy.hyperml.base;
 
 import static java.util.Arrays.asList;
+import static ngoy.core.FlatList.flatten;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +56,7 @@ public abstract class HtmlBase<T extends HtmlBase<?>> extends HtmlCore<T> {
 		if (inCss) {
 			throw new NgoyException("Nested css() calls are not allowed");
 		}
-		Object[] pairs = checkPairs(mergeUnits(styleValuePairs));
+		Object[] pairs = checkPairs(mergeUnits(flatten(styleValuePairs)));
 		if (pairs.length == 0) {
 			inCss = true;
 			return text(selector, "{");
@@ -89,7 +90,7 @@ public abstract class HtmlBase<T extends HtmlBase<?>> extends HtmlCore<T> {
 		if (inCss) {
 			List<Object> pairs = new ArrayList<>();
 			pairs.add(name);
-			pairs.addAll(asList(params));
+			pairs.addAll(asList(flatten(params)));
 			return cssBlockStyles(checkPairs(mergeUnits(pairs.toArray())));
 		}
 		return super.$(name, params);
@@ -181,18 +182,18 @@ public abstract class HtmlBase<T extends HtmlBase<?>> extends HtmlCore<T> {
 	 * @return class list
 	 */
 	public String classes(Object clazz, boolean include, Object... morePairs) {
-		checkPairs(morePairs);
+		Object[] pairs = checkPairs(flatten(morePairs));
 		StringBuilder sb = new StringBuilder();
 		if (include) {
 			sb.append(clazz);
 		}
-		for (int i = 0, n = morePairs.length; i < n; i += 2) {
-			Boolean pred = (Boolean) morePairs[i + 1];
+		for (int i = 0, n = pairs.length; i < n; i += 2) {
+			Boolean pred = (Boolean) pairs[i + 1];
 			if (pred) {
 				if (sb.length() > 0) {
 					sb.append(' ');
 				}
-				sb.append(morePairs[i]);
+				sb.append(pairs[i]);
 			}
 		}
 		return sb.toString();
@@ -269,7 +270,7 @@ public abstract class HtmlBase<T extends HtmlBase<?>> extends HtmlCore<T> {
 		List<Object> all = new ArrayList<>();
 		all.add(style);
 		all.add(value);
-		all.addAll(asList(morePairs));
+		all.addAll(asList(flatten(morePairs)));
 
 		Object[] pairs = checkPairs(mergeUnits(all.toArray()));
 

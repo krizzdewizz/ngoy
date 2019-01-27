@@ -11,8 +11,7 @@ import ngoy.core.Output;
 /**
  * Base class for code-only components using {@link Html}.
  * 
- * @author christian.oetterli
- *
+ * @author krizz
  */
 public abstract class HtmlComponent extends Html implements OnRender, OnCompileStyles {
 
