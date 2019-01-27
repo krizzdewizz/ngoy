@@ -57,7 +57,7 @@ public abstract class J2HtmlComponent implements OnRender {
 			OnRender render = (OnRender) cmp;
 
 			StringWriter sw = new StringWriter();
-			Output out = new Ctx(injector, sw);
+			Output out = new Ctx(cmp, injector, sw);
 			render.onRender(out);
 			render.onRenderEnd(out);
 

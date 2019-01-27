@@ -421,13 +421,13 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 			render = (OnRender) cmp;
 		} else {
 			TemplateRender templateRender = TemplateRenderCache.INSTANCE.getTemplateRender(cmpClass, clazz -> {
-				TemplateCompiler compiler = injector().get(TemplateCompiler.class);
-				return compiler.compile(null, clazz);
+				return injector.get(TemplateCompiler.class)
+						.compile(null, clazz);
 			});
 
 			Object cmpp = cmp;
 
-			render = out -> templateRender.render(new Ctx(injector, out.getWriter()), cmpp);
+			render = out -> templateRender.render(new Ctx(cmpp, injector, out.getWriter()));
 		}
 
 		if (init != null) {

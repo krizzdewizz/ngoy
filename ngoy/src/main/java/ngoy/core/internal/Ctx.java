@@ -19,11 +19,13 @@ import ngoy.core.Variable;
 
 public class Ctx implements Output {
 
+	private final Object cmpInstance;
 	private final Injector injector;
 	private final Writer writer;
 	private Map<String, Variable<?>> variables = new HashMap<>();
 
-	public Ctx(Injector injector, Writer out) {
+	public Ctx(Object cmpInstance, Injector injector, Writer out) {
+		this.cmpInstance = cmpInstance;
 		this.injector = injector;
 		this.writer = out;
 	}
@@ -94,5 +96,9 @@ public class Ctx implements Output {
 	@Override
 	public Writer getWriter() {
 		return writer;
+	}
+
+	public Object getCmpInstance() {
+		return cmpInstance;
 	}
 }

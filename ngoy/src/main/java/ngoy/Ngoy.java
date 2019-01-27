@@ -662,7 +662,7 @@ public class Ngoy<T> {
 	}
 
 	private Ctx createRenderContext(Writer out) {
-		Ctx ctx = new Ctx(injector, out);
+		Ctx ctx = new Ctx(appInstance, injector, out);
 
 		if (context != null) {
 			ctx.setVariables(context.getVariables());
@@ -801,7 +801,7 @@ public class Ngoy<T> {
 
 	private void render(Ctx ctx) {
 		try {
-			templateRenderer.render(ctx, appInstance);
+			templateRenderer.render(ctx);
 		} catch (RenderException e) {
 			ExprComment exprComment = isSet(e.debugInfo) ? getExprComment(e.debugInfo) : new ExprComment("<unknown>", "");
 			throw new NgoyException(e.getCause(), "Runtime error in expression \"%s\": %s\nsource: %s", exprComment.comment, e.getMessage(), exprComment.sourcePosition);

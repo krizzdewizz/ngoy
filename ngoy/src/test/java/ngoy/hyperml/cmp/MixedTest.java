@@ -20,7 +20,6 @@ public class MixedTest extends ANgoyTest {
 
 	@Component(selector = "x")
 	public static class XCmp extends HtmlComponent {
-
 		@Override
 		protected void content() {
 			text("hellox:");

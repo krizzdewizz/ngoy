@@ -1,5 +1,7 @@
 package ngoy.core.internal;
 
+import ngoy.core.Nullable;
+
 public interface TemplateCompiler {
-	TemplateRender compile(String template, Class<?> cmpClass);
+	TemplateRender compile(@Nullable String template, Class<?> cmpClass);
 }

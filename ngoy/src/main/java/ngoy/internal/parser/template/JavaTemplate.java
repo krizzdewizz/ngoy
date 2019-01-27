@@ -98,7 +98,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 	}
 
-	private static final String CMP_INSTANCE_VAR = "__cmpInstance__";
 	public static final String CTX_VAR = "__";
 	private static final Set<String> GLOBALS = new HashSet<>(asList("java", "Map", "List", "Set", CTX_VAR));
 
@@ -163,7 +162,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		$("private static final String[] ", stringsVar, "=new String[]{", STRINGS, "};");
 
-		$("public void render(", Ctx.class, " ", CTX_VAR, ", Object ", CMP_INSTANCE_VAR, ") throws ", RenderException.class, "{");
+		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws ", RenderException.class, "{");
 		$("String ", lastExprVar, "=\"\";");
 		$("try{");
 		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
@@ -552,7 +551,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		cmpVar = createLocalVar(cmpRef.clazz.getSimpleName());
 		if (appRoot) {
-			$("final ", cmpClass, " ", cmpVar, "=(", cmpClass, ")", CMP_INSTANCE_VAR, ";");
+			$("final ", cmpClass, " ", cmpVar, "=(", cmpClass, ")", CTX_VAR, ".getCmpInstance();");
 		} else {
 			$("final ", cmpClass, " ", cmpVar, "=(", cmpClass, ")", CTX_VAR, ".cmpNew(", cmpClass, ".class);");
 		}
