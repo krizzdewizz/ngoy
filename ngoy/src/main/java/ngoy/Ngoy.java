@@ -496,7 +496,7 @@ public class Ngoy<T> {
 				});
 		all.addAll(pipeDecls.values());
 		all.addAll(rootProviders);
-		all.add(useValue(TemplateCompiler.class, (template, clazz) -> compileTemplate(template, clazz, new AppClassResolver(clazz, resolver))));
+		all.add(useValue(TemplateCompiler.class, clazz -> compileTemplate(null, clazz, new AppClassResolver(clazz, resolver))));
 
 		injector = new DefaultInjector(cmpDeclsSet, getSelectorToCmpDecls(cmpDeclsSet), injectors.toArray(new Injector[injectors.size()]), all.toArray(new Provider[all.size()]));
 

@@ -22,7 +22,7 @@ import jodd.lagarto.dom.Node;
 import ngoy.core.Component;
 import ngoy.core.Directive;
 import ngoy.core.Inject;
-import ngoy.core.MinifyCss;
+import ngoy.core.CssTransform;
 import ngoy.core.NgoyException;
 import ngoy.core.OnCompile;
 import ngoy.core.OnCompileStyles;
@@ -52,7 +52,7 @@ public class StyleUrlsDirective implements OnCompile {
 
 	@Inject
 	@Optional
-	public MinifyCss minifyCss = Objects::requireNonNull;
+	public CssTransform transformCss = Objects::requireNonNull;
 
 	@Override
 	public void onCompile(Jerry el, String componentClass) {
@@ -63,7 +63,7 @@ public class StyleUrlsDirective implements OnCompile {
 				return;
 			}
 
-			styles = minifyCss.minifyCss(styles);
+			styles = transformCss.transformCss(styles);
 
 			if (isSet(config.href)) {
 				Jerry lnk = append(findParent(el), createElement("link", el));

@@ -50,25 +50,26 @@ public class FlatList {
 				add(list, Array.get(it, i));
 			}
 		} else if (it instanceof Iterable) {
-			add(list, ((Iterable<?>) it).iterator());
+			addIter(list, ((Iterable<?>) it).iterator());
+		} else if (it instanceof Iterator) {
+			addIter(list, (Iterator<?>) it);
 		} else if (it instanceof Map) {
-			for (Entry<?, ?> e : ((Map<?, ?>) it).entrySet()) {
-				add(list, e);
-			}
+			addIter(list, ((Map<?, ?>) it).entrySet()
+					.iterator());
 		} else if (it instanceof Entry) {
 			Entry<?, ?> e = (Entry<?, ?>) it;
 			// do not flatten
 			list.add(e.getKey());
 			list.add(e.getValue());
 		} else if (it instanceof Stream) {
-			add(list, ((Stream<?>) it).iterator());
+			addIter(list, ((Stream<?>) it).iterator());
 		} else {
 			list.add(it); // may be null
 		}
 	}
 
-	private static void add(List<Object> list, Iterator<?> iterator) {
-		for (Iterator<?> iter = iterator; iter.hasNext();) {
+	private static void addIter(List<Object> list, Iterator<?> iter) {
+		while (iter.hasNext()) {
 			add(list, iter.next());
 		}
 	}

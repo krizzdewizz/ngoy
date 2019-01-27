@@ -17,7 +17,7 @@ public final class Pair<K, V> implements Map.Entry<K, V> {
 	 * @param value
 	 * @return pair
 	 */
-	public static <K, V> Pair<K, V> pair(K key, V value) {
+	public static <K, V> Pair<K, V> of(K key, V value) {
 		return new Pair<K, V>(key, value);
 	}
 

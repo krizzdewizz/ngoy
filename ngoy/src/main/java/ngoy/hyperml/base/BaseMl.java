@@ -95,7 +95,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	 * @return Pair
 	 */
 	public static Pair<String, Object> attr(String name, Object value) {
-		return Pair.pair(name, value);
+		return Pair.of(name, value);
 	}
 
 	/**
@@ -421,10 +421,8 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 		if (cmp instanceof OnRender) {
 			render = (OnRender) cmp;
 		} else {
-			TemplateRender templateRender = TemplateRenderCache.INSTANCE.getTemplateRender(cmpClass, clazz -> {
-				return injector.get(TemplateCompiler.class)
-						.compile(null, clazz);
-			});
+			TemplateRender templateRender = TemplateRenderCache.INSTANCE.getTemplateRender(cmpClass, clazz -> injector.get(TemplateCompiler.class)
+					.compile(clazz));
 
 			Object cmpp = cmp;
 

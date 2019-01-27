@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
-import ngoy.core.MinifyCss;
+import ngoy.core.CssTransform;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
 import ngoy.core.Provide;
@@ -123,21 +123,21 @@ public class StyleUrlsDirectiveTest extends ANgoyTest {
 
 	//
 
-	public static class MyMinifyCss implements MinifyCss {
+	public static class MyCssTransform implements CssTransform {
 
 		@Override
-		public String minifyCss(String css) {
-			return "minified";
+		public String transformCss(String css) {
+			return "transformed";
 		}
 	}
 
-	@Component(selector = "test", template = "<html></html>", styles = { "h1 { font-weight: normal; }" }, provide = { @Provide(provide = MinifyCss.class, useClass = MyMinifyCss.class) })
+	@Component(selector = "test", template = "<html></html>", styles = { "h1 { font-weight: normal; }" }, provide = { @Provide(provide = CssTransform.class, useClass = MyCssTransform.class) })
 	public static class MinifyCmp {
 	}
 
 	@Test
 	public void testMinify() {
-		assertThat(render(MinifyCmp.class)).isEqualTo("<html><style type=\"text/css\">minified</style></html>");
+		assertThat(render(MinifyCmp.class)).isEqualTo("<html><style type=\"text/css\">transformed</style></html>");
 	}
 
 }

@@ -2,7 +2,7 @@ package ngoy.core;
 
 import static java.util.Arrays.asList;
 import static ngoy.core.FlatList.flatten;
-import static ngoy.core.Pair.pair;
+import static ngoy.core.Pair.of;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class FlatListTest {
 
 	@Test
 	public void itemIsEntry() throws Exception {
-		assertThat(flatten("a", pair("color", "red"), pair(44, "none"))).isEqualTo(new Object[] { "a", "color", "red", 44, "none" });
+		assertThat(flatten("a", of("color", "red"), of(44, "none"))).isEqualTo(new Object[] { "a", "color", "red", 44, "none" });
 	}
 
 	@Test
@@ -50,6 +50,6 @@ public class FlatListTest {
 		Map<String, Object> map = new HashMap<>();
 		map.put("0", false);
 		map.put("1", true);
-		assertThat(flatten("a", Stream.of(1, asList(4, pair("color", "red")), map), "b")).isEqualTo(new Object[] { "a", 1, 4, "color", "red", "0", false, "1", true, "b" });
+		assertThat(flatten("a", Stream.of(1, asList(4, of("color", "red")), map), "b")).isEqualTo(new Object[] { "a", 1, 4, "color", "red", "0", false, "1", true, "b" });
 	}
 }
