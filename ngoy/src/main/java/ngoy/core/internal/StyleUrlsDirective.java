@@ -12,12 +12,14 @@ import static ngoy.core.dom.XDom.createElement;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
 import ngoy.core.Component;
+import ngoy.core.MinifyCss;
 import ngoy.core.Directive;
 import ngoy.core.Inject;
 import ngoy.core.NgoyException;
@@ -47,6 +49,10 @@ public class StyleUrlsDirective implements OnCompile {
 	@Optional
 	public Config config = new Config(null, false);
 
+	@Inject
+	@Optional
+	public MinifyCss minifyCss = Objects::requireNonNull;
+
 	@Override
 	public void onCompile(Jerry el, String componentClass) {
 		try {
@@ -55,6 +61,8 @@ public class StyleUrlsDirective implements OnCompile {
 			if (styles.isEmpty()) {
 				return;
 			}
+
+			styles = minifyCss.minifyCss(styles);
 
 			if (isSet(config.href)) {
 				Jerry lnk = appendChild(findParent(el), createElement("link", el));

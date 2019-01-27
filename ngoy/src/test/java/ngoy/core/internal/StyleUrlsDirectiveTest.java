@@ -7,8 +7,10 @@ import org.junit.Test;
 
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
+import ngoy.core.MinifyCss;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
+import ngoy.core.Provide;
 
 public class StyleUrlsDirectiveTest extends ANgoyTest {
 	@Component(selector = "a-cmp", template = "", styleUrls = { "style_a0.css", "style_a1.css" })
@@ -117,6 +119,25 @@ public class StyleUrlsDirectiveTest extends ANgoyTest {
 	private String flatten(String s) {
 		return s.replace("\n", "")
 				.replace("\r", "");
+	}
+
+	//
+
+	public static class MyMinifyCss implements MinifyCss {
+
+		@Override
+		public String minifyCss(String css) {
+			return "minified";
+		}
+	}
+
+	@Component(selector = "test", template = "<html></html>", styles = { "h1 { font-weight: normal; }" }, provide = { @Provide(provide = MinifyCss.class, useClass = MyMinifyCss.class) })
+	public static class MinifyCmp {
+	}
+
+	@Test
+	public void testMinify() {
+		assertThat(render(MinifyCmp.class)).isEqualTo("<html><style type=\"text/css\">minified</style></html>");
 	}
 
 }
