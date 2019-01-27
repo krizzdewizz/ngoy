@@ -2,11 +2,13 @@ package ngoy.hyperml.base;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
+import static ngoy.core.FlatList.flatten;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.escapeHtmlXml;
 
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -17,6 +19,7 @@ import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
+import ngoy.core.Pair;
 import ngoy.core.reflect.CmpReflectInfo;
 import ngoy.core.reflect.CmpReflectInfoCache;
 import ngoy.core.reflect.ReflectBinding;
@@ -75,6 +78,28 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	 * closing of tags like <code>&lt;x/&gt;</code> --&gt; <code>$("x", $)</code>.
 	 */
 	public static final Object $ = new Object();
+
+	/**
+	 * Returns an attribute name/value pair which can directly be put on
+	 * {@link #$(Object, Object...)}.
+	 * 
+	 * @param name  Name of the attribute
+	 * @param value Value of the attribute
+	 * @return Pair
+	 */
+	public static Pair<String, Object> attr(String name, Object value) {
+		return Pair.pair(name, value);
+	}
+
+	/**
+	 * Returns the items as a list.
+	 * 
+	 * @param items Items
+	 * @return List
+	 */
+	public static List<Object> list(Object... items) {
+		return Arrays.asList(items);
+	}
 
 	private static String toString(Object obj) {
 		return obj == null ? null : obj.toString();
@@ -241,8 +266,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	}
 
 	private T _$(Object nameOrClass, Object... params) {
-
-		ParamsWithInit paramsWithInit = new ParamsWithInit(params);
+		ParamsWithInit paramsWithInit = new ParamsWithInit(flatten(params));
 		params = paramsWithInit.toArray();
 
 		int nParams = params.length;
