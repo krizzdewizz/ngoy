@@ -1,4 +1,4 @@
-package ngoy.core.cot;
+package ngoy.core.reflect;
 
 import static ngoy.core.NgoyException.wrap;
 
@@ -17,22 +17,6 @@ import ngoy.internal.parser.AttributeBinding;
 
 public class CmpReflectInfo {
 
-	interface Unreflect<T> {
-		MethodHandle run(T t) throws Exception;
-	}
-
-	private static <T> HostBindingCallback<T> makeAddCb(Unreflect<T> unref, Set<ReflectBinding> attrBindings, Set<ReflectClassBinding> classBindings, Set<ReflectBinding> styleBindings) {
-		return (f, name, prefix) -> {
-			if (prefix.equals(AttributeBinding.BINDING_ATTR)) {
-				attrBindings.add(new ReflectBinding(name, unref.run(f)));
-			} else if (prefix.equals(AttributeBinding.BINDING_CLASS)) {
-				classBindings.add(new ReflectClassBinding(name, unref.run(f)));
-			} else if (prefix.equals(AttributeBinding.BINDING_STYLE)) {
-				styleBindings.add(new ReflectBinding(name, unref.run(f)));
-			}
-		};
-	}
-
 	public static CmpReflectInfo of(Class<?> cmpClass) {
 		String selector = cmpClass.getAnnotation(Component.class)
 				.selector();
@@ -40,13 +24,29 @@ public class CmpReflectInfo {
 		Lookup lookup = MethodHandles.lookup();
 
 		Set<ReflectBinding> attrBindings = new LinkedHashSet<>();
-		Set<ReflectClassBinding> classBindings = new LinkedHashSet<>();
+		Set<ReflectBinding> classBindings = new LinkedHashSet<>();
 		Set<ReflectBinding> styleBindings = new LinkedHashSet<>();
 
 		withFieldHostBindings(cmpClass, makeAddCb(lookup::unreflectGetter, attrBindings, classBindings, styleBindings));
 		withMethodHostBindings(cmpClass, makeAddCb(lookup::unreflect, attrBindings, classBindings, styleBindings));
 
 		return new CmpReflectInfo(selector, ReflectInput.of(cmpClass), attrBindings, classBindings, styleBindings);
+	}
+
+	private interface Unreflect<T> {
+		MethodHandle run(T t) throws Exception;
+	}
+
+	private static <T> HostBindingCallback<T> makeAddCb(Unreflect<T> unref, Set<ReflectBinding> attrBindings, Set<ReflectBinding> classBindings, Set<ReflectBinding> styleBindings) {
+		return (f, name, prefix) -> {
+			if (prefix.equals(AttributeBinding.BINDING_ATTR)) {
+				attrBindings.add(new ReflectAttrBinding(name, unref.run(f)));
+			} else if (prefix.equals(AttributeBinding.BINDING_CLASS)) {
+				classBindings.add(new ReflectClassBinding(name, unref.run(f)));
+			} else if (prefix.equals(AttributeBinding.BINDING_STYLE)) {
+				styleBindings.add(new ReflectStyleBinding(name, unref.run(f)));
+			}
+		};
 	}
 
 	public interface HostBindingCallback<T> {
@@ -93,10 +93,10 @@ public class CmpReflectInfo {
 	public final String selector;
 	public final Map<String, ReflectInput> inputs;
 	public final Set<ReflectBinding> attrBindings;
-	public final Set<ReflectClassBinding> classBindings;
+	public final Set<ReflectBinding> classBindings;
 	public final Set<ReflectBinding> styleBindings;
 
-	private CmpReflectInfo(String selector, Map<String, ReflectInput> inputs, Set<ReflectBinding> attrBindings, Set<ReflectClassBinding> classBindings, Set<ReflectBinding> styleBindings) {
+	private CmpReflectInfo(String selector, Map<String, ReflectInput> inputs, Set<ReflectBinding> attrBindings, Set<ReflectBinding> classBindings, Set<ReflectBinding> styleBindings) {
 		this.selector = selector;
 		this.inputs = inputs;
 		this.attrBindings = attrBindings;

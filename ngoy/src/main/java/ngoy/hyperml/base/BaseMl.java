@@ -17,11 +17,10 @@ import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
-import ngoy.core.cot.CmpReflectInfo;
-import ngoy.core.cot.CmpReflectInfoCache;
-import ngoy.core.cot.ReflectBinding;
-import ngoy.core.cot.ReflectClassBinding;
-import ngoy.core.cot.ReflectInput;
+import ngoy.core.reflect.CmpReflectInfo;
+import ngoy.core.reflect.CmpReflectInfoCache;
+import ngoy.core.reflect.ReflectBinding;
+import ngoy.core.reflect.ReflectInput;
 
 /**
  * Base class for XML/HTML.
@@ -291,9 +290,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 			}
 		}
 
-		writeHostAttributeBindings(cmp);
-		writeHostClassBindings(cmp, paramsWithInit.classList);
-		writeHostStyleBindings(cmp, paramsWithInit.styleList);
+		writeHostBindings(cmp, paramsWithInit);
 
 		_endElementHead();
 
@@ -321,80 +318,12 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 		return _this();
 	}
 
-	private void writeHostClassBindings(CmpInstance cmp, Object classList) {
-		String existing = classList == null ? "" : classList.toString();
-		if (cmp == null && existing.isEmpty()) {
-			return;
-		}
-		StringBuilder sb = new StringBuilder(existing);
+	private void writeHostBindings(CmpInstance cmp, ParamsWithInit params) {
+		Object cmpp = cmp == null ? null : cmp.cmp;
+		ReflectBinding.eval(cmpp, cmp == null ? null : cmp.info.classBindings, "class", params.classList, this::_attribute);
+		ReflectBinding.eval(cmpp, cmp == null ? null : cmp.info.styleBindings, "style", params.styleList, this::_attribute);
 		if (cmp != null) {
-			for (ReflectClassBinding cb : cmp.info.classBindings) {
-				try {
-					if (cb.getValue(cmp.cmp)) {
-						if (sb.length() > 0) {
-							sb.append(' ');
-						}
-						sb.append(cb.name);
-					}
-				} catch (Throwable e) {
-					throw new NgoyException(e, "Error while setting component host binding %s.%s: %s", cmp.cmp.getClass()
-							.getName(), cb.name, e.getMessage());
-				}
-			}
-		}
-
-		if (sb.length() > 0) {
-			_attribute("class", sb.toString());
-		}
-	}
-
-	private void writeHostStyleBindings(CmpInstance cmp, Object styleList) {
-		String existing = styleList == null ? "" : styleList.toString();
-		if (cmp == null && existing.isEmpty()) {
-			return;
-		}
-		StringBuilder sb = new StringBuilder(existing);
-		if (cmp != null) {
-			for (ReflectBinding b : cmp.info.styleBindings) {
-				try {
-					Object value = b.getValue(cmp.cmp);
-					if (value != null && !value.toString()
-							.isEmpty()) {
-						if (sb.length() > 0) {
-							sb.append(';');
-						}
-						sb.append(b.name);
-						sb.append(':');
-						sb.append(value);
-					}
-				} catch (Throwable e) {
-					throw new NgoyException(e, "Error while setting component host binding %s.%s: %s", cmp.cmp.getClass()
-							.getName(), b.name, e.getMessage());
-				}
-			}
-		}
-
-		if (sb.length() > 0) {
-			_attribute("style", sb.toString());
-		}
-	}
-
-	private void writeHostAttributeBindings(CmpInstance cmp) {
-		if (cmp == null) {
-			return;
-		}
-
-		for (ReflectBinding binding : cmp.info.attrBindings) {
-			try {
-				Object attrValue = binding.getValue(cmp.cmp);
-				if (attrValue != null && !attrValue.toString()
-						.isEmpty()) {
-					_attribute(binding.name, attrValue.toString());
-				}
-			} catch (Throwable e) {
-				throw new NgoyException(e, "Error while setting component host binding %s.%s: %s", cmp.cmp.getClass()
-						.getName(), binding.name, e.getMessage());
-			}
+			ReflectBinding.eval(cmp.cmp, cmp.info.attrBindings, "", null, this::_attribute);
 		}
 	}
 

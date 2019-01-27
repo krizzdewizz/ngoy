@@ -1,4 +1,4 @@
-package ngoy.core.cot;
+package ngoy.core.reflect;
 
 import static ngoy.core.Util.isSet;
 import static ngoy.internal.parser.Inputs.fieldName;
