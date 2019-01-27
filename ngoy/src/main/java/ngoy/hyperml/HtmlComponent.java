@@ -7,6 +7,7 @@ import ngoy.core.Injector;
 import ngoy.core.OnCompileStyles;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
+import ngoy.hyperml.base.BaseMl;
 
 /**
  * Base class for code-only components using {@link Html}.
@@ -37,14 +38,23 @@ public abstract class HtmlComponent extends Html implements OnRender, OnCompileS
 
 	@Override
 	public String onCompileStyles() {
-		try {
-			renderer = this::styles;
-			StringWriter sw = new StringWriter();
-			build(sw);
-			return sw.toString();
-		} finally {
-			renderer = null;
+		StringWriter sw = new StringWriter();
+		BaseMl<?> doc = stylesDocument();
+		if (doc != null) {
+			doc.build(sw);
+		} else {
+			try {
+				renderer = this::styles;
+				build(sw);
+			} finally {
+				renderer = null;
+			}
 		}
+		return sw.toString();
+	}
+
+	protected BaseMl<?> stylesDocument() {
+		return null;
 	}
 
 	protected void styles() {

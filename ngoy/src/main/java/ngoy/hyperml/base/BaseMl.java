@@ -6,6 +6,7 @@ import static ngoy.core.FlatList.flatten;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.escapeHtmlXml;
 
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -470,6 +471,13 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 		if (cmp instanceof OnDestroy) {
 			((OnDestroy) cmp).onDestroy();
 		}
+	}
+
+	@Override
+	public String toString() {
+		StringWriter sw = new StringWriter();
+		build(sw);
+		return sw.toString();
 	}
 
 	@SuppressWarnings("unchecked")

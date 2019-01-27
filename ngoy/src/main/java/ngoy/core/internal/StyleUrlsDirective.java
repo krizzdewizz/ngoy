@@ -18,10 +18,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import jodd.jerry.Jerry;
+import jodd.lagarto.dom.Node;
 import ngoy.core.Component;
-import ngoy.core.MinifyCss;
 import ngoy.core.Directive;
 import ngoy.core.Inject;
+import ngoy.core.MinifyCss;
 import ngoy.core.NgoyException;
 import ngoy.core.OnCompile;
 import ngoy.core.OnCompileStyles;
@@ -65,18 +66,34 @@ public class StyleUrlsDirective implements OnCompile {
 			styles = minifyCss.minifyCss(styles);
 
 			if (isSet(config.href)) {
-				Jerry lnk = appendChild(findParent(el), createElement("link", el));
+				Jerry lnk = append(findParent(el), createElement("link", el));
 				lnk.attr("rel", "stylesheet");
 				lnk.attr("type", "text/css");
 				lnk.attr("href", config.href);
 			} else {
-				Jerry st = appendChild(findParent(el), createElement("style", el));
+				Jerry st = append(findParent(el), createElement("style", el));
 				st.attr("type", "text/css");
 				st.text(styles);
 			}
 		} catch (Exception e) {
 			throw wrap(e);
 		}
+	}
+
+	private Jerry append(Jerry parent, Jerry el) {
+		Node ell = el.get(0);
+		if ("head".equalsIgnoreCase(ell.getNodeName())) {
+			return appendChild(parent, el);
+		}
+
+		Node parentt = parent.get(0);
+		Node[] childNodes = parentt.getChildNodes();
+		if (childNodes.length == 0) {
+			return appendChild(parent, el);
+		}
+
+		parentt.insertBefore(ell, childNodes[0]);
+		return el;
 	}
 
 	public String getStyles() {
