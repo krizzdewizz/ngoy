@@ -24,7 +24,6 @@ import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.util.DeepCopier;
 
-import ngoy.common.RawPipe;
 import ngoy.core.NgoyException;
 import ngoy.core.PipeTransform;
 import ngoy.core.Variable;
@@ -81,11 +80,7 @@ public class ExprParser {
 				throw new ParseException("Pipe %s must implement %s", resolvedPipe.getName(), PipeTransform.class.getName());
 			}
 
-			if (resolvedPipe == RawPipe.class) {
-				e = format("$%s(%s,%s)", pipe, JavaTemplate.CTX_VAR, e);
-			} else {
-				e = format("$%s(%s%s)", pipe, e, params.isEmpty() ? "" : format(",%s", params));
-			}
+			e = format("$%s(%s%s)", pipe, e, params.isEmpty() ? "" : format(",%s", params));
 		}
 		return e;
 	}
@@ -145,6 +140,9 @@ public class ExprParser {
 			outMethodCalls.add(subject.methodName);
 			if (subject.optionalTarget == null && !excludes.contains(subject.methodName) && !prefix.isEmpty()) {
 				return new MethodInvocation(subject.getLocation(), new AmbiguousName(subject.getLocation(), new String[] { prefix }), subject.methodName, copyRvalues(subject.arguments));
+			} else if (subject.methodName.equals("$raw")) {
+				return new MethodInvocation(subject.getLocation(), null, subject.methodName,
+						new Rvalue[] { copyRvalue(subject.arguments[0]), new AmbiguousName(subject.getLocation(), new String[] { JavaTemplate.CTX_VAR }) });
 			}
 
 			return super.copyMethodInvocation(subject);

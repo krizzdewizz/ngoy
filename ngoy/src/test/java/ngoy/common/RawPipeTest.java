@@ -18,6 +18,20 @@ public class RawPipeTest extends ANgoyTest {
 		assertThat(render(RawCmp.class)).isEqualTo("a<>a");
 	}
 
+	//
+
+	@Component(selector = "a-cmp", template = "a{{ $raw(rawText) }}a")
+	public static class FunCmp {
+		public String rawText = "x";
+	}
+
+	@Test
+	public void testFun() {
+		assertThat(render(FunCmp.class)).isEqualTo("axa");
+	}
+
+	//
+
 	@Component(selector = "a-cmp", template = "a{{ rawText | raw  }}a")
 	public static class NullCmp {
 		public String rawText;
@@ -27,4 +41,5 @@ public class RawPipeTest extends ANgoyTest {
 	public void testNull() {
 		assertThat(render(NullCmp.class)).isEqualTo("aa");
 	}
+
 }

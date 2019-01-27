@@ -14,9 +14,9 @@ public final class RawPipe implements PipeTransform {
 
 	@Override
 	public Object transform(Object obj, Object... params) {
-		// ctx parameter is inserted at front unlike all the other pipes. see ExprParser
-		Ctx ctx = (Ctx) obj;
-		ctx.p(params[0]);
+		// ctx parameter is added in Prefixer
+		Ctx ctx = (Ctx) params[0];
+		ctx.p(obj);
 		return null;
 	}
 }

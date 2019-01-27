@@ -1,6 +1,5 @@
 package ngoy.hyperml.base;
 
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static ngoy.core.FlatList.flatten;
 import static ngoy.core.NgoyException.wrap;
@@ -210,13 +209,6 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 		return hasEnd ? $() : _this();
 	}
 
-	private Object[] merge(Consumer<?> init, Object... params) {
-		List<Object> ps = new ArrayList<>();
-		ps.add(init);
-		ps.addAll(asList(params));
-		return ps.toArray();
-	}
-
 	/**
 	 * Renders a component instance, given an initializer function.
 	 * <p>
@@ -233,7 +225,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	 * @return this
 	 */
 	public <C> T $(Object nameOrClass, Consumer<C> init, Object... params) {
-		return _$(nameOrClass, merge(init, params));
+		return _$(nameOrClass, list(init, params));
 	}
 
 	/**
@@ -251,7 +243,7 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	 * @return this
 	 */
 	public <C> T $(Class<C> nameOrClass, Consumer<C> init, Object... params) {
-		return _$(nameOrClass, merge(init, params));
+		return _$(nameOrClass, list(init, params));
 	}
 
 	/**
