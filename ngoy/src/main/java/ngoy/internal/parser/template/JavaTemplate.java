@@ -11,6 +11,7 @@ import static ngoy.core.Util.isSet;
 import static ngoy.core.Util.primitiveToRefType;
 import static ngoy.core.Util.sourceClassName;
 import static ngoy.core.Util.tryLoadClass;
+import static ngoy.internal.parser.template.Printer.NULL_PRINTER;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,16 +83,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 		return new ExprComment(debugInfo, source);
 	}
-
-	private static final Printer NULL_PRINTER = new Printer() {
-		public void print(String text) {
-		}
-
-		@Override
-		public String toString() {
-			return "";
-		}
-	};
 
 	private static final String STRINGS = "$STRINGS$";
 	private static final String PIPE_METHODS = "$PIPE_METHODS$";
@@ -680,7 +671,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			$("((", OnDestroy.class, ")", cmpVar.name, ").onDestroy();");
 		}
 
-		$("}"); // __render
+		$("}"); // __r
 		cmpRenderers.append(cmpPrinters.pop());
 
 		$("}");
@@ -731,6 +722,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 				String ex = prefixName(expr);
 				if (forStyles) {
 					if (clazz.equals("ngStyle")) {
+						printExprComment(ex);
 						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()){");
 						String valueVar = createLocalVar("styleValue");
 						$("final Object ", valueVar, "=", "entry.getValue();");
@@ -757,6 +749,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 					}
 				} else {
 					if (clazz.equals("ngClass")) {
+						printExprComment(ex);
 						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()){");
 						$("  if((Boolean)entry.getValue()){");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
