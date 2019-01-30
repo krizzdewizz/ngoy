@@ -38,6 +38,7 @@ import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.IteratorWithVariables;
 import ngoy.core.internal.RenderException;
+import ngoy.core.internal.Scope;
 import ngoy.core.internal.TemplateRender;
 import ngoy.internal.parser.ClassDef;
 import ngoy.internal.parser.ExprParser;
@@ -423,8 +424,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			switchVar = createLocalVar("switchVar");
 			printExprComment(expr);
 			$("final Object ", switchVar, "=", prefixName(expr), ";");
-			printExprComment(switchFirstCase);
-			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase), ")){");
+			String exprComment = getExprCommentPrint(switchFirstCase)[0];
+			$("if(((", exprComment, ")!=null)&&(java.util.Objects.equals(", switchVar, ", ", prefixName(switchFirstCase), "))){");
 			switchHadElseIf.push(true);
 		} else {
 			switchVar = "";
@@ -450,8 +451,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 				switchHadElseIf.push(true);
 			}
 
-			printExprComment(expr);
-			$("if(java.util.Objects.equals(", switchVar, ", ", prefixName(expr), ")){");
+			String exprComment = getExprCommentPrint(expr)[0];
+			$("if(((", exprComment, ")!=null)&&(java.util.Objects.equals(", switchVar, ", ", prefixName(expr), "))){");
 		}
 	}
 
@@ -568,7 +569,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private void ifExprIsTrue(String expr) {
 		flushOut();
 		String exprComment = getExprCommentPrint(expr)[0];
-		$("if((", exprComment, ")!=null&&(", prefixName(expr), ")){");
+		$("if(((", exprComment, ")!=null)&&(", prefixName(expr), ")){");
 	}
 
 	@Override
@@ -608,7 +609,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		String classId = classToId(cmpRef);
 
-		if (cmpRef.template != null && cmpRef.template.contains("scope")) {
+		if (cmpRef.clazz.getAnnotation(Scope.class) != null) {
 			cmpParents.push(new CmpVar(cmpLocalVar, cmpRef.clazz));
 		} else {
 			cmpParents.push(null);

@@ -9,10 +9,12 @@ import ngoy.core.Inject;
 import ngoy.core.OnCompile;
 import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
+import ngoy.core.internal.Scope;
 import ngoy.router.Route;
 import ngoy.router.Router;
 
-@Component(selector = "router-outlet", template = "<ng-content scope></ng-content>")
+@Component(selector = "router-outlet", template = "<ng-content></ng-content>")
+@Scope
 public class OutletComponent implements OnCompile, OnInit, OnDestroy {
 	@Inject
 	public Router router;

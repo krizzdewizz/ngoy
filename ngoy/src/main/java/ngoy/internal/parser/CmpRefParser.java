@@ -20,6 +20,7 @@ import java.util.Set;
 import jodd.jerry.Jerry;
 import ngoy.core.dom.NodeVisitor;
 import ngoy.core.internal.CmpRef;
+import ngoy.core.internal.Scope;
 import ngoy.internal.parser.Inputs.CmpInput;
 
 public class CmpRefParser {
@@ -147,8 +148,7 @@ public class CmpRefParser {
 			return;
 		}
 
-		boolean invokeHandler = !ngContentEl.get(0)
-				.hasAttribute("scope");
+		boolean invokeHandler = ref.clazz.getAnnotation(Scope.class) == null;
 		String select = ngContentEl.attr("select");
 		String selector = select == null ? ngContentEl.attr("selector") : select;
 		Jerry elContents = selector == null ? el.contents() : el.$(selector);
