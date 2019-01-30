@@ -10,6 +10,7 @@ import static ngoy.internal.parser.Parser.NG_TEMPLATE;
 import jodd.jerry.Jerry;
 import ngoy.core.dom.NodeVisitor;
 import ngoy.core.dom.XDom;
+import ngoy.core.internal.ContainerComponent;
 
 public class SwitchToElseIfVisitor implements NodeVisitor {
 
@@ -61,8 +62,20 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 				def.removeAttr("ngSwitchDefault");
 			}
 
-			tpl.get(0)
-					.insertChild(elClone.get(0), 0);
+			if (elClone.get(0)
+					.getNodeName()
+					.equals(ContainerComponent.SELECTOR)) {
+
+				elClone.contents()
+						.each((c, index) -> {
+							tpl.get(0)
+									.insertChild(c.get(0), index);
+							return null;
+						});
+			} else {
+				tpl.get(0)
+						.insertChild(elClone.get(0), 0);
+			}
 		}
 
 		target.start(el);

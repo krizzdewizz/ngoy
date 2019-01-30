@@ -4,7 +4,7 @@ import static ngoy.core.Util.sourceClassName;
 
 public class CodeBuilder {
 	private int depth;
-	protected final Printer printer;
+	private final Printer printer;
 
 	public CodeBuilder() {
 		this.printer = new Printer();
@@ -27,7 +27,7 @@ public class CodeBuilder {
 	}
 
 	protected void doPrint(Object object) {
-		printer.print(String.valueOf(object));
+		getPrinter().print(String.valueOf(object));
 	}
 
 	public CodeBuilder $(Object... strings) {
@@ -59,10 +59,14 @@ public class CodeBuilder {
 
 	@Override
 	public String toString() {
-		return printer.toString();
+		return getPrinter().toString();
 	}
 
 	protected int getDepth() {
 		return depth;
+	}
+
+	protected Printer getPrinter() {
+		return printer;
 	}
 }

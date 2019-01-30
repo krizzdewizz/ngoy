@@ -82,9 +82,20 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		return new ExprComment(debugInfo, source);
 	}
 
+	private static final Printer NULL_PRINTER = new Printer() {
+		public void print(String text) {
+		}
+
+		@Override
+		public String toString() {
+			return "";
+		}
+	};
+
 	private static final String STRINGS = "$STRINGS$";
 	private static final String PIPE_METHODS = "$PIPE_METHODS$";
 	private static final String SET_PIPES = "$SET_PIPES$";
+	private static final String CMP_RENDERERS = "$CMP_RENDERERS$";
 
 	private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\r|\\n");
 
@@ -107,27 +118,30 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	private final LinkedList<String> switchVars = new LinkedList<>();
 	private final LinkedList<Boolean> switchHadElseIf = new LinkedList<>();
 	private final LinkedList<CmpVar> cmpVars = new LinkedList<>();
+	private final LinkedList<CmpVar> cmpParents = new LinkedList<>();
+	private final LinkedList<Printer> cmpPrinters = new LinkedList<>();
 	private final LinkedList<Map<String, Class<?>>> localVarDefs = new LinkedList<>();
 	private final LinkedList<Set<String>> prefixExcludes = new LinkedList<>();
+	// class -> name
+	private final LinkedList<Map<String, String>> localIterationVars = new LinkedList<>();
 	private final Map<String, Integer> localVars = new HashMap<>();
 	private final Map<String, Integer> stringRefs = new LinkedHashMap<>();
 	private final Map<String, Variable<?>> variables;
 	private final Set<String> methodCalls = new HashSet<>();
-	private String cmpVar;
 	private String code;
-
+	private String cmpLocalVar;
 	private String stringsVar;
-	private String stringsLocalVar;
 	private String lastExprVar;
-
 	private String sourcePosition;
 	private Map<String, Class<?>> pipesMap;
+	private final StringBuilder cmpRenderers = new StringBuilder();
+	private CmpVar appRootCmpVar;
+	private final Set<String> cmpsRendered = new HashSet<>();
 
 	public JavaTemplate(String contentType, Map<String, Variable<?>> variables) {
 		this.variables = variables;
-		out = new TextOutput(printer, this::getDepth, this::createStringRef, contentType);
+		out = new TextOutput(this::getPrinter, this::getDepth, this::createStringRef, contentType);
 		stringsVar = createLocalVar("strings", false);
-		stringsLocalVar = createLocalVar("stringsLocal", false);
 		lastExprVar = createLocalVar("lastExpr", false);
 	}
 
@@ -138,7 +152,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			stringRefs.put(text, ref);
 		}
 
-		return format("%s[%s]", stringsLocalVar, ref);
+		return format("%s[%s]", stringsVar, ref);
 	}
 
 	@Override
@@ -152,24 +166,24 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		addApiHelpers();
 
+		$("private static final String[] ", stringsVar, "=new String[]{", STRINGS, "};");
+
 		$("private static class Renderer implements ", TemplateRender.class, "{");
 
 		$(PIPE_METHODS);
+		$(CMP_RENDERERS);
 
 		$("private Renderer(", Injector.class, " injector){");
 		$(SET_PIPES);
 		$("}");
 
-		$("private static final String[] ", stringsVar, "=new String[]{", STRINGS, "};");
-
 		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws ", RenderException.class, "{");
-		$("String ", lastExprVar, "=\"\";");
+		$("String[] ", lastExprVar, "=new String[]{\"\"};");
 		$("try{");
-		$("final String[] ", stringsLocalVar, "=", stringsVar, ";");
 		addVariables();
 
 		textOverrideVar = createLocalVar("textOverride");
-		$("String ", textOverrideVar, ";");
+		$("String[] ", textOverrideVar, "=new String[1];");
 	}
 
 	private void addApiHelpers() {
@@ -198,7 +212,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	public void documentEnd() {
 		flushOut();
 		$("} catch (Exception __e){"); // try
-		$(" throw new ", RenderException.class, "(__e, ", lastExprVar, ");");
+		$(" throw new ", RenderException.class, "(__e, ", lastExprVar, "[0]);");
 		$("}"); // catch
 		$("}"); // render method
 
@@ -208,6 +222,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		replaceStrings();
 		replacePipes();
+		replaceCmpRenderers();
 	}
 
 	@Override
@@ -220,6 +235,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 				.stream()
 				.map(s -> format("\"%s\"", s))
 				.collect(joining(",\n")));
+	}
+
+	private void replaceCmpRenderers() {
+		code = code.replace(CMP_RENDERERS, cmpRenderers);
 	}
 
 	private void replacePipes() {
@@ -316,7 +335,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		printExprComment(expr);
 		String retVar = createLocalVar("textOverrideRet");
 		$("final Object ", retVar, "=", prefixName(expr), ";");
-		$(textOverrideVar, "=", retVar, "==null?null:", retVar, ".toString();");
+		$(textOverrideVar, "[0]=", retVar, "==null?null:", retVar, ".toString();");
 		hadTextOverride = true;
 	}
 
@@ -327,8 +346,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		if (hadTextOverride) {
 			flushOut();
 
-			out.printEscaped(textOverrideVar);
-			$(textOverrideVar, "=null;");
+			out.printEscaped(textOverrideVar.concat("[0]"));
+			$(textOverrideVar, "[0]=null;");
 
 			hadTextOverride = false;
 		}
@@ -455,6 +474,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		flushOut();
 		$("}");
 
+		localIterationVars.pop();
 		prefixExcludes.pop();
 		localVarDefs.pop();
 	}
@@ -491,13 +511,19 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$("for (final ", IteratorWithVariables.class, " ", iterVar, "=new ", IteratorWithVariables.class, "(", listName, "); ", iterVar, ".hasNext();){");
 		$(itemTypeClazz, " ", itemName, "=(", itemTypeClazz, ")", iterVar, ".next();");
 
+		Map<String, String> liv = new HashMap<>();
+		liv.put(itemTypeClazz, itemName);
+
 		Set<Entry<ForOfVariable, String>> entries = variables.entrySet();
 		for (Map.Entry<ForOfVariable, String> e : entries) {
 			String varType = e.getKey() == ForOfVariable.index ? "int" : "boolean";
-			$(varType, " ", e.getValue(), "=", iterVar, ".", e.getKey(), ";");
-			ex.add(e.getValue());
+			String varName = e.getValue();
+			$(varType, " ", varName, "=", iterVar, ".", e.getKey(), ";");
+			liv.put(varType, varName);
+			ex.add(varName);
 		}
 
+		localIterationVars.push(liv);
 		prefixExcludes.push(ex);
 
 		Map<String, Class<?>> iterVarDef = new HashMap<>();
@@ -517,7 +543,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String debugInfo = format("%s:::%s", sourcePosition, NEWLINE_PATTERN.matcher(expr)
 				.replaceAll(""));
 
-		return new String[] { format("%s=\"%s\"", lastExprVar, escapeJava(debugInfo)), debugInfo };
+		return new String[] { format("%s[0]=\"%s\"", lastExprVar, escapeJava(debugInfo)), debugInfo };
 	}
 
 	private void printExprComment(String expr) {
@@ -549,39 +575,103 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	public void componentStartInput(CmpRef cmpRef, boolean appRoot, List<CmpInput> params) {
 		Class<?> cmpClass = cmpRef.clazz;
 
-		cmpVar = createLocalVar(cmpRef.clazz.getSimpleName());
+		cmpLocalVar = createLocalVar(cmpRef.clazz.getSimpleName());
 		if (appRoot) {
-			$("final ", cmpClass, " ", cmpVar, "=(", cmpClass, ")", CTX_VAR, ".getCmpInstance();");
+			$("final ", cmpClass, " ", cmpLocalVar, "=(", cmpClass, ")", CTX_VAR, ".getCmpInstance();");
 		} else {
-			$("final ", cmpClass, " ", cmpVar, "=(", cmpClass, ")", CTX_VAR, ".cmpNew(", cmpClass, ".class);");
+			$("final ", cmpClass, " ", cmpLocalVar, "=(", cmpClass, ")", CTX_VAR, ".cmpNew(", cmpClass, ".class);");
 		}
 		$("{");
 
 		// testForOfNested2
-		cmpVars.push(new CmpVar(cmpVar, cmpRef.clazz));
+		cmpVars.push(new CmpVar(cmpLocalVar, cmpRef.clazz));
 		setInputs(params);
 		cmpVars.pop();
+
+		if (appRoot) {
+			appRootCmpVar = new CmpVar(cmpLocalVar, cmpRef.clazz);
+		}
 	}
 
 	@Override
 	public void componentStart(CmpRef cmpRef) {
-		cmpVars.push(new CmpVar(cmpVar, cmpRef.clazz));
+		CmpVar parent = cmpParents.peek();
+		Object parentClass = parent == null ? "Void" : parent.cmpClass;
+		String parentName = parent == null ? "noparent" : parent.name;
+		String parentVar = parent == null ? "null" : parent.name;
+
+		cmpVars.push(new CmpVar(cmpLocalVar, cmpRef.clazz));
+
 		if (OnInit.class.isAssignableFrom(cmpRef.clazz)) {
-			$("((", OnInit.class, ")", cmpVar, ").onInit();");
+			$("((", OnInit.class, ")", cmpLocalVar, ").onInit();");
+		}
+
+		String classId = classToId(cmpRef);
+
+		if (cmpRef.template != null && cmpRef.template.contains("scope")) {
+			cmpParents.push(new CmpVar(cmpLocalVar, cmpRef.clazz));
+		} else {
+			cmpParents.push(null);
+		}
+
+		StringBuilder liv = new StringBuilder();
+		StringBuilder livDecl = new StringBuilder();
+		Map<String, String> livs = localIterationVars.peek();
+		if (livs != null) {
+			for (Map.Entry<String, String> it : livs.entrySet()) {
+				livDecl.append("final ")
+						.append(it.getKey())
+						.append(' ')
+						.append(it.getValue())
+						.append(',');
+
+				liv.append(it.getValue())
+						.append(',');
+			}
+		}
+
+		for (Entry<String, Variable<?>> it : variables.entrySet()) {
+			Variable<?> v = it.getValue();
+			livDecl.append("final ")
+					.append(v.type.getName())
+					.append(' ')
+					.append(it.getKey())
+					.append(',');
+
+			liv.append(it.getKey())
+					.append(',');
+		}
+
+		$("__r", classId, "(", liv, parentVar, ",", appRootCmpVar.name, ",", cmpLocalVar, ",", CTX_VAR, ",", lastExprVar, ",", textOverrideVar, ");");
+
+		if (cmpsRendered.contains(classId)) {
+			cmpPrinters.push(NULL_PRINTER);
+		} else {
+			cmpPrinters.push(new Printer());
+			String appRootCmpName = appRootCmpVar.name.equals(cmpLocalVar) ? "unusedAppRoot" : appRootCmpVar.name;
+
+			$("private static void __r", classId, "(", livDecl, " final ", parentClass, " ", parentName, ",final ", appRootCmpVar.cmpClass, " ", appRootCmpName, ",final ", cmpRef.clazz, " ", cmpLocalVar, ",final ", Ctx.class, " ", CTX_VAR, ", final String[] ", lastExprVar, ",String[] ",
+					textOverrideVar, ") throws Exception {");
+			cmpsRendered.add(classId);
 		}
 	}
 
 	@Override
 	public void componentContentStart(CmpRef cmpRef) {
 		flushOut();
+
 		if (OnRender.class.isAssignableFrom(cmpRef.clazz)) {
-			$("((", OnRender.class, ")", cmpVar, ").onRender(", CTX_VAR, ");");
+			$("((", OnRender.class, ")", cmpLocalVar, ").onRender(", CTX_VAR, ");");
 		}
 	}
 
 	@Override
 	public void componentEnd() {
 		flushOut();
+
+		$("}"); // __render
+		Printer cmpOut = cmpPrinters.pop();
+		cmpRenderers.append(cmpOut);
 
 		CmpVar cmpVar = cmpVars.pop();
 
@@ -594,18 +684,28 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 
 		$("}");
+
+		cmpParents.pop();
 	}
 
 	@Override
 	public void ngContentStart() {
 		flushOut();
-		cmpVars.push(cmpVars.get(1));
+		CmpVar parent = cmpVars.get(1);
+		cmpVars.push(parent);
+		cmpParents.push(parent);
 	}
 
 	@Override
 	public void ngContentEnd() {
 		flushOut();
 		cmpVars.pop();
+		cmpParents.pop();
+	}
+
+	private String classToId(CmpRef cmpRef) {
+		return cmpRef.clazz.getName()
+				.replace(".", "");
 	}
 
 	private String[] parseUnit(String s) {
@@ -709,5 +809,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void setSourcePosition(String sourcePosition) {
 		this.sourcePosition = sourcePosition;
+	}
+
+	@Override
+	protected Printer getPrinter() {
+		return cmpPrinters.isEmpty() ? super.getPrinter() : cmpPrinters.peek();
 	}
 }
