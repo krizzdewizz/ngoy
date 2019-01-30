@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Provider.of;
 import static ngoy.core.Provider.useClass;
@@ -417,7 +418,7 @@ public class Ngoy<T> {
 	private DefaultInjector injector;
 	private final Events events = new Events();
 	private final String template;
-	private final Map<String, Provider> pipeDecls = new HashMap<>();
+	private final Map<String, ProviderWithModule> pipeDecls = new HashMap<>();
 	private final Context<?> context;
 	private String contentType;
 	private boolean contentTypeComputed;
@@ -472,7 +473,7 @@ public class Ngoy<T> {
 
 		for (ModuleWithProviders<?> mod : modules) {
 			addModuleDecls(mod.getModule(), cmpDecls, pipeDecls, cmpProviders);
-			addDecls(toProviders(mod.getDeclarations()), cmpDecls, pipeDecls);
+			addDecls(mod.getModule(), toProviders(mod.getDeclarations()), cmpDecls, pipeDecls);
 			for (Provider p : mod.getProviders()) {
 				all.add(p);
 			}
@@ -480,7 +481,11 @@ public class Ngoy<T> {
 
 		// collection done
 
-		resolver = createResolver(cmpDecls, pipeDecls);
+		Map<String, Provider> pipeProviders = pipeDecls.entrySet()
+				.stream()
+				.collect(toMap(Map.Entry::getKey, e -> e.getValue().provider));
+
+		resolver = createResolver(cmpDecls, pipeProviders);
 		Set<Class<?>> cmpDeclsSet = new HashSet<>();
 
 		all.add(useValue(Resolver.class, resolver));
@@ -494,7 +499,7 @@ public class Ngoy<T> {
 					all.add(decl);
 					cmpDeclsSet.add(decl.getProvide());
 				});
-		all.addAll(pipeDecls.values());
+		all.addAll(pipeProviders.values());
 		all.addAll(rootProviders);
 		all.add(useValue(TemplateCompiler.class, clazz -> compileTemplate(null, clazz, new AppClassResolver(clazz, resolver))));
 
@@ -704,11 +709,11 @@ public class Ngoy<T> {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void addModuleDecls(Class<?> mod, Map<String, List<Provider>> targetCmps, Map<String, Provider> targetPipes, List<Provider> providers) {
+	private void addModuleDecls(Class<?> mod, Map<String, List<Provider>> targetCmps, Map<String, ProviderWithModule> targetPipes, List<Provider> providers) {
 
 		NgModule ngMod = mod.getAnnotation(NgModule.class);
 		if (ngMod != null) {
-			addDecls(toProviders(asList(ngMod.declarations())), targetCmps, targetPipes);
+			addDecls(mod, toProviders(asList(ngMod.declarations())), targetCmps, targetPipes);
 
 			for (Class<?> imp : ngMod.imports()) {
 				addModuleDecls(imp, targetCmps, targetPipes, providers);
@@ -740,12 +745,27 @@ public class Ngoy<T> {
 		}
 	}
 
-	private void addDecls(List<Provider> providers, Map<String, List<Provider>> targetCmps, Map<String, Provider> targetPipes) {
+	private static class ProviderWithModule {
+		final Provider provider;
+		final String moduleName;
+
+		ProviderWithModule(Provider provider, String moduleName) {
+			this.provider = provider;
+			this.moduleName = moduleName;
+		}
+	}
+
+	private void addDecls(Class<?> mod, List<Provider> providers, Map<String, List<Provider>> targetCmps, Map<String, ProviderWithModule> targetPipes) {
 		for (Provider p : providers) {
 			Pipe pipe = p.getProvide()
 					.getAnnotation(Pipe.class);
 			if (pipe != null) {
-				targetPipes.put(pipe.value(), p);
+				String pipeValue = pipe.value();
+				ProviderWithModule providerWithModule = targetPipes.get(pipeValue);
+				if (providerWithModule != null) {
+					throw new NgoyException("Pipe '%s' is already registered in module %s", pipeValue, providerWithModule.moduleName);
+				}
+				targetPipes.put(pipeValue, new ProviderWithModule(p, mod.getName()));
 			}
 
 			Component cmp = p.getProvide()
