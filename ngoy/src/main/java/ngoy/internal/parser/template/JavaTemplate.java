@@ -226,7 +226,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		code = code.replace(STRINGS, stringRefs.keySet()
 				.stream()
 				.map(s -> format("\"%s\"", s))
-				.collect(joining(",\n")));
+				.collect(joining(",")));
 	}
 
 	private void replaceCmpRenderers() {
@@ -324,8 +324,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	@Override
 	public void textOverride(String expr) {
-		printExprComment(expr);
 		String retVar = createLocalVar("textOverrideRet");
+		printExprComment(expr);
 		$("final Object ", retVar, "=", prefixName(expr), ";");
 		$(textOverrideVar, "[0]=", retVar, "==null?null:", retVar, ".toString();");
 		hadTextOverride = true;
@@ -638,8 +638,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			cmpPrinters.push(new Printer());
 			String appRootCmpName = appRootCmpVar.name.equals(cmpLocalVar) ? "unusedAppRoot" : appRootCmpVar.name;
 
-			$("private static void __r", classId, "(", livDecl, " final ", parentClass, " ", parentName, ",final ", appRootCmpVar.cmpClass, " ", appRootCmpName, ",final ", cmpRef.clazz, " ", cmpLocalVar, ",final ", Ctx.class, " ", CTX_VAR, ", final String[] ", lastExprVar, ",String[] ",
-					textOverrideVar, ")throws Exception{");
+			$("private static void __r", classId, "(", livDecl, " final ", parentClass, " ", parentName, ",final ", appRootCmpVar.cmpClass, " ", appRootCmpName, ",final ", cmpRef.clazz, " ",
+					cmpLocalVar, ",final ", Ctx.class, " ", CTX_VAR, ", final String[] ", lastExprVar, ",String[] ", textOverrideVar, ")throws Exception{");
 
 			if (OnInit.class.isAssignableFrom(cmpRef.clazz)) {
 				$("((", OnInit.class, ")", cmpLocalVar, ").onInit();");
@@ -804,6 +804,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 	@Override
 	protected Printer getPrinter() {
-		return cmpPrinters.isEmpty() ? super.getPrinter() : cmpPrinters.peek();
+		Printer cmpPrinter = cmpPrinters.peek();
+		return cmpPrinter != null ? cmpPrinter : super.getPrinter();
 	}
 }

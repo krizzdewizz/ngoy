@@ -791,7 +791,7 @@ public class Ngoy<T> {
 	private TemplateRender compileTemplate(String template, Class<?> clazz, Resolver resolver) {
 		try {
 			Parser parser = createParser(resolver, config);
-			Class<?> templateClass = compileTemplate(parser, template != null ? template : getTemplate(clazz));
+			Class<?> templateClass = compileTemplate(parser, template != null ? template : getTemplate(clazz), clazz);
 			return (TemplateRender) templateClass.getMethod("createRenderer", Injector.class)
 					.invoke(null, resolver.getInjector());
 		} catch (Exception e) {
@@ -808,12 +808,12 @@ public class Ngoy<T> {
 		}
 	}
 
-	private Class<?> compileTemplate(Parser parser, String template) {
+	private Class<?> compileTemplate(Parser parser, String template, Class<?> clazz) {
 		JavaTemplate tpl = new JavaTemplate(getContentType(config), context != null ? context.getVariables() : emptyMap());
 		parser.parse(template, tpl);
 		String code = tpl.toString();
 
-		Debug.writeTemplate(code);
+		Debug.writeTemplate(clazz.getSimpleName(), code);
 
 		ClassBodyEvaluator bodyEvaluator = new ClassBodyEvaluator();
 		bodyEvaluator.setClassName("ngoy.core.internal.NgoyTemplate");

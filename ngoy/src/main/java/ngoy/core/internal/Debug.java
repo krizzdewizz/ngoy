@@ -1,15 +1,14 @@
 package ngoy.core.internal;
 
 import static java.lang.String.format;
-import static ngoy.core.NgoyException.wrap;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import ngoy.core.NgoyException;
 import ngoy.internal.parser.template.CodeBuilder;
 
 public final class Debug {
@@ -20,14 +19,10 @@ public final class Debug {
 		return Boolean.getBoolean("ngoy.debug");
 	}
 
-	private static int templateIndex = 0;
-
-	public static void writeTemplate(String code) {
+	public static void writeTemplate(String className, String code) {
 
 		boolean localDebug = false;
-		boolean incrTemplateIndex = false;
 //		localDebug = true;
-//		incrTemplateIndex = true;
 
 		if (!debug() && !localDebug) {
 			return;
@@ -35,11 +30,7 @@ public final class Debug {
 
 		try {
 			String pack = "ngoy.core.internal";
-			String clazz = "XTemplate";
-
-			if (incrTemplateIndex) {
-				clazz += (templateIndex++);
-			}
+			String clazz = format("XTemplate%s", className);
 
 			String clazzz = clazz;
 
@@ -72,8 +63,8 @@ public final class Debug {
 
 			Files.write(tempFile, cu.getBytes(StandardCharsets.UTF_8));
 			System.out.println(format("ngoy.debug: template has been written to %s", tempFile));
-		} catch (IOException e) {
-			throw wrap(e);
+		} catch (Exception e) {
+			new NgoyException(e, "Error while writing ngoy debug file: ", e).printStackTrace();
 		}
 	}
 }
