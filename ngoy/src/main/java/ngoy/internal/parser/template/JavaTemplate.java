@@ -178,7 +178,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		$(SET_PIPES);
 		$("}");
 
-		$("public void render(", Ctx.class, " ", CTX_VAR, ") throws ", RenderException.class, "{");
+		$("public void render(", Ctx.class, " ", CTX_VAR, ")throws ", RenderException.class, "{");
 		$("String[] ", lastExprVar, "=new String[]{\"\"};");
 		$("try{");
 		addVariables();
@@ -603,10 +603,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		cmpVars.push(new CmpVar(cmpLocalVar, cmpRef.clazz));
 
-		if (OnInit.class.isAssignableFrom(cmpRef.clazz)) {
-			$("((", OnInit.class, ")", cmpLocalVar, ").onInit();");
-		}
-
 		String classId = classToId(cmpRef);
 
 		if (cmpRef.clazz.getAnnotation(Scope.class) != null) {
@@ -652,7 +648,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			String appRootCmpName = appRootCmpVar.name.equals(cmpLocalVar) ? "unusedAppRoot" : appRootCmpVar.name;
 
 			$("private static void __r", classId, "(", livDecl, " final ", parentClass, " ", parentName, ",final ", appRootCmpVar.cmpClass, " ", appRootCmpName, ",final ", cmpRef.clazz, " ", cmpLocalVar, ",final ", Ctx.class, " ", CTX_VAR, ", final String[] ", lastExprVar, ",String[] ",
-					textOverrideVar, ") throws Exception {");
+					textOverrideVar, ")throws Exception{");
+
+			if (OnInit.class.isAssignableFrom(cmpRef.clazz)) {
+				$("((", OnInit.class, ")", cmpLocalVar, ").onInit();");
+			}
 			cmpsRendered.add(classId);
 		}
 	}
@@ -670,10 +670,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	public void componentEnd() {
 		flushOut();
 
-		$("}"); // __render
-		Printer cmpOut = cmpPrinters.pop();
-		cmpRenderers.append(cmpOut);
-
 		CmpVar cmpVar = cmpVars.pop();
 
 		if (OnRender.class.isAssignableFrom(cmpVar.cmpClass)) {
@@ -683,6 +679,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		if (OnDestroy.class.isAssignableFrom(cmpVar.cmpClass)) {
 			$("((", OnDestroy.class, ")", cmpVar.name, ").onDestroy();");
 		}
+
+		$("}"); // __render
+		cmpRenderers.append(cmpPrinters.pop());
 
 		$("}");
 
@@ -694,14 +693,12 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		flushOut();
 		CmpVar parent = cmpVars.get(1);
 		cmpVars.push(parent);
-		cmpParents.push(parent);
 	}
 
 	@Override
 	public void ngContentEnd() {
 		flushOut();
 		cmpVars.pop();
-		cmpParents.pop();
 	}
 
 	private String classToId(CmpRef cmpRef) {
