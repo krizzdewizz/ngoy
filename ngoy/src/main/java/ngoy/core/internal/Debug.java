@@ -26,7 +26,7 @@ public final class Debug {
 
 		boolean localDebug = false;
 		boolean incrTemplateIndex = false;
-//		localDebug = true;
+		localDebug = true;
 //		incrTemplateIndex = true;
 
 		if (!debug() && !localDebug) {

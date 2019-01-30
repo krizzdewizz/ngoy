@@ -130,7 +130,15 @@ public class CmpRefParser {
 		}
 	}
 
+	Set<Class<?>> refClasses = new HashSet<>();
+
 	private void acceptCmpRef(Jerry el, CmpRef ref) {
+		if (refClasses.contains(ref.clazz)) {
+			return;
+		}
+
+		refClasses.add(ref.clazz);
+
 		Jerry cmpTpl = parser.parse(ref.template);
 
 		Jerry ngContentEl = cmpTpl.$("ng-content");

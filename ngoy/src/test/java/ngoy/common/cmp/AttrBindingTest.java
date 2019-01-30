@@ -78,8 +78,8 @@ public class AttrBindingTest extends ANgoyTest {
 
 	@Test
 	public void testAttrNonString() {
-		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Assignment conversion not possible"));
+//		expectedEx.expect(NgoyException.class);
+//		expectedEx.expectMessage(containsString("Assignment conversion not possible"));
 		render(AttrNonString.class);
 	}
 

@@ -3,6 +3,7 @@ package ngoy.internal.parser.template;
 import static java.lang.String.format;
 
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 import ngoy.internal.parser.BufferedOutput;
 
@@ -12,12 +13,12 @@ public class TextOutput extends BufferedOutput {
 		String createRef(String text);
 	}
 
-	private final Printer printer;
+	private final Supplier<Printer> printer;
 	private final IntSupplier depth;
 	private final StringRef stringRef;
 	private final String printCall;
 
-	public TextOutput(Printer printer, IntSupplier depth, StringRef stringRef, String contentType) {
+	public TextOutput(Supplier<Printer> printer, IntSupplier depth, StringRef stringRef, String contentType) {
 		super(contentType);
 		this.printer = printer;
 		this.depth = depth;
@@ -31,13 +32,15 @@ public class TextOutput extends BufferedOutput {
 			printEscaped(text);
 		} else {
 			String ref = stringRef.createRef(text);
-			printer.print(format("%s%s.p(%s);\n", getDepth(), JavaTemplate.CTX_VAR, ref));
+			printer.get()
+					.print(format("%s%s.p(%s);\n", getDepth(), JavaTemplate.CTX_VAR, ref));
 		}
 	}
 
 	public void printEscaped(String expr) {
 		flush();
-		printer.print(format("%s%s.%s(%s);\n", getDepth(), JavaTemplate.CTX_VAR, printCall, expr));
+		printer.get()
+				.print(format("%s%s.%s(%s);\n", getDepth(), JavaTemplate.CTX_VAR, printCall, expr));
 	}
 
 	private String getDepth() {

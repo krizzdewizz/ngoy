@@ -1,8 +1,8 @@
 package ngoy.common;
 
+import ngoy.core.Output;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
-import ngoy.core.internal.Ctx;
 
 /**
  * Outputs the input object as raw, unescaped text.
@@ -14,9 +14,12 @@ public final class RawPipe implements PipeTransform {
 
 	@Override
 	public Object transform(Object obj, Object... params) {
+		if (obj == null) {
+			return null;
+		}
 		// ctx parameter is added in Prefixer
-		Ctx ctx = (Ctx) params[0];
-		ctx.p(obj);
+		Output out = (Output) params[0];
+		out.write(obj.toString());
 		return null;
 	}
 }
