@@ -19,7 +19,7 @@ public class StylesTest extends ANgoyTest {
 			+ "[style.empty]='empty' " //
 			+ "[style.color]='col' " //
 			+ "[style.width.px]='w' " //
-			+ "[ngStyle]='Map(\"a\", w)'>" //
+			+ "[ngStyle]='$map(\"a\", w)'>" //
 			+ "</a>")
 	public static class Cmp {
 		public String col = "red";

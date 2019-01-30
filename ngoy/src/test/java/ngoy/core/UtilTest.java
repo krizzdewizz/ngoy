@@ -6,7 +6,9 @@ import static ngoy.core.Util.sourceClassName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,6 +16,7 @@ import org.junit.rules.ExpectedException;
 
 import ngoy.core.UtilTest.Inner.Sub$Inner;
 import ngoy.core.UtilTest.Inner.SubInner;
+import ngoy.model.Person;
 
 public class UtilTest {
 	@Rule
@@ -75,5 +78,38 @@ public class UtilTest {
 		assertThat(sourceClassName(Inner.class)).isEqualTo("ngoy.core.UtilTest.Inner");
 		assertThat(sourceClassName(SubInner.class)).isEqualTo("ngoy.core.UtilTest.Inner.SubInner");
 		assertThat(sourceClassName(Sub$Inner.class)).isEqualTo("ngoy.core.UtilTest.Inner.Sub$Inner");
+	}
+
+	private interface TestItf {
+		Object getObj();
+
+		Object[] getObjArray();
+
+		Object[][] getObjArrayArray();
+
+		List<String> getList();
+
+		List<String[]> getListArray();
+
+		Map<String[], Person> getMap();
+	}
+
+	private Class<?> getReturnType(String meth) throws Exception {
+		return TestItf.class.getMethod(meth)
+				.getReturnType();
+	}
+
+	@Test
+	public void testArrays() throws Exception {
+		assertThat(sourceClassName(getReturnType("getObj"))).isEqualTo("java.lang.Object");
+		assertThat(sourceClassName(getReturnType("getObjArray"))).isEqualTo("java.lang.Object[]");
+		assertThat(sourceClassName(getReturnType("getObjArrayArray"))).isEqualTo("java.lang.Object[][]");
+	}
+
+	@Test
+	public void testGenerics() throws Exception {
+		assertThat(sourceClassName(TestItf.class.getMethod("getList"))).isEqualTo("java.util.List<java.lang.String>");
+		assertThat(sourceClassName(TestItf.class.getMethod("getListArray"))).isEqualTo("java.util.List<java.lang.String[]>");
+		assertThat(sourceClassName(TestItf.class.getMethod("getMap"))).isEqualTo("java.util.Map<java.lang.String[], ngoy.model.Person>");
 	}
 }

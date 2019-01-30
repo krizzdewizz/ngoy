@@ -51,7 +51,8 @@ public class FieldAccessToGetterParserTest {
 
 	@Test
 	public void getX() {
-		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "getBetween().persons.get(0).name", emptyMap(), null, null)).isEqualTo("((ngoy.model.Person) (getBetween().getPersons()).get(0)).getName()");
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "getBetween().persons.get(0).name", emptyMap(), null, null))
+				.isEqualTo("((ngoy.model.Person) (getBetween().getPersons()).get(0)).getName()");
 	}
 
 	@Test
@@ -75,7 +76,8 @@ public class FieldAccessToGetterParserTest {
 	@Test
 	public void between2() {
 		ClassDef[] outLastClassDef = new ClassDef[1];
-		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "getBetween().persons.get(0).getName()", emptyMap(), null, outLastClassDef)).isEqualTo("((ngoy.model.Person) (getBetween().getPersons()).get(0)).getName()");
+		assertThat(fieldAccessToGetter(MyCmp.class, emptyMap(), "getBetween().persons.get(0).getName()", emptyMap(), null, outLastClassDef))
+				.isEqualTo("((ngoy.model.Person) (getBetween().getPersons()).get(0)).getName()");
 		assertThat(outLastClassDef[0].clazz).isEqualTo(String.class);
 	}
 
@@ -94,7 +96,7 @@ public class FieldAccessToGetterParserTest {
 	@Test
 	public void builtInList() {
 		ClassDef[] outLastClassDef = new ClassDef[1];
-		fieldAccessToGetter(MyCmp.class, emptyMap(), "List(1, 2, 3)", emptyMap(), null, outLastClassDef);
+		fieldAccessToGetter(MyCmp.class, emptyMap(), "$list(1, 2, 3)", emptyMap(), null, outLastClassDef);
 		assertThat(outLastClassDef[0].clazz).isEqualTo(List.class);
 		assertThat(outLastClassDef[0].getTypeArgument()).isEqualTo(Integer.class);
 	}
@@ -102,7 +104,7 @@ public class FieldAccessToGetterParserTest {
 	@Test
 	public void builtInMap() {
 		ClassDef[] outLastClassDef = new ClassDef[1];
-		fieldAccessToGetter(MyCmp.class, emptyMap(), "Map('a', 1, 'b', 2, 'c', 3)", emptyMap(), null, outLastClassDef);
+		fieldAccessToGetter(MyCmp.class, emptyMap(), "$map('a', 1, 'b', 2, 'c', 3)", emptyMap(), null, outLastClassDef);
 		assertThat(outLastClassDef[0].clazz).isEqualTo(Map.class);
 		assertThat(outLastClassDef[0].getTypeArgument()).isEqualTo(Integer.class);
 	}

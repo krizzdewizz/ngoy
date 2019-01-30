@@ -23,7 +23,7 @@ import ngoy.internal.parser.template.CodeBuilder;
 
 public class HtmlGen {
 
-	private static final Set<String> KEYWORDS = new HashSet<>(asList("class", "true", "false", "default", "for", "void", "char", "continue", "float"));
+	private static final Set<String> KEYWORDS = new HashSet<>(asList("class", "true", "false", "default", "for", "void", "char", "continue", "float", "map"));
 	private static final String[] UNITS = new String[] { "em", "ex", "percent", "px", "cm", "mm", "in", "pt", "pc", "ch", "rem", "vh", "vwv", "vmin", "vmax" };
 
 	static class Item implements Comparable<Item> {

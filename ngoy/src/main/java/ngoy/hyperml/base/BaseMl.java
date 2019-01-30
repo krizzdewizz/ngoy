@@ -8,9 +8,10 @@ import static ngoy.core.Util.escapeHtmlXml;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import ngoy.core.Injector;
@@ -20,6 +21,7 @@ import ngoy.core.OnInit;
 import ngoy.core.OnRender;
 import ngoy.core.Output;
 import ngoy.core.Pair;
+import ngoy.core.Util;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.TemplateCompiler;
 import ngoy.core.internal.TemplateRender;
@@ -98,13 +100,35 @@ public abstract class BaseMl<T extends BaseMl<?>> {
 	}
 
 	/**
+	 * Returns the key/value pairs array as a map.
+	 * 
+	 * @param keyValuePairs
+	 * @return Map
+	 */
+	public static <K, V> Map<K, V> map(Object... keyValuePairs) {
+		return Util.map(keyValuePairs);
+	}
+
+	/**
 	 * Returns the items as a list.
 	 * 
 	 * @param items Items
 	 * @return List
 	 */
-	public static List<Object> list(Object... items) {
-		return Arrays.asList(items);
+	@SafeVarargs
+	public static <T> List<T> list(T... items) {
+		return Util.list(items);
+	}
+
+	/**
+	 * Returns the items as a set.
+	 * 
+	 * @param items Items
+	 * @return Set
+	 */
+	@SafeVarargs
+	public static <T> Set<T> set(T... items) {
+		return Util.set(items);
 	}
 
 	private static String toString(Object obj) {

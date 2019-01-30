@@ -19,6 +19,8 @@ public class AttributeBinding {
 	public static final String BINDING_ATTR = "attr.";
 	private static final String BINDING_TEXT = "ngText";
 	public static final String BINDING_STYLE = "style.";
+	public static final String BINDING_NG_CLASS = "ngClass";
+	public static final String BINDING_NG_STYLE = "ngStyle";
 
 	private static void addAttributeBinding(Parser parser, String name, String expr, Set<String> exclude, List<String[]> targetClassNames, List<String[]> targetAttrNames,
 			List<String[]> targetStyleNames) {
@@ -31,9 +33,9 @@ public class AttributeBinding {
 
 		expr = convertPipesToTransformCalls(expr, parser.resolver);
 
-		if (rawName.equals("ngClass")) {
+		if (rawName.equals(BINDING_NG_CLASS)) {
 			targetClassNames.add(new String[] { rawName, expr });
-		} else if (rawName.equals("ngStyle")) {
+		} else if (rawName.equals(BINDING_NG_STYLE)) {
 			targetStyleNames.add(new String[] { rawName, expr });
 		} else if (rawName.startsWith(BINDING_CLASS)) {
 			String className = rawName.substring(BINDING_CLASS.length());

@@ -2318,7 +2318,7 @@ public abstract class HtmlCore<T extends HtmlCore<?>> extends BaseMl<T> {
 	 * 
 	 * @return this
 	 */
-	public T map(Object... params) {
+	public T mapp(Object... params) {
 		return $("map", params);
 	}
 

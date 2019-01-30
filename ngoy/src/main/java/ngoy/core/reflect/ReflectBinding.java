@@ -2,11 +2,17 @@ package ngoy.core.reflect;
 
 import java.lang.invoke.MethodHandle;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 
 import ngoy.core.NgoyException;
 
 public abstract class ReflectBinding {
+
+	private interface OnItem {
+		void run(String name, Object item, char itemDelimiter, char valueDelimiter);
+	}
 
 	public final String name;
 	public final MethodHandle getter;
@@ -29,33 +35,49 @@ public abstract class ReflectBinding {
 		if (all == null && existing.isEmpty()) {
 			return;
 		}
+
 		StringBuilder sb = new StringBuilder(existing);
+
+		OnItem onItem = (String name, Object value, char itemDelimiter, char valueDelimiter) -> {
+			if (value == null || value.toString()
+					.isEmpty()) {
+				return;
+			}
+
+			if (itemDelimiter == 0) {
+				result.accept(name, value.toString());
+				return;
+			}
+
+			if (sb.length() > 0) {
+				sb.append(itemDelimiter);
+			}
+			sb.append(name);
+			if (valueDelimiter != 0) {
+				sb.append(valueDelimiter);
+				if (valueDelimiter != 0) {
+					sb.append(value);
+				}
+			}
+		};
+
 		if (all != null) {
 			for (ReflectBinding binding : all) {
 				try {
-					char itemDelimiter = binding.itemDelimiter;
-					char valueDelimiter = binding.valueDelimiter;
 					Object value = binding.getValue(cmp);
+					if (value instanceof Map) {
+						@SuppressWarnings("unchecked")
+						Map<String, Object> map = (Map<String, Object>) value;
+						for (Entry<String, Object> entry : map.entrySet()) {
+							onItem.run(entry.getKey(), entry.getValue(), binding.itemDelimiter, binding.valueDelimiter);
+						}
+						continue;
+					}
 					if (value == null || value.toString()
 							.isEmpty()) {
 						continue;
 					}
-
-					if (itemDelimiter == 0) {
-						result.accept(binding.name, value.toString());
-						continue;
-					}
-
-					if (sb.length() > 0) {
-						sb.append(itemDelimiter);
-					}
-					sb.append(binding.name);
-					if (valueDelimiter != 0) {
-						sb.append(valueDelimiter);
-						if (valueDelimiter != 0) {
-							sb.append(value);
-						}
-					}
+					onItem.run(binding.name, value, binding.itemDelimiter, binding.valueDelimiter);
 				} catch (Throwable e) {
 					throw new NgoyException(e, "Error while setting component host binding %s.%s: %s", cmp.getClass()
 							.getName(), binding.name, e.getMessage());

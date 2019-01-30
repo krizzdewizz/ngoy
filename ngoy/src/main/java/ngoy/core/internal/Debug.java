@@ -29,7 +29,7 @@ public final class Debug {
 		}
 
 		try {
-			String pack = "ngoy.core.internal";
+			String pack = "ngoy.core.internal.xtpl";
 			String clazz = format("XTemplate%s", className);
 
 			String clazzz = clazz;

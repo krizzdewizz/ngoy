@@ -45,6 +45,10 @@ public class CmpReflectInfo {
 				classBindings.add(new ReflectClassBinding(name, unref.run(f)));
 			} else if (prefix.equals(AttributeBinding.BINDING_STYLE)) {
 				styleBindings.add(new ReflectStyleBinding(name, unref.run(f)));
+			} else if (name.equals(AttributeBinding.BINDING_NG_CLASS)) {
+				classBindings.add(new ReflectClassBinding("class", unref.run(f)));
+			} else if (name.equals(AttributeBinding.BINDING_NG_STYLE)) {
+				styleBindings.add(new ReflectStyleBinding("style", unref.run(f)));
 			}
 		};
 	}

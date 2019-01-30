@@ -1,15 +1,11 @@
 package ngoy.core.internal;
 
-import static java.util.Arrays.asList;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.escapeHtmlXml;
 
 import java.io.Writer;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import ngoy.core.Injector;
 import ngoy.core.NgoyException;
@@ -64,25 +60,6 @@ public class Ctx implements Output {
 
 	public void setVariables(Map<String, Variable<?>> variables) {
 		this.variables = variables;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <K, V> Map<K, V> Map(Object... pairs) {
-		Map<K, V> map = new HashMap<>();
-		for (int i = 0, n = pairs.length; i < n; i += 2) {
-			map.put((K) pairs[i], (V) pairs[i + 1]);
-		}
-		return map;
-	}
-
-	@SafeVarargs
-	public static <T> List<T> List(T... items) {
-		return asList(items);
-	}
-
-	@SafeVarargs
-	public static <T> Set<T> Set(T... items) {
-		return new HashSet<T>(List(items));
 	}
 
 	public void write(String string) {

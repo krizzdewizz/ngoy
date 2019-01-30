@@ -52,7 +52,7 @@ public class ClassAttrBindingTest extends ANgoyTest {
 
 	//
 
-	@Component(selector = "", template = "<a [ngClass]=\"Map('q', true, 'a', false, 'a-a', true)\"></a>")
+	@Component(selector = "", template = "<a [ngClass]=\"$map('q', true, 'a', false, 'a-a', true)\"></a>")
 	public static class ObjLiteralCmp {
 		public Map<String, Boolean> all = new HashMap<>();
 

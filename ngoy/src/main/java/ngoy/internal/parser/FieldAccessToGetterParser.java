@@ -71,7 +71,6 @@ import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
 import ngoy.core.Util;
 import ngoy.core.Variable;
-import ngoy.core.internal.Ctx;
 
 /**
  * Converts a field access to a getter call.
@@ -294,9 +293,10 @@ public final class FieldAccessToGetterParser {
 						target = new ParenthesizedExpression(mi.getLocation(), cast);
 					}
 				}
-			} else if (mi.methodName.equals("List") || mi.methodName.equals("Map")) {
-				Method meth = findMethod(Ctx.class, mi.methodName, 0);
-				int argIndex = mi.methodName.equals("List") ? 0 : 1;
+			} else if (mi.methodName.equals("$list") || mi.methodName.equals("$map") || mi.methodName.equals("$set")) {
+				String methName = mi.methodName.substring(1);
+				Method meth = findMethod(Util.class, methName, 0);
+				int argIndex = mi.methodName.equals("$map") ? 1 : 0;
 				// try to infer from argument index
 				if (mi.arguments.length < argIndex + 1) {
 					cd = ClassDef.of(meth);
@@ -690,7 +690,8 @@ public final class FieldAccessToGetterParser {
 
 			return sw.toString();
 		} catch (Exception e) {
-			throw new NgoyException("Error while compiling expression '%s': %s. The expression must be a single rvalue", expr, e instanceof CompileException ? getCompileExceptionMessageWithoutLocation((CompileException) e) : e.getMessage());
+			throw new NgoyException("Error while compiling expression '%s': %s. The expression must be a single rvalue", expr,
+					e instanceof CompileException ? getCompileExceptionMessageWithoutLocation((CompileException) e) : e.getMessage());
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package ngoy.core;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static ngoy.core.NgoyException.wrap;
 
 import java.io.ByteArrayOutputStream;
@@ -8,8 +9,15 @@ import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -240,7 +248,7 @@ public class Util {
 				|| "double".equals(clazz);
 	}
 
-	public static String sourceClassName(Class<?> clazz) {
+	private static String innerSourceClassName(Class<?> clazz) {
 		String name = clazz.getName();
 		Class<?> enclosingClass = clazz.getEnclosingClass();
 		while (enclosingClass != null) {
@@ -254,6 +262,25 @@ public class Util {
 		}
 
 		return name;
+	}
+
+	public static String sourceClassName(Class<?> clazz) {
+		return sourceClassName(clazz, null);
+	}
+
+	public static String sourceClassName(Field field) {
+		return sourceClassName(field.getType(), field.getGenericType());
+	}
+
+	public static String sourceClassName(Method method) {
+		return sourceClassName(method.getReturnType(), method.getGenericReturnType());
+	}
+
+	public static String sourceClassName(Class<?> clazz, @Nullable Type genericType) {
+		if (genericType != null) {
+			return genericType.toString();
+		}
+		return clazz.isArray() ? format("%s[]", sourceClassName(clazz.getComponentType())) : innerSourceClassName(clazz);
 	}
 
 	public static String getArrayClass(String type) {
@@ -317,5 +344,42 @@ public class Util {
 				})
 				.findFirst()
 				.orElse(null);
+	}
+
+	/**
+	 * Returns the key/value pairs array as a map.
+	 * 
+	 * @param keyValuePairs
+	 * @return Map
+	 */
+	@SuppressWarnings("unchecked")
+	public static <K, V> Map<K, V> map(Object... keyValuePairs) {
+		Map<K, V> map = new LinkedHashMap<>();
+		for (int i = 0, n = keyValuePairs.length; i < n; i += 2) {
+			map.put((K) keyValuePairs[i], (V) keyValuePairs[i + 1]);
+		}
+		return map;
+	}
+
+	/**
+	 * Returns the items as a list.
+	 * 
+	 * @param items Items
+	 * @return List
+	 */
+	@SafeVarargs
+	public static <T> List<T> list(T... items) {
+		return asList(items);
+	}
+
+	/**
+	 * Returns the items as a set.
+	 * 
+	 * @param items Items
+	 * @return Set
+	 */
+	@SafeVarargs
+	public static <T> Set<T> set(T... items) {
+		return new HashSet<T>(list(items));
 	}
 }

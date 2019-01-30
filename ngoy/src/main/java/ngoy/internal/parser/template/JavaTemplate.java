@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
+import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Util.escapeJava;
 import static ngoy.core.Util.getLine;
 import static ngoy.core.Util.isSet;
@@ -13,6 +14,7 @@ import static ngoy.core.Util.sourceClassName;
 import static ngoy.core.Util.tryLoadClass;
 import static ngoy.internal.parser.template.Printer.NULL_PRINTER;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -156,8 +158,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		$("public static ", TemplateRender.class, " createRenderer(", Injector.class, " injector) { return new Renderer(injector); }");
 
-		addApiHelpers();
-
 		$("private static final String[] ", stringsVar, "=new String[]{", STRINGS, "};");
 
 		$("private static class Renderer implements ", TemplateRender.class, "{");
@@ -176,20 +176,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		textOverrideVar = createLocalVar("textOverride");
 		$("String[] ", textOverrideVar, "=new String[1];");
-	}
-
-	private void addApiHelpers() {
-		$("private static <K,V> ", Map.class, "<K,V> Map(Object...pairs){");
-		$(" return ", Ctx.class, ".<K,V>Map(pairs);");
-		$("}");
-
-		$("private static <T> ", List.class, " List(T...items){");
-		$(" return ", Ctx.class, ".<T>List(items);");
-		$("}");
-
-		$("private static <T> ", Set.class, " Set(T...items){");
-		$(" return ", Ctx.class, ".<T>Set(items);");
-		$("}");
 	}
 
 	private void addVariables() {
@@ -240,11 +226,19 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		String pipeMethods = new CodeBuilder() {
 			@Override
 			protected void doCreate() {
-				for (String pipeFun : pipeCalls) {
-					$("private static ", PipeTransform.class, " _", pipeFun, ";");
-					$("private static Object ", pipeFun, "(Object obj, Object... args){");
-					$("  return _", pipeFun, ".transform(obj, args);");
-					$("}");
+				try {
+					for (String pipeFun : pipeCalls) {
+						Class<?> pipe = pipesMap.get(pipeFun);
+						Method pm = pipe.getMethod("transform", Object.class, Object[].class);
+						Object retType = sourceClassName(pm.getReturnType());
+
+						$("private static ", PipeTransform.class, " _", pipeFun, ";");
+						$("private static ", retType, " ", pipeFun, "(Object obj, Object... args){");
+						$("  return (", retType, ")_", pipeFun, ".transform(obj, args);");
+						$("}");
+					}
+				} catch (Exception e) {
+					throw wrap(e);
 				}
 			}
 		}.create()
@@ -807,4 +801,5 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		Printer cmpPrinter = cmpPrinters.peek();
 		return cmpPrinter != null ? cmpPrinter : super.getPrinter();
 	}
+
 }
