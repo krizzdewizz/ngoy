@@ -763,7 +763,7 @@ public class Ngoy<T> {
 				String pipeValue = pipe.value();
 				ProviderWithModule providerWithModule = targetPipes.get(pipeValue);
 				if (providerWithModule != null) {
-					throw new NgoyException("Pipe '%s' is already registered in module %s", pipeValue, providerWithModule.moduleName);
+					throw new NgoyException("More than one provider found for pipe '%s': %s, %s", pipeValue, providerWithModule.moduleName, mod.getName());
 				}
 				targetPipes.put(pipeValue, new ProviderWithModule(p, mod.getName()));
 			}

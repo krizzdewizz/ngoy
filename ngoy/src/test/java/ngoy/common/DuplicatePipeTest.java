@@ -29,7 +29,7 @@ public class DuplicatePipeTest extends ANgoyTest {
 	@Test
 	public void test() {
 		expectedEx.expect(NgoyException.class);
-		expectedEx.expectMessage(containsString("Pipe 'set' is already registered in module ngoy.common.CommonModule"));
+		expectedEx.expectMessage(containsString("More than one provider found for pipe 'set': ngoy.common.CommonModule, ngoy.common.DuplicatePipeTest$Cmp"));
 
 		render(Cmp.class);
 	}

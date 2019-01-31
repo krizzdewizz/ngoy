@@ -5,9 +5,11 @@ import static jodd.lagarto.dom.Node.NodeType.ELEMENT;
 import static ngoy.core.dom.XDom.appendChild;
 import static ngoy.core.dom.XDom.cloneNode;
 import static ngoy.core.dom.XDom.createElement;
+import static ngoy.core.dom.XDom.getNodeName;
 import static ngoy.internal.parser.Parser.NG_TEMPLATE;
 
 import jodd.jerry.Jerry;
+import jodd.lagarto.dom.Node;
 import ngoy.core.dom.NodeVisitor;
 import ngoy.core.dom.XDom;
 import ngoy.core.internal.ContainerComponent;
@@ -62,19 +64,15 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 				def.removeAttr("ngSwitchDefault");
 			}
 
-			if (elClone.get(0)
-					.getNodeName()
-					.equals(ContainerComponent.SELECTOR)) {
-
+			Node tpll = tpl.get(0);
+			if (ContainerComponent.SELECTOR.equals(getNodeName(elClone))) {
 				elClone.contents()
 						.each((c, index) -> {
-							tpl.get(0)
-									.insertChild(c.get(0), index);
+							tpll.insertChild(c.get(0), index);
 							return null;
 						});
 			} else {
-				tpl.get(0)
-						.insertChild(elClone.get(0), 0);
+				tpll.insertChild(elClone.get(0), 0);
 			}
 		}
 
