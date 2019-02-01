@@ -1,7 +1,5 @@
 package ngoy.hyperml.base;
 
-import static hyperml.base.Util.flatten;
-
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -76,7 +74,7 @@ public class NgoyHtmlBase<T extends NgoyHtmlBase<?>> extends HtmlBase<NgoyHtmlBa
 
 		@Override
 		public ParamInfo<ParamsWithInit> init(Object nameOrClass, Object... params) {
-			ParamsWithInit paramsWithInit = new ParamsWithInit(flatten(params));
+			ParamsWithInit paramsWithInit = new ParamsWithInit(params);
 			CmpInstance cmp = handleCmp(nameOrClass, paramsWithInit);
 			paramsWithInit.cmpInstance = cmp;
 			String name = cmp != null ? cmp.info.selector : nameOrClass.toString();

@@ -39,13 +39,17 @@ public abstract class ReflectBinding {
 		StringBuilder sb = new StringBuilder(existing);
 
 		OnItem onItem = (String name, Object value, char itemDelimiter, char valueDelimiter) -> {
-			if (value == null || value.toString()
-					.isEmpty()) {
+			if (value == null) {
+				return;
+			}
+
+			String stringValue = value.toString();
+			if (stringValue.isEmpty()) {
 				return;
 			}
 
 			if (itemDelimiter == 0) {
-				result.accept(name, value.toString());
+				result.accept(name, stringValue);
 				return;
 			}
 
@@ -56,7 +60,7 @@ public abstract class ReflectBinding {
 			if (valueDelimiter != 0) {
 				sb.append(valueDelimiter);
 				if (valueDelimiter != 0) {
-					sb.append(value);
+					sb.append(stringValue);
 				}
 			}
 		};
@@ -71,10 +75,6 @@ public abstract class ReflectBinding {
 						for (Entry<String, Object> entry : map.entrySet()) {
 							onItem.run(entry.getKey(), entry.getValue(), binding.itemDelimiter, binding.valueDelimiter);
 						}
-						continue;
-					}
-					if (value == null || value.toString()
-							.isEmpty()) {
 						continue;
 					}
 					onItem.run(binding.name, value, binding.itemDelimiter, binding.valueDelimiter);

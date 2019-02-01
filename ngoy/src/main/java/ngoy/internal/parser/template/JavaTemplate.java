@@ -745,7 +745,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 					if (clazz.equals("ngClass")) {
 						printExprComment(ex);
 						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()){");
-						$("  if((Boolean)entry.getValue()){");
+						String valVar = createLocalVar("entryValue");
+						$("final Boolean ", valVar, "=(Boolean)entry.getValue();");
+						$("  if(",valVar,"!=null&&", valVar, ".booleanValue()){");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$(listVar, ".append(entry.getKey());");
 						$("  }");
