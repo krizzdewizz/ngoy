@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import hyperml.base.BaseMl;
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.NgModule;
 import ngoy.hyperml.Html;
 import ngoy.hyperml.HtmlComponent;
-import ngoy.hyperml.base.BaseMl;
 
 public class StylesDocumentTest extends ANgoyTest {
 
