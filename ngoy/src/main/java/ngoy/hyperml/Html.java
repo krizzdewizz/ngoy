@@ -16,11 +16,11 @@ public class Html extends NgoyHtmlBase<Html> {
 		return new Html();
 	}
 
-	public static Html of(Writer writer) {
+	public static Html to(Writer writer) {
 		return new Html(writer);
 	}
 
-	public static Html of(OutputStream out) {
+	public static Html to(OutputStream out) {
 		return new Html(out);
 	}
 
