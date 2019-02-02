@@ -9,6 +9,7 @@ import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.isSet;
 import static ngoy.core.dom.XDom.appendChild;
 import static ngoy.core.dom.XDom.createElement;
+import static ngoy.core.dom.XDom.getNodeName;
 
 import java.io.InputStream;
 import java.util.List;
@@ -20,9 +21,9 @@ import java.util.stream.Stream;
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Node;
 import ngoy.core.Component;
+import ngoy.core.CssTransform;
 import ngoy.core.Directive;
 import ngoy.core.Inject;
-import ngoy.core.CssTransform;
 import ngoy.core.NgoyException;
 import ngoy.core.OnCompile;
 import ngoy.core.OnCompileStyles;
@@ -81,8 +82,7 @@ public class StyleUrlsDirective implements OnCompile {
 	}
 
 	private Jerry append(Jerry parent, Jerry el) {
-		Node ell = el.get(0);
-		if ("head".equalsIgnoreCase(ell.getNodeName())) {
+		if ("head".equalsIgnoreCase(getNodeName(parent))) {
 			return appendChild(parent, el);
 		}
 
@@ -92,7 +92,7 @@ public class StyleUrlsDirective implements OnCompile {
 			return appendChild(parent, el);
 		}
 
-		parentt.insertBefore(ell, childNodes[0]);
+		parentt.insertBefore(el.get(0), childNodes[0]);
 		return el;
 	}
 

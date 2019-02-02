@@ -588,8 +588,6 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 
 		cmpVars.push(new CmpVar(cmpLocalVar, cmpRef.clazz));
 
-		String classId = classToId(cmpRef);
-
 		if (cmpRef.clazz.getAnnotation(Scope.class) != null) {
 			cmpParents.push(new CmpVar(cmpLocalVar, cmpRef.clazz));
 		} else {
@@ -597,9 +595,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 
 		StringBuilder liv = new StringBuilder();
+		int livCount = 0;
 		StringBuilder livDecl = new StringBuilder();
 		Map<String, String> livs = localIterationVars.peek();
 		if (livs != null) {
+			livCount = livs.size();
 			for (Map.Entry<String, String> it : livs.entrySet()) {
 				livDecl.append("final ")
 						.append(it.getKey())
@@ -612,6 +612,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			}
 		}
 
+		livCount += variables.size();
 		for (Entry<String, Variable<?>> it : variables.entrySet()) {
 			Variable<?> v = it.getValue();
 			livDecl.append("final ")
@@ -624,7 +625,13 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 					.append(',');
 		}
 
-		$("__r", classId, "(", liv, parentVar, ",", appRootCmpVar.name, ",", cmpLocalVar, ",", CTX_VAR, ",", lastExprVar, ",", textOverrideVar, ");");
+		List<String> allVars = asList(parentVar, appRootCmpVar.name, cmpLocalVar, CTX_VAR, lastExprVar, textOverrideVar);
+		String allVarsString = allVars.stream()
+				.collect(joining(","));
+
+		String classId = format("%s_%s", classToId(cmpRef), allVars.size() + livCount);
+
+		$("__r", classId, "(", liv, allVarsString, ");");
 
 		if (cmpsRendered.contains(classId)) {
 			cmpPrinters.push(NULL_PRINTER);
@@ -747,7 +754,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						$("for (", Map.class, ".Entry entry : ", ex, ".entrySet()){");
 						String valVar = createLocalVar("entryValue");
 						$("final Boolean ", valVar, "=(Boolean)entry.getValue();");
-						$("  if(",valVar,"!=null&&", valVar, ".booleanValue()){");
+						$("  if(", valVar, "!=null&&", valVar, ".booleanValue()){");
 						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
 						$(listVar, ".append(entry.getKey());");
 						$("  }");

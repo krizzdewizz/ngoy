@@ -2,6 +2,8 @@ package ngoy.internal.parser.template;
 
 import static ngoy.core.Util.sourceClassName;
 
+import hyperml.base.Util;
+
 public class CodeBuilder {
 	private int depth;
 	private final Printer printer;
@@ -30,7 +32,8 @@ public class CodeBuilder {
 		getPrinter().print(String.valueOf(object));
 	}
 
-	public CodeBuilder $(Object... strings) {
+	public CodeBuilder $(Object... stringss) {
+		Object[] strings = Util.flatten(stringss);
 
 		String last = strings.length > 0 ? strings[strings.length - 1].toString()
 				.trim() : "";
