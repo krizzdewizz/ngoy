@@ -38,7 +38,7 @@ public class CmpRefParser {
 	}
 
 	private final Parser parser;
-	private final Set<Class<?>> acceptedCmpRefs = new HashSet<>();
+	private final Set<String> acceptedCmpRefs = new HashSet<>();
 
 	public CmpRefParser(Parser parser) {
 		this.parser = parser;
@@ -47,7 +47,7 @@ public class CmpRefParser {
 	void acceptCmpRefs(Jerry el, List<CmpRef> cmpRefs) {
 
 		List<String[]> attrNames = new ArrayList<>();
-		
+
 		List<String[]> classNames = getClassList(el).stream()
 				.map(it -> new String[] { it, "" })
 				.collect(toList());
@@ -144,16 +144,18 @@ public class CmpRefParser {
 	}
 
 	private void acceptCmpRef(Jerry el, CmpRef ref) {
-		if (acceptedCmpRefs.contains(ref.clazz)) {
+
+		String classId = ref.clazz.getName() + el.htmlAll(true)
+				.hashCode();
+
+		if (acceptedCmpRefs.contains(classId)) {
 			return;
 		}
 
-		acceptedCmpRefs.add(ref.clazz);
+		acceptedCmpRefs.add(classId);
 
 		Jerry cmpTpl = parser.parse(ref.template);
-
 		Jerry ngContentEl = cmpTpl.$("ng-content");
-
 		if (ngContentEl.length() == 0) {
 			parser.accept(cmpTpl);
 			return;
