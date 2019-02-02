@@ -148,15 +148,13 @@ public class CmpRefParser {
 		String classId = ref.clazz.getName() + el.htmlAll(true)
 				.hashCode();
 
-		if (acceptedCmpRefs.contains(classId)) {
-			return;
-		}
-
-		acceptedCmpRefs.add(classId);
-
 		Jerry cmpTpl = parser.parse(ref.template);
 		Jerry ngContentEl = cmpTpl.$("ng-content");
 		if (ngContentEl.length() == 0) {
+			if (acceptedCmpRefs.contains(classId)) {
+				return;
+			}
+			acceptedCmpRefs.add(classId);
 			parser.accept(cmpTpl);
 			return;
 		}

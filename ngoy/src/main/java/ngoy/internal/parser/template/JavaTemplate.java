@@ -595,12 +595,12 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 		}
 
 		StringBuilder liv = new StringBuilder();
-		int livCount = 0;
+		int livHash = 0;
 		StringBuilder livDecl = new StringBuilder();
 		Map<String, String> livs = localIterationVars.peek();
 		if (livs != null) {
-			livCount = livs.size();
 			for (Map.Entry<String, String> it : livs.entrySet()) {
+				livHash = Objects.hash(livHash, it.getKey());
 				livDecl.append("final ")
 						.append(it.getKey())
 						.append(' ')
@@ -612,11 +612,11 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			}
 		}
 
-		livCount += variables.size();
 		for (Entry<String, Variable<?>> it : variables.entrySet()) {
 			Variable<?> v = it.getValue();
+			livHash = Objects.hash(livHash, v.type);
 			livDecl.append("final ")
-					.append(v.type.getName())
+					.append(sourceClassName(v.type))
 					.append(' ')
 					.append(it.getKey())
 					.append(',');
@@ -625,11 +625,33 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 					.append(',');
 		}
 
+		Set<String> vAdded = new HashSet<>(asList(cmpLocalVar, appRootCmpVar.name, parentVar));
+		for (CmpVar v : cmpVars) {
+			String vName = v.name;
+			if (vAdded.contains(vName)) {
+				continue;
+			}
+			
+			vAdded.add(vName);
+
+			livHash = Objects.hash(livHash, v.cmpClass);
+			livDecl.append("final ")
+					.append(sourceClassName(v.cmpClass))
+					.append(' ')
+					.append(vName)
+					.append(',');
+
+			liv.append(vName)
+					.append(',');
+		}
+
 		List<String> allVars = asList(parentVar, appRootCmpVar.name, cmpLocalVar, CTX_VAR, lastExprVar, textOverrideVar);
 		String allVarsString = allVars.stream()
 				.collect(joining(","));
 
-		String classId = format("%s_%s", classToId(cmpRef), allVars.size() + livCount);
+		livHash = Objects.hash(livHash, allVarsString);
+
+		String classId = format("%s_%s", classToId(cmpRef), Math.abs(livHash));
 
 		$("__r", classId, "(", liv, allVarsString, ");");
 
