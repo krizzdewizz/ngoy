@@ -30,7 +30,7 @@ public final class Debug {
 
 		try {
 			String pack = "ngoy.core.internal.xtpl";
-			String clazz = format("XTemplate%s", className);
+			String clazz = format("XTemplate_%s", className);
 
 			String clazzz = clazz;
 
