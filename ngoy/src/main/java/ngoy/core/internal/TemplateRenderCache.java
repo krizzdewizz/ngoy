@@ -20,7 +20,7 @@ public enum TemplateRenderCache {
 
 	public TemplateRender getTemplateRender(Class<?> clazz, Function<Class<?>, TemplateRender> producer) {
 		TemplateRender render = map.get(clazz);
-		if (render == null || "".isEmpty()) {
+		if (render == null) {
 			map.put(clazz, render = producer.apply(clazz));
 		}
 
