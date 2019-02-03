@@ -739,7 +739,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			String clazz = pair[0];
 			String expr = pair[1];
 			if (expr.isEmpty()) {
-				$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
+				$("if(", listVar, ".length()>0){", listVar, ".append('", delimiter, "');}");
 				$(listVar, ".append(\"", clazz, "\");");
 			} else {
 				String ex = prefixName(expr);
@@ -750,7 +750,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						String valueVar = createLocalVar("styleValue");
 						$("final Object ", valueVar, "=", "entry.getValue();");
 						$("  if(", valueVar, "!= null && !", valueVar, ".toString().isEmpty()){");
-						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
+						$("if(", listVar, ".length()>0){", listVar, ".append('", delimiter, "');}");
 						$(listVar, ".append(entry.getKey()).append(':').append(", valueVar, ");");
 						$("  }");
 						$("}");
@@ -763,7 +763,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						printExprComment(ex);
 						$("final Object ", exVar, "=", ex, ";");
 						$("if(", exVar, "!=null && !", exVar, ".toString().isEmpty()){");
-						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
+						$("if(", listVar, ".length()>0){", listVar, ".append('", delimiter, "');}");
 						$(listVar, ".append(\"", clazz, "\").append(':').append(", exVar, ");");
 						if (!unit.isEmpty()) {
 							$(listVar, ".append(\"", unit, "\");");
@@ -777,14 +777,14 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 						String valVar = createLocalVar("entryValue");
 						$("final Boolean ", valVar, "=(Boolean)entry.getValue();");
 						$("  if(", valVar, "!=null&&", valVar, ".booleanValue()){");
-						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
+						$("if(", listVar, ".length()>0){", listVar, ".append('", delimiter, "');}");
 						$(listVar, ".append(entry.getKey());");
 						$("  }");
 						$("}");
 					} else {
 						printExprComment(ex);
 						$("if(", ex, "){");
-						$("if(", listVar, ".length()>0){", listVar, ".append(\"", delimiter, "\");}");
+						$("if(", listVar, ".length()>0){", listVar, ".append('", delimiter, "');}");
 						$(listVar, ".append(\"", clazz, "\");");
 						$("}");
 					}

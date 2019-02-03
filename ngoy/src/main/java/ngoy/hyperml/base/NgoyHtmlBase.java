@@ -267,11 +267,9 @@ public class NgoyHtmlBase<T extends NgoyHtmlBase<?>> extends HtmlBase<NgoyHtmlBa
 		if (cmp instanceof OnRender) {
 			render = (OnRender) cmp;
 		} else {
-			TemplateRender templateRender = TemplateRenderCache.INSTANCE.getTemplateRender(cmpClass, clazz -> injector.get(TemplateCompiler.class)
-					.compile(clazz));
+			TemplateRender templateRender = TemplateRenderCache.INSTANCE.compile(cmpClass, injector.get(TemplateCompiler.class));
 
 			Object cmpp = cmp;
-
 			render = out -> templateRender.render(new Ctx(cmpp, injector, out.getWriter()));
 		}
 

@@ -15,16 +15,21 @@ public final class Debug {
 	private Debug() {
 	}
 
+	private static boolean localDebug = false;
+	static {
+//		localDebug = true;
+	}
+
 	public static boolean debug() {
+		if (localDebug) {
+			return true;
+		}
 		return Boolean.getBoolean("ngoy.debug");
 	}
 
 	public static void writeTemplate(String className, String code) {
 
-		boolean localDebug = false;
-//		localDebug = true;
-
-		if (!debug() && !localDebug) {
+		if (!debug()) {
 			return;
 		}
 

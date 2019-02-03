@@ -1,29 +1,69 @@
 package ngoy.router.internal;
 
-import static ngoy.core.dom.XDom.appendChild;
-import static ngoy.core.dom.XDom.createElement;
-
-import jodd.jerry.Jerry;
 import ngoy.core.Component;
 import ngoy.core.Inject;
-import ngoy.core.OnCompile;
+import ngoy.core.Injector;
 import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
+import ngoy.core.OnRender;
+import ngoy.core.Output;
+import ngoy.core.internal.Ctx;
 import ngoy.core.internal.Scope;
+import ngoy.core.internal.TemplateCompiler;
+import ngoy.core.internal.TemplateRender;
+import ngoy.core.internal.TemplateRenderCache;
 import ngoy.router.Route;
 import ngoy.router.Router;
 
 @Component(selector = "router-outlet", template = "<ng-content></ng-content>")
 @Scope
-public class OutletComponent implements OnCompile, OnInit, OnDestroy {
+public class OutletComponent implements OnDestroy, OnRender {
 	@Inject
 	public Router router;
 
-	public int activeRoute;
+	@Inject
+	public TemplateCompiler compiler;
+
+	@Inject
+	public Injector injector;
 
 	@Override
-	public void onInit() {
-		activeRoute = router.getActiveRoute();
+	public void onRender(Output output) {
+		Route route = router.getRoutes()
+				.get(router.getActiveRoute());
+
+		Class<?> routeClass = route.getComponent();
+
+		OnRender render;
+		Object cmp = injector.getNew(routeClass);
+		if (cmp instanceof OnRender) {
+			render = (OnRender) cmp;
+		} else {
+			TemplateRender templateRender = TemplateRenderCache.INSTANCE.compile(routeClass, compiler);
+			Object cmpp = cmp;
+			render = out -> templateRender.render(new Ctx(cmpp, injector, out.getWriter()));
+		}
+
+		if (cmp instanceof OnInit) {
+			((OnInit) cmp).onInit();
+		}
+
+		String selector = getSelector(routeClass);
+
+		output.write("<");
+		output.write(selector);
+		output.write(">");
+
+		render.onRender(output);
+		render.onRenderEnd(output);
+
+		output.write("</");
+		output.write(selector);
+		output.write(">");
+
+		if (cmp instanceof OnDestroy) {
+			((OnDestroy) cmp).onDestroy();
+		}
 	}
 
 	@Override
@@ -31,21 +71,9 @@ public class OutletComponent implements OnCompile, OnInit, OnDestroy {
 		router.clearRouteParams();
 	}
 
-	@Override
-	public void onCompile(Jerry el, String componentClass) {
-		Jerry container = appendChild(el, createElement("ng-container", el));
-		int i = 0;
-		container.attr("[ngSwitch]", "activeRoute");
-		for (Route route : router.getRoutes()) {
-			Jerry tpl = appendChild(container, createElement("ng-template", container));
-			tpl.attr("[ngSwitchCase]", String.valueOf(i));
-			appendChild(tpl, createElement(getSelector(route.getComponent()), tpl));
-			i++;
-		}
-	}
-
 	private String getSelector(Class<?> component) {
 		return component.getAnnotation(Component.class)
 				.selector();
 	}
+
 }
