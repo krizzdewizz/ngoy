@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Caches a component's input info.
+ * Caches a compiled component renderer.
  * 
  * @author krizz
  */

@@ -30,7 +30,7 @@ public abstract class ReflectBinding {
 		return getter.invoke(instance);
 	}
 
-	public static void eval(Object cmp, Collection<? extends ReflectBinding> all, String attrName, Object existingAttrValue, BiConsumer<String, String> result) {
+	public static void eval(Object cmp, Collection<? extends ReflectBinding> all, String attrName, Object existingAttrValue, BiConsumer<String, Object> result) {
 		String existing = existingAttrValue == null ? "" : existingAttrValue.toString();
 		if (all == null && existing.isEmpty()) {
 			return;
