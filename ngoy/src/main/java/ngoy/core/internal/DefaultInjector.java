@@ -91,6 +91,7 @@ public class DefaultInjector implements Injector {
 	@SuppressWarnings("unchecked")
 	private <T> T getInternal(Class<T> clazz, Set<Class<?>> resolving, boolean nullIfNone) {
 		try {
+
 			Object object = providerInstances.get(clazz);
 			if (object != null) {
 				return (T) object;
@@ -101,23 +102,21 @@ public class DefaultInjector implements Injector {
 				return (T) factory.create();
 			}
 
-			Provider provider = providers.get(clazz);
-			if (provider == null) {
-				
-				if (!cmpDecls.contains(clazz)) {
-					for (Injector inj : moreInjectors) {
-						if ((object = inj.get(clazz)) != null) {
-							providerInstances.put(clazz, object);
-							applyInjections(object, fieldInjections(clazz, resolving));
-							return (T) object;
-						}
+			if (!cmpDecls.contains(clazz) && !Injector.class.isAssignableFrom(clazz)) {
+				for (Injector inj : moreInjectors) {
+					if ((object = inj.get(clazz)) != null) {
+						providerInstances.put(clazz, object);
+						applyInjections(object, fieldInjections(clazz, resolving));
+						return (T) object;
 					}
 				}
-				
+			}
+
+			Provider provider = providers.get(clazz);
+			if (provider == null) {
 				if (nullIfNone) {
 					return null;
 				}
-				
 				throw new NgoyException("No provider found for %s", clazz.getName());
 			}
 
