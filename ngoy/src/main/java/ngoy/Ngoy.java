@@ -67,6 +67,7 @@ import ngoy.core.internal.Resolver;
 import ngoy.core.internal.StyleUrlsDirective;
 import ngoy.core.internal.TemplateCompiler;
 import ngoy.core.internal.TemplateRender;
+import ngoy.core.internal.TemplateRenderCache;
 import ngoy.internal.parser.Parser;
 import ngoy.internal.parser.template.JavaTemplate;
 import ngoy.internal.parser.template.JavaTemplate.ExprComment;
@@ -441,6 +442,8 @@ public class Ngoy<T> {
 	}
 
 	private void init(List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
+		
+		TemplateRenderCache.INSTANCE.clear();
 
 		if (!packagePrefixes.isEmpty()) {
 			modules.add(new ClassScanner() //
