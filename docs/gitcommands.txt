@@ -23,7 +23,7 @@ ngoy --version
 ngoy -e "1 + 1"
 
 git add build.gradle ngoy ngoy.cmd ../README.md
-git commit -m "<release>"
+git commit -m "1.0.0-rc7"
 git push
 
 # check travis

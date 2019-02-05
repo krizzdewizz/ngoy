@@ -59,7 +59,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.krizzdewizz:ngoy:1.0.0-rc7")
+    implementation("com.github.krizzdewizz:ngoy:1.0.0-rc8")
 }
 ```
 
@@ -75,7 +75,7 @@ dependencies {
 <dependency>
     <groupId>com.github.krizzdewizz</groupId>
     <artifactId>ngoy</artifactId>
-    <version>1.0.0-rc7</version>
+    <version>1.0.0-rc8</version>
 </dependency>
 ```
 
