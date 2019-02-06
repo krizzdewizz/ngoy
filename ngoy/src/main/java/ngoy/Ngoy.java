@@ -376,7 +376,7 @@ public class Ngoy<T> {
 	 */
 	public static class Config {
 		/**
-		 * The locale to render the template with
+		 * The locale to render the template with.
 		 */
 		public Locale locale;
 
@@ -386,17 +386,16 @@ public class Ngoy<T> {
 		public String translateBundle;
 
 		/**
-		 * Whether to inline components. TODO: document
+		 * Whether to inline components.
 		 */
 		public boolean inlineComponents;
 
 		/**
-		 * The content type. Known values are: <code>text/xml</code>,
-		 * <code>text/plain</code> and <code>text/html</code>. Default is
-		 * <code>text/html</code>.
+		 * The content type. Known values are: <code>text/plain</code> and
+		 * <code>text/html</code>. Default is <code>text/html</code>.
 		 * <p>
-		 * This affects the output escaping. With <code>text/plain</code>, no escaping
-		 * takes place.
+		 * With <code>text/plain</code>, no output escaping takes place and only an
+		 * element's text content is written.
 		 */
 		public String contentType;
 
@@ -442,7 +441,7 @@ public class Ngoy<T> {
 	}
 
 	private void init(List<Injector> injectors, List<ModuleWithProviders<?>> modules, List<String> packagePrefixes, List<Provider> rootProviders) {
-		
+
 		TemplateRenderCache.INSTANCE.clear();
 
 		if (!packagePrefixes.isEmpty()) {
@@ -828,7 +827,7 @@ public class Ngoy<T> {
 		} catch (RenderException e) {
 			if (e.getCause() instanceof ngoy.core.CompileException) {
 				// dynamically compiled components during rendering
-				throw (ngoy.core.CompileException)e.getCause();
+				throw (ngoy.core.CompileException) e.getCause();
 			}
 			ExprComment exprComment = isSet(e.debugInfo) ? getExprComment(e.debugInfo) : new ExprComment("<unknown>", "");
 			throw new NgoyException(e.getCause(), "Runtime error in expression \"%s\": %s\nsource: %s", exprComment.comment, e.getMessage(), exprComment.sourcePosition);
