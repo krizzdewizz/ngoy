@@ -1,6 +1,4 @@
-package ngoy.core.internal;
-
-import ngoy.core.NgoyException;
+package ngoy.core;
 
 /**
  * Exception thrown from the generated TemplateRender class.

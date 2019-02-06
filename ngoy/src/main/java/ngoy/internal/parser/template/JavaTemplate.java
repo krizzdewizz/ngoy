@@ -35,12 +35,12 @@ import ngoy.core.OnInit;
 import ngoy.core.OnRender;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
+import ngoy.core.RenderException;
 import ngoy.core.Util;
 import ngoy.core.Variable;
 import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.IteratorWithVariables;
-import ngoy.core.internal.RenderException;
 import ngoy.core.internal.Scope;
 import ngoy.core.internal.TemplateRender;
 import ngoy.internal.parser.ClassDef;
@@ -189,6 +189,8 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 	@Override
 	public void documentEnd() {
 		flushOut();
+		$("} catch (", RenderException.class, " __e){");
+		$(" throw __e;");
 		$("} catch (Exception __e){"); // try
 		$(" throw new ", RenderException.class, "(__e, ", lastExprVar, "[0]);");
 		$("}"); // catch
@@ -631,7 +633,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
 			if (vAdded.contains(vName)) {
 				continue;
 			}
-			
+
 			vAdded.add(vName);
 
 			livHash = Objects.hash(livHash, v.cmpClass);

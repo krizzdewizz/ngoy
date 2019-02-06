@@ -55,6 +55,7 @@ import ngoy.core.Nullable;
 import ngoy.core.Pipe;
 import ngoy.core.Provide;
 import ngoy.core.Provider;
+import ngoy.core.RenderException;
 import ngoy.core.cli.Cli;
 import ngoy.core.internal.AppClassResolver;
 import ngoy.core.internal.CmpRef;
@@ -62,7 +63,6 @@ import ngoy.core.internal.CoreInternalModule;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.Debug;
 import ngoy.core.internal.DefaultInjector;
-import ngoy.core.internal.RenderException;
 import ngoy.core.internal.Resolver;
 import ngoy.core.internal.StyleUrlsDirective;
 import ngoy.core.internal.TemplateCompiler;
@@ -826,6 +826,10 @@ public class Ngoy<T> {
 		try {
 			templateRenderer.render(ctx);
 		} catch (RenderException e) {
+			if (e.getCause() instanceof ngoy.core.CompileException) {
+				// dynamically compiled components during rendering
+				throw (ngoy.core.CompileException)e.getCause();
+			}
 			ExprComment exprComment = isSet(e.debugInfo) ? getExprComment(e.debugInfo) : new ExprComment("<unknown>", "");
 			throw new NgoyException(e.getCause(), "Runtime error in expression \"%s\": %s\nsource: %s", exprComment.comment, e.getMessage(), exprComment.sourcePosition);
 		}
@@ -850,7 +854,7 @@ public class Ngoy<T> {
 			ExprComment exprComment = location == null ? new ExprComment("<unknown>", "") : getExprComment(code, location.getLineNumber());
 
 			String msg = getCompileExceptionMessageWithoutLocation(e);
-			throw new NgoyException("Compile error in expression \"%s\": %s\nsource: %s", exprComment.comment, msg, exprComment.sourcePosition);
+			throw new ngoy.core.CompileException("Compile error in expression \"%s\": %s\nsource: %s", exprComment.comment, msg, exprComment.sourcePosition);
 		}
 		return bodyEvaluator.getClazz();
 	}
