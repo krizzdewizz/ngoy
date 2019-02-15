@@ -36,7 +36,7 @@ public class Ctx implements Output {
 
 	public void pe(@Nullable Object obj) {
 		if (obj != null) {
-			write(escapeHtmlXml(obj.toString()));
+			writeEscaped(obj.toString());
 		}
 	}
 
@@ -68,6 +68,10 @@ public class Ctx implements Output {
 		} catch (Exception e) {
 			throw wrap(e);
 		}
+	}
+
+	public void writeEscaped(String string) {
+		write(escapeHtmlXml(string));
 	}
 
 	@Override

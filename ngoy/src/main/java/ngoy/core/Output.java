@@ -13,9 +13,18 @@ public interface Output {
 	 * <p>
 	 * Shorthand for <code>getWriter().write(string)</code>
 	 * 
-	 * @param string String to write
+	 * @param string
+	 *            String to write
 	 */
 	void write(String string);
+
+	/**
+	 * Writes the given string escaped to the output.
+	 * 
+	 * @param string
+	 *            String to write escaped
+	 */
+	void writeEscaped(String string);
 
 	Writer getWriter();
 }
