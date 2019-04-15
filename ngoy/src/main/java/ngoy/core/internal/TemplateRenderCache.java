@@ -1,5 +1,7 @@
 package ngoy.core.internal;
 
+import static java.util.Collections.synchronizedMap;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -12,7 +14,7 @@ import java.util.function.Function;
 public enum TemplateRenderCache {
 	INSTANCE;
 
-	private final Map<Class<?>, TemplateRender> map = new HashMap<>();
+	private final Map<Class<?>, TemplateRender> map = synchronizedMap(new HashMap<>());
 
 	public TemplateRender compile(Class<?> clazz, TemplateCompiler compiler) {
 		return getTemplateRender(clazz, compiler::compile);
