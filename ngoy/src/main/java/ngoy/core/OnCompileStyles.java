@@ -9,8 +9,7 @@ package ngoy.core;
  */
 public interface OnCompileStyles {
 	/**
-	 * Called upon compilation of a html document - nNot called at 'runtime'.ot
-	 * called at 'runtime'.
+	 * Called upon compilation of a html document - not called at 'runtime'.
 	 * 
 	 * @return css style declarations to add to the document
 	 */

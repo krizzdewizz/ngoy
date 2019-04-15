@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,7 +36,7 @@ public class Util {
 	}
 
 	/**
-	 * Copies all bytes from in o out.
+	 * Copies all bytes from in to out.
 	 * 
 	 * @param in
 	 * @param out
@@ -61,7 +62,7 @@ public class Util {
 	public static String copyToString(InputStream in) {
 		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 			copy(in, out);
-			return new String(out.toByteArray(), "UTF-8");
+			return new String(out.toByteArray(), StandardCharsets.UTF_8);
 		} catch (Exception e) {
 			throw wrap(e);
 		}

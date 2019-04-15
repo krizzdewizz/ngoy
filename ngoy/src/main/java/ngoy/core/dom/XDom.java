@@ -51,7 +51,7 @@ public class XDom {
 	 * @param visitor
 	 */
 	public static void accept(Jerry nodes, NodeVisitor visitor) {
-		nodes.each((n, i) -> {
+		nodes.each((n, _i) -> {
 			visitor.start(n);
 			accept(n.contents(), visitor);
 			visitor.end(n);
