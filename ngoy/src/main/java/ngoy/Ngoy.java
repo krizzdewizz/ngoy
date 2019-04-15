@@ -8,12 +8,13 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static ngoy.core.NgoyException.wrap;
 import static ngoy.core.Provider.of;
-import static ngoy.core.Provider.useClass;
 import static ngoy.core.Provider.useValue;
 import static ngoy.core.Util.copyToString;
 import static ngoy.core.Util.getCompileExceptionMessageWithoutLocation;
 import static ngoy.core.Util.getTemplate;
 import static ngoy.core.Util.isSet;
+import static ngoy.core.internal.DeclCollector.addModuleDecls;
+import static ngoy.core.internal.DeclCollector.getSelectorToCmpDecls;
 import static ngoy.internal.parser.template.JavaTemplate.getExprComment;
 
 import java.io.InputStream;
@@ -52,8 +53,6 @@ import ngoy.core.ModuleWithProviders;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
 import ngoy.core.Nullable;
-import ngoy.core.Pipe;
-import ngoy.core.Provide;
 import ngoy.core.Provider;
 import ngoy.core.RenderException;
 import ngoy.core.cli.Cli;
@@ -62,6 +61,7 @@ import ngoy.core.internal.CmpRef;
 import ngoy.core.internal.CoreInternalModule;
 import ngoy.core.internal.Ctx;
 import ngoy.core.internal.Debug;
+import ngoy.core.internal.DeclCollector;
 import ngoy.core.internal.DefaultInjector;
 import ngoy.core.internal.Resolver;
 import ngoy.core.internal.StyleUrlsDirective;
@@ -418,7 +418,7 @@ public class Ngoy<T> {
 	private DefaultInjector injector;
 	private final Events events = new Events();
 	private final String template;
-	private final Map<String, ProviderWithModule> pipeDecls = new HashMap<>();
+	private final Map<String, DeclCollector.ProviderWithModule> pipeDecls = new HashMap<>();
 	private final Context<?> context;
 	private String contentType;
 	private boolean contentTypeComputed;
@@ -453,7 +453,7 @@ public class Ngoy<T> {
 		List<Provider> cmpProviders = new ArrayList<>();
 		Map<String, List<Provider>> cmpDecls = new LinkedHashMap<>(); // order of css
 
-		if (provides(LocaleProvider.class, rootProviders) == null) {
+		if (DeclCollector.provides(LocaleProvider.class, rootProviders) == null) {
 			cmpProviders.add(useValue(LocaleProvider.class, new LocaleProvider.Default(config.locale != null ? config.locale : Locale.getDefault())));
 		}
 
@@ -471,15 +471,9 @@ public class Ngoy<T> {
 		addModuleDecls(CommonModule.class, cmpDecls, pipeDecls, cmpProviders);
 		addModuleDecls(appClass, cmpDecls, pipeDecls, cmpProviders);
 
-		List<Provider> all = new ArrayList<>();
+		List<Provider> allProviders = new ArrayList<>();
 
-		for (ModuleWithProviders<?> mod : modules) {
-			addModuleDecls(mod.getModule(), cmpDecls, pipeDecls, cmpProviders);
-			addDecls(mod.getModule(), toProviders(mod.getDeclarations()), cmpDecls, pipeDecls);
-			for (Provider p : mod.getProviders()) {
-				all.add(p);
-			}
-		}
+		addModuleDecls(modules, cmpDecls, pipeDecls, cmpProviders, allProviders);
 
 		// collection done
 
@@ -490,22 +484,22 @@ public class Ngoy<T> {
 		resolver = createResolver(cmpDecls, pipeProviders);
 		Set<Class<?>> cmpDeclsSet = new HashSet<>();
 
-		all.add(useValue(Resolver.class, resolver));
-		all.add(useValue(Events.class, events));
-		all.add(of(SiteRenderer.class));
-		all.addAll(cmpProviders);
+		allProviders.add(useValue(Resolver.class, resolver));
+		allProviders.add(useValue(Events.class, events));
+		allProviders.add(of(SiteRenderer.class));
+		allProviders.addAll(cmpProviders);
 		cmpDecls.values()
 				.stream()
 				.flatMap(List::stream)
 				.forEach(decl -> {
-					all.add(decl);
+					allProviders.add(decl);
 					cmpDeclsSet.add(decl.getProvide());
 				});
-		all.addAll(pipeProviders.values());
-		all.addAll(rootProviders);
-		all.add(useValue(TemplateCompiler.class, clazz -> compileTemplate(null, clazz, new AppClassResolver(clazz, resolver))));
+		allProviders.addAll(pipeProviders.values());
+		allProviders.addAll(rootProviders);
+		allProviders.add(useValue(TemplateCompiler.class, clazz -> compileTemplate(null, clazz, new AppClassResolver(clazz, resolver))));
 
-		injector = new DefaultInjector(cmpDeclsSet, getSelectorToCmpDecls(cmpDeclsSet), injectors.toArray(new Injector[injectors.size()]), all.toArray(new Provider[all.size()]));
+		injector = new DefaultInjector(cmpDeclsSet, getSelectorToCmpDecls(cmpDeclsSet), injectors.toArray(new Injector[injectors.size()]), allProviders.toArray(new Provider[allProviders.size()]));
 
 		initAppInstance(rootProviders);
 
@@ -515,24 +509,9 @@ public class Ngoy<T> {
 		}
 	}
 
-	private Map<Object, Object> getSelectorToCmpDecls(Set<Class<?>> cmpDecls) {
-		Map<Object, Object> all = new HashMap<>();
-		for (Class<?> cmpDecl : cmpDecls) {
-			Component cmp = cmpDecl.getAnnotation(Component.class);
-			if (cmp == null) {
-				continue;
-			}
-
-			String selector = cmp.selector();
-			all.put(selector, cmpDecl);
-			all.put(cmpDecl, selector);
-		}
-		return all;
-	}
-
 	@SuppressWarnings("unchecked")
 	private void initAppInstance(List<Provider> rootProviders) {
-		Provider appClassProvider = provides(appClass, rootProviders);
+		Provider appClassProvider = DeclCollector.provides(appClass, rootProviders);
 		if (appClassProvider != null && appClassProvider.getUseValue() != null) {
 			appInstance = (T) appClassProvider.getUseValue();
 			injector.applyInjections(appInstance, injector.fieldInjections(appClass, new HashSet<>()));
@@ -551,12 +530,6 @@ public class Ngoy<T> {
 				return (A) appInstance;
 			}
 		}));
-	}
-
-	private List<Provider> toProviders(List<Class<?>> list) {
-		return list.stream()
-				.map(Provider::of)
-				.collect(toList());
 	}
 
 	private Resolver createResolver(Map<String, List<Provider>> cmpDecls, Map<String, Provider> pipeDecls) {
@@ -623,14 +596,6 @@ public class Ngoy<T> {
 						.collect(toList());
 			}
 		};
-	}
-
-	private Provider provides(Class<?> theClass, List<Provider> rootProviders) {
-		return rootProviders.stream()
-				.filter(p -> p.getProvide()
-						.equals(theClass))
-				.findFirst()
-				.orElse(null);
 	}
 
 	/**
@@ -708,102 +673,6 @@ public class Ngoy<T> {
 	 */
 	public void render(Writer out) {
 		render(createRenderContext(out));
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void addModuleDecls(Class<?> mod, Map<String, List<Provider>> targetCmps, Map<String, ProviderWithModule> targetPipes, List<Provider> providers) {
-
-		NgModule ngMod = mod.getAnnotation(NgModule.class);
-		if (ngMod != null) {
-			addDecls(mod, toProviders(asList(ngMod.declarations())), targetCmps, targetPipes);
-
-			for (Class<?> imp : ngMod.imports()) {
-				addModuleDecls(imp, targetCmps, targetPipes, providers);
-			}
-
-			for (Class<?> prov : ngMod.providers()) {
-				providers.add(of(prov));
-			}
-
-			for (Provide prov : ngMod.provide()) {
-				Class p = prov.provide();
-				Class c = prov.useClass();
-				providers.add(useClass(p, c));
-			}
-		}
-
-		Component cmp = mod.getAnnotation(Component.class);
-		if (cmp != null) {
-
-			for (Class<?> prov : cmp.providers()) {
-				providers.add(of(prov));
-			}
-
-			for (Provide prov : cmp.provide()) {
-				Class p = prov.provide();
-				Class c = prov.useClass();
-				providers.add(useClass(p, (Class<?>) c));
-			}
-		}
-	}
-
-	private static class ProviderWithModule {
-		final Provider provider;
-		final String moduleName;
-
-		ProviderWithModule(Provider provider, String moduleName) {
-			this.provider = provider;
-			this.moduleName = moduleName;
-		}
-	}
-
-	private void addDecls(Class<?> mod, List<Provider> providers, Map<String, List<Provider>> targetCmps, Map<String, ProviderWithModule> targetPipes) {
-		for (Provider p : providers) {
-			Pipe pipe = p.getProvide()
-					.getAnnotation(Pipe.class);
-			if (pipe != null) {
-				String pipeValue = pipe.value();
-				ProviderWithModule providerWithModule = targetPipes.get(pipeValue);
-				if (providerWithModule != null) {
-					throw new NgoyException("More than one provider found for pipe '%s': %s, %s", pipeValue, providerWithModule.moduleName, mod.getName());
-				}
-				targetPipes.put(pipeValue, new ProviderWithModule(p, mod.getName()));
-			}
-
-			Component cmp = p.getProvide()
-					.getAnnotation(Component.class);
-			if (cmp != null) {
-				putCmp(cmp.selector(), p, targetCmps, false);
-			}
-
-			Directive dir = p.getProvide()
-					.getAnnotation(Directive.class);
-			if (dir != null) {
-				putCmp(dir.selector(), p, targetCmps, true);
-			}
-		}
-	}
-
-	private void putCmp(String selector, Provider p, Map<String, List<Provider>> targetCmps, boolean allowMulti) {
-		List<Provider> list = targetCmps.get(selector);
-		if (list != null && !allowMulti) {
-			Provider existing = list.get(0);
-			if (existing.getProvide() == p.getProvide()) {
-				// double registration on same component
-				return;
-			}
-			throw new NgoyException("More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
-					selector, existing.getProvide()
-							.getName(),
-					p.getProvide()
-							.getName());
-		}
-
-		if (list == null) {
-			list = new ArrayList<>();
-			targetCmps.put(selector, list);
-		}
-		list.add(p);
 	}
 
 	private void compile(String template) {
