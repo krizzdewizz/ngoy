@@ -14,7 +14,7 @@ public interface NodeVisitor {
 	 * 
 	 * @author krizz
 	 */
-	public class Default implements NodeVisitor {
+    class Default implements NodeVisitor {
 		@Override
 		public void start(Jerry node) {
 		}

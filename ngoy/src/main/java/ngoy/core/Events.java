@@ -30,12 +30,8 @@ public class Events {
 	private final List<Event> queue = new ArrayList<>();
 
 	public <T> void subscribe(Object token, Consumer<T> consumer) {
-		Set<Consumer<?>> set = subscriptions.get(token);
-		if (set == null) {
-			set = new LinkedHashSet<>();
-			subscriptions.put(token, set);
-		}
-		set.add(consumer);
+		subscriptions.computeIfAbsent(token, _k -> new LinkedHashSet<>())
+				.add(consumer);
 	}
 
 	public void unsubscribe(Object topic) {

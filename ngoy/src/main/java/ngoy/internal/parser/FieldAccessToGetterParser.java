@@ -551,7 +551,7 @@ public final class FieldAccessToGetterParser {
 			AtomDef<AmbiguousName> an = toGetter(lastClassDef.clazz, subject);
 			lastClassDef = an.classDef;
 			return an.atom;
-		};
+		}
 
 		@Override
 		public Rvalue copyMethodInvocation(MethodInvocation subject) throws CompileException {

@@ -133,7 +133,7 @@ public class LambdaParser {
 		return body.toString();
 	}
 
-	private static enum ParamState {
+	private enum ParamState {
 		INIT, RPAREN
 	}
 

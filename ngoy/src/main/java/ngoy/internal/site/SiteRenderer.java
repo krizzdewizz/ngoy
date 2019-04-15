@@ -94,7 +94,7 @@ public class SiteRenderer {
 			}
 			Path cssFile = folder.resolve(MAIN_CSS);
 			ensureDirectory(cssFile);
-			Files.write(cssFile, styles.getBytes("UTF-8"));
+			Files.write(cssFile, styles.getBytes(StandardCharsets.UTF_8));
 		} catch (Exception e) {
 			throw wrap(e);
 		}

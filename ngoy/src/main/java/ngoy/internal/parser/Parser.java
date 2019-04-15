@@ -72,7 +72,7 @@ public class Parser {
 			switch (n.getNodeType()) {
 			case TEXT:
 				handler.setSourcePosition(exceptionInfo("", false));
-				replaceExpr(((Text) n).getTextContent());
+				replaceExpr(n.getTextContent());
 				break;
 			case ELEMENT:
 				currentEl = node;

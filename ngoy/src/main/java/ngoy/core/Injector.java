@@ -43,5 +43,5 @@ public interface Injector {
 	@Nullable
 	default <T> T getNewCmp(String selector) {
 		return null;
-	};
+	}
 }

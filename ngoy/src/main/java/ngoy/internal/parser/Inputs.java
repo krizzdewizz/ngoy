@@ -105,13 +105,13 @@ public class Inputs {
 		return result;
 	}
 
-	public static enum InputType {
-		FIELD, METHOD;
-	}
+	public enum InputType {
+		FIELD, METHOD
+    }
 
-	public static enum ValueType {
-		EXPR, TEXT;
-	}
+	public enum ValueType {
+		EXPR, TEXT
+    }
 
 	public static class CmpInput {
 		public final InputType type;

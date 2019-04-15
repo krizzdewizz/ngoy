@@ -12,9 +12,9 @@ public final class SmartStringParser {
 	private SmartStringParser() {
 	}
 
-	private static enum State {
-		INIT, SINGLE, DOUBLE;
-	}
+	private enum State {
+		INIT, SINGLE, DOUBLE
+    }
 
 	/**
 	 * Converts a single or double quoted string to a double quoted java string.

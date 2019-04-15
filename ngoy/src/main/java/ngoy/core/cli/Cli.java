@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -57,11 +58,11 @@ public class Cli {
 		if (isNew(args)) {
 			List<String> rest = new ArrayList<>(asList(args).subList(1, args.length));
 			rest.add(0, "project");
-			createGenCli().run(rest.toArray(new String[rest.size()]), out);
+			createGenCli().run(rest.toArray(new String[0]), out);
 			return;
 		} else if (isGen(args)) {
 			List<String> rest = asList(args).subList(1, args.length);
-			createGenCli().run(rest.toArray(new String[rest.size()]), out);
+			createGenCli().run(rest.toArray(new String[0]), out);
 			return;
 		}
 
@@ -132,7 +133,7 @@ public class Cli {
 	private String readTemplate(String template, boolean isFile) {
 		if (isFile) {
 			try {
-				return new String(Files.readAllBytes(Paths.get(template)), "UTF-8");
+				return new String(Files.readAllBytes(Paths.get(template)), StandardCharsets.UTF_8);
 			} catch (Exception e) {
 				throw wrap(e);
 			}
@@ -143,7 +144,7 @@ public class Cli {
 
 	void eachLine(InputStream in, Consumer<String> lineConsumer) {
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 			String line;
 			while ((line = reader.readLine()) != null) {
 				lineConsumer.accept(line);
