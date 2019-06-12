@@ -32,13 +32,13 @@ public class NgoyElementTest {
 	public void lineFix() {
 		Jerry html = XDom.parseHtml(HTML, 0);
 
-		Jerry ul = html.$("ul");
+		Jerry ul = html.s("ul");
 		assertThat(getLine(ul)).isEqualTo(8);
-		assertThat(getLine(ul.$("a"))).isEqualTo(10);
+		assertThat(getLine(ul.s("a"))).isEqualTo(10);
 
 		Jerry ulClone = XDom.cloneNode(ul);
 		assertThat(getLine(ulClone)).isEqualTo(9);
-		assertThat(getLine(ulClone.$("a"))).isEqualTo(11);
+		assertThat(getLine(ulClone.s("a"))).isEqualTo(11);
 	}
 
 	private int getLine(Jerry el) {

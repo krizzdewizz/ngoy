@@ -256,7 +256,7 @@ public class Parser {
     }
 
     private void acceptTemplate(String ref, Jerry document) {
-        Jerry template = document.$(format("%s[\\#%s]", NG_TEMPLATE, ref)).first();
+        Jerry template = document.s(format("%s[\\#%s]", NG_TEMPLATE, ref)).first();
         if (template.length() == 0) {
             throw new ParseException("No <%s> found for name %s", NG_TEMPLATE, ref);
         }

@@ -44,7 +44,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
             tpl.attr("[ngIf]", ngSwitch);
 
             int i = 0;
-            for (Jerry casee : elClone.$("[\\[ngSwitchCase\\]]")) {
+            for (Jerry casee : elClone.s("[\\[ngSwitchCase\\]]")) {
                 String caseExpr = casee.attr("[ngSwitchCase]");
                 String ref = nextRef();
                 String tag = i == 0 ? "ngElseIfFirst" : "ngElseIf";
@@ -54,7 +54,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
                 i++;
             }
 
-            Jerry def = elClone.$("[ngSwitchDefault]").first();
+            Jerry def = elClone.s("[ngSwitchDefault]").first();
             if (def.length() > 0) {
                 String ref = nextRef();
                 tpl.attr("ngElse", ref);

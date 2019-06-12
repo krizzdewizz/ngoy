@@ -148,10 +148,10 @@ public class StyleUrlsDirective implements OnCompile {
     }
 
     private Jerry findParent(Jerry el) {
-        Jerry parent = el.$("head");
+        Jerry parent = el.s("head");
 
         if (parent.length() == 0) {
-            parent = el.$("body");
+            parent = el.s("body");
         }
         if (parent.length() == 0) {
             parent = el;

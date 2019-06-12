@@ -149,7 +149,7 @@ public class CmpRefParser {
                 .hashCode();
 
         Jerry cmpTpl = parser.parse(ref.template);
-        Jerry ngContentEl = cmpTpl.$("ng-content");
+        Jerry ngContentEl = cmpTpl.s("ng-content");
         if (ngContentEl.length() == 0) {
             if (acceptedCmpRefs.contains(classId)) {
                 return;
@@ -162,7 +162,7 @@ public class CmpRefParser {
         boolean invokeHandler = ref.clazz.getAnnotation(Scope.class) == null;
         String select = ngContentEl.attr("select");
         String selector = select == null ? ngContentEl.attr("selector") : select;
-        Jerry elContents = selector == null ? el.contents() : el.$(selector);
+        Jerry elContents = selector == null ? el.contents() : el.s(selector);
 
         accept(cmpTpl, new NodeVisitor() {
             @Override
