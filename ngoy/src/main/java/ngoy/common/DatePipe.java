@@ -10,16 +10,15 @@ import ngoy.core.PipeTransform;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
 import static java.util.Arrays.asList;
 import static ngoy.core.Util.isSet;
 
 /**
- * Formats a {@link LocalDateTime}, {@link LocalDate} or {@link Date}/Long
+ * Formats a {@link TemporalAccessor} or {@link Date}/Long
  * instance in the current locale, accepting an optional format pattern as the
  * first argument.
  * <p>
@@ -54,21 +53,16 @@ public class DatePipe implements PipeTransform {
          * <p>
          * If null or empty, uses {@link SimpleDateFormat#getDateTimeInstance()}
          */
+        @Nullable
         public String defaultDatePattern;
 
         /**
-         * Pattern used to format {@link LocalDate} instances.
-         * <p>
-         * If null or empty, uses {@link DateTimeFormatter#ISO_LOCAL_DATE}
-         */
-        public String defaultLocalDatePattern;
-
-        /**
-         * Pattern used to format {@link LocalDateTime} instances.
+         * Pattern used to format {@link TemporalAccessor} instances.
          * <p>
          * If null or empty, uses {@link DateTimeFormatter#ISO_LOCAL_DATE_TIME}
          */
-        public String defaultLocalDateTimePattern;
+        @Nullable
+        public String defaultTemporalPattern;
     }
 
     private static final Config DEFAULT_CONFIG = new Config();
@@ -86,29 +80,27 @@ public class DatePipe implements PipeTransform {
             return null;
         }
 
-        if (obj instanceof LocalDateTime) {
-            return formatter(formatPattern(params, config.defaultLocalDateTimePattern), DateTimeFormatter.ISO_LOCAL_DATE_TIME).format((LocalDateTime) obj);
-        } else if (obj instanceof LocalDate) {
-            return formatter(formatPattern(params, config.defaultLocalDatePattern), DateTimeFormatter.ISO_LOCAL_DATE).format((LocalDate) obj);
+        if (obj instanceof TemporalAccessor) {
+            return formatter(formatPattern(params, config.defaultTemporalPattern), DateTimeFormatter.ISO_LOCAL_DATE_TIME).format((TemporalAccessor) obj);
         } else if (obj instanceof Date) {
             return formatDate((Date) obj, params, config.defaultDatePattern);
         } else if (obj instanceof Long) {
             return formatDate(new Date((long) obj), params, config.defaultDatePattern);
         } else {
-            throw new NgoyException("DatePipe: input must be one of type %s", asList(LocalDate.class.getName(), LocalDateTime.class.getName(), Date.class.getName(), long.class.getName()));
+            throw new NgoyException("DatePipe: input must be one of type %s", asList(TemporalAccessor.class.getName(), Date.class.getName(), long.class.getName()));
         }
     }
 
-    private String formatDate(Date date, Object[] params, String defPattern) {
+    private String formatDate(Date date, Object[] params, @Nullable String defPattern) {
         String pattern = formatPattern(params, defPattern);
         return (isSet(pattern) ? new SimpleDateFormat(pattern, localeProvider.getLocale()) : DateFormat.getDateTimeInstance()).format(date);
     }
 
-    private DateTimeFormatter formatter(String pattern, DateTimeFormatter def) {
+    private DateTimeFormatter formatter(@Nullable String pattern, DateTimeFormatter def) {
         return isSet(pattern) ? DateTimeFormatter.ofPattern(pattern, localeProvider.getLocale()) : def;
     }
 
-    private String formatPattern(Object[] params, String def) {
+    private String formatPattern(Object[] params, @Nullable String def) {
         return params.length == 0 ? def : params[0].toString();
     }
 }
