@@ -612,25 +612,24 @@ public class Ngoy<T> {
      *                   Given this route configuration:
      *
      *                   <pre>
-     *                                                       RouterConfig routerConfig = RouterConfig
-     *                                                       		.baseHref("/")
-     *                                                       		.route("index", HomeCmp.class)
-     *                                                       		.route("details/:id", DetailsCmp.class)
-     *                                                       		.build();
-     *                                                       </pre>
+     *                                                                         RouterConfig routerConfig = RouterConfig
+     *                                                                         		.baseHref("/")
+     *                                                                         		.route("index", HomeCmp.class)
+     *                                                                         		.route("details/:id", DetailsCmp.class)
+     *                                                                         		.build();
+     *                                                                         </pre>
      *                   <p>
      *                   You can render several detail pages with:
      *
      *                   <pre>
-     *                                                       ngoy.renderSite(Paths.get("docs"), "/index", "/details/123", "/details/456");
-     *                                                       </pre>
+     *                                                                         ngoy.renderSite(Paths.get("docs"), "/index", "/details/123", "/details/456");
+     *                                                                         </pre>
      *                   <p>
      *                   Paths should start with the configured
      *                   <code>baseHref()</code>.
      */
     public void renderSite(Path folder, String... routePaths) {
-        injector.get(SiteRenderer.class)
-                .render(this, folder, asList(routePaths), () -> compile(template));
+        injector.get(SiteRenderer.class).render(this, folder, asList(routePaths), () -> compile(template));
     }
 
     private Ctx createRenderContext(Writer out) {
@@ -683,7 +682,8 @@ public class Ngoy<T> {
         try {
             Parser parser = createParser(resolver, config);
             Class<?> templateClass = compileTemplate(parser, template != null ? template : getTemplate(clazz), clazz);
-            return (TemplateRender) templateClass.getMethod("createRenderer", Injector.class)
+            return (TemplateRender) templateClass
+                    .getMethod("createRenderer", Injector.class)
                     .invoke(null, resolver.getInjector());
         } catch (Exception e) {
             throw wrap(e);
