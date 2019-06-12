@@ -32,6 +32,8 @@ import static ngoy.core.NgoyException.wrap;
  */
 public class Util {
 
+    private static final Pattern EXCEPTION_LOCATION_PATTERN = Pattern.compile(".*Column \\d*:(.*)");
+
     private Util() {
     }
 
@@ -211,11 +213,9 @@ public class Util {
     public static String getCompileExceptionMessageWithoutLocation(CompileException compileException) {
         String message = compileException.getMessage();
         if (compileException.getLocation() != null) {
-            Matcher matcher = Pattern.compile(".*Column \\d*:(.*)")
-                    .matcher(message);
+            Matcher matcher = EXCEPTION_LOCATION_PATTERN.matcher(message);
             if (matcher.find()) {
-                return matcher.group(1)
-                        .trim();
+                return matcher.group(1).trim();
             }
         }
 
@@ -234,18 +234,17 @@ public class Util {
             return Integer.class.getSimpleName();
         }
 
-        return clazz.substring(0, 1)
-                .toUpperCase() + clazz.substring(1);
+        return clazz.substring(0, 1).toUpperCase() + clazz.substring(1);
     }
 
     public static boolean isPrimitive(String clazz) {
-        return "boolean".equals(clazz) //
-                || "byte".equals(clazz) //
-                || "char".equals(clazz) //
-                || "short".equals(clazz) //
-                || "int".equals(clazz) //
-                || "long".equals(clazz) //
-                || "float".equals(clazz) //
+        return "boolean".equals(clazz)
+                || "byte".equals(clazz)
+                || "char".equals(clazz)
+                || "short".equals(clazz)
+                || "int".equals(clazz)
+                || "long".equals(clazz)
+                || "float".equals(clazz)
                 || "double".equals(clazz);
     }
 
@@ -339,8 +338,7 @@ public class Util {
                         return false;
                     }
                     boolean hasArgs = meth.getParameterCount() == nArgs || meth.isVarArgs();
-                    boolean isName = meth.getName()
-                            .equals(methodName) || !isSet(methodName);
+                    boolean isName = meth.getName().equals(methodName) || !isSet(methodName);
                     return !meth.isDefault() && hasArgs && isName && Modifier.isPublic(mods);
                 })
                 .findFirst()

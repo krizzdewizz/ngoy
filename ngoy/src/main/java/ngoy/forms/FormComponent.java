@@ -60,8 +60,7 @@ public class FormComponent implements OnInit {
             controllerMethod = String.valueOf(controller);
         }
 
-        formAction = findControllerMethodAction(appRoot.getAppClass()
-                .getName(), controllerMethod);
+        formAction = findControllerMethodAction(appRoot.getAppClass().getName(), controllerMethod);
     }
 
     public static String findControllerMethodAction(String componentClass, String controllerMethod) {
@@ -70,20 +69,17 @@ public class FormComponent implements OnInit {
                     .getContextClassLoader()
                     .loadClass(componentClass);
 
-            String requestPath = findRequestMapping(clazz).map(FormComponent::findPath)
-                    .orElse("");
+            String requestPath = findRequestMapping(clazz).map(FormComponent::findPath).orElse("");
 
             String postPath = Stream.of(clazz.getMethods())
-                    .filter(method -> method.getName()
-                            .equals(controllerMethod))
+                    .filter(method -> method.getName().equals(controllerMethod))
                     .findFirst()
                     .flatMap(FormComponent::findPostMapping)
                     .map(FormComponent::findPath)
                     .orElseThrow(() -> new NgoyException("Controller method %s.%s with a @PostMapping annotation could not be not found", componentClass, controllerMethod));
 
             String path = requestPath.isEmpty() ? postPath : format("%s/%s", requestPath, postPath);
-            return path.replace("*", "")
-                    .replace("//", "/");
+            return path.replace("*", "").replace("//", "/");
         } catch (Exception e) {
             throw wrap(e);
         }
@@ -91,17 +87,13 @@ public class FormComponent implements OnInit {
 
     private static Optional<Annotation> findRequestMapping(Class<?> clazz) {
         return Stream.of(clazz.getAnnotations())
-                .filter(ann -> ann.annotationType()
-                        .getSimpleName()
-                        .equals("RequestMapping"))
+                .filter(ann -> ann.annotationType().getSimpleName().equals("RequestMapping"))
                 .findFirst();
     }
 
     private static Optional<Annotation> findPostMapping(Method method) {
         return Stream.of(method.getAnnotations())
-                .filter(ann -> ann.annotationType()
-                        .getSimpleName()
-                        .equals("PostMapping"))
+                .filter(ann -> ann.annotationType().getSimpleName().equals("PostMapping"))
                 .findFirst();
     }
 
@@ -110,14 +102,12 @@ public class FormComponent implements OnInit {
         String path = "";
         try {
             Object value;
-            value = at.getMethod("name")
-                    .invoke(ann);
+            value = at.getMethod("name").invoke(ann);
             if (value instanceof String) {
                 path = (String) value;
             }
             if (path.isEmpty()) {
-                value = at.getMethod("value")
-                        .invoke(ann);
+                value = at.getMethod("value").invoke(ann);
                 if (value instanceof String[]) {
                     String[] sa = (String[]) value;
                     path = Stream.of(sa)

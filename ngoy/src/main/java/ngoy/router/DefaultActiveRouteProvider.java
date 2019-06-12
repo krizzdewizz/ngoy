@@ -31,8 +31,7 @@ public class DefaultActiveRouteProvider implements ActiveRouteProvider {
         List<Route> routes = config.getRoutes();
         for (int i = 0, n = routes.size(); i < n; i++) {
             Route route = routes.get(i);
-            String[] splits = route.getPath()
-                    .split("/");
+            String[] splits = route.getPath().split("/");
 
             if (splits[0].equals(subSplits[0])) {
                 RouteParams params = new RouteParams();

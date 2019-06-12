@@ -13,7 +13,7 @@ public class NgoyDomBuilder extends LagartoDOMBuilder {
     private final LagartoDOMBuilderTagVisitor visitor;
 
     public NgoyDomBuilder(int baseLineNumber) {
-        config //
+        config
                 .setCalculatePosition(true)
                 .setCaseSensitive(true)
                 .setParseXmlTags(true);

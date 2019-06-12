@@ -24,9 +24,9 @@ public class NgoyElement extends Element {
         private static Position parse(String position, int baseLineNumber) {
             Matcher matcher = POSITION_PATTERN.matcher(position);
             if (matcher.find()) {
-                return new Position( //
-                        Integer.parseInt(matcher.group(1)) + baseLineNumber, //
-                        Integer.parseInt(matcher.group(2)), //
+                return new Position(
+                        Integer.parseInt(matcher.group(1)) + baseLineNumber,
+                        Integer.parseInt(matcher.group(2)),
                         Integer.parseInt(matcher.group(3)));
             }
 

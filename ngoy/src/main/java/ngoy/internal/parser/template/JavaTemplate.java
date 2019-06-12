@@ -153,9 +153,9 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
     @Override
     public void documentStart(List<Class<?>> pipes) {
 
-        pipesMap = pipes.stream()
-                .collect(toMap(pipe -> format("$%s", pipe.getAnnotation(Pipe.class)
-                        .value()), Objects::requireNonNull));
+        pipesMap = pipes.stream().collect(toMap(
+                pipe -> format("$%s", pipe.getAnnotation(Pipe.class).value()),
+                Objects::requireNonNull));
 
         $("public static ", TemplateRender.class, " createRenderer(", Injector.class, " injector) { return new Renderer(injector); }");
 
@@ -244,8 +244,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
                     throw wrap(e);
                 }
             }
-        }.create()
-                .toString();
+        }.create().toString();
 
         String setPipes = new CodeBuilder() {
             @Override
@@ -254,10 +253,10 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
                     $("_", pipeFun, "=(", PipeTransform.class, ")injector.get(", pipesMap.get(pipeFun), ".class);");
                 }
             }
-        }.create()
-                .toString();
+        }.create().toString();
 
-        code = code.replace(PIPE_METHODS, pipeMethods)
+        code = code
+                .replace(PIPE_METHODS, pipeMethods)
                 .replace(SET_PIPES, setPipes);
     }
 
@@ -714,8 +713,7 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
     }
 
     private String classToId(CmpRef cmpRef) {
-        return cmpRef.clazz.getName()
-                .replace(".", "");
+        return cmpRef.clazz.getName().replace(".", "");
     }
 
     private String[] parseUnit(String s) {
@@ -830,5 +828,4 @@ public class JavaTemplate extends CodeBuilder implements ParserHandler {
         Printer cmpPrinter = cmpPrinters.peek();
         return cmpPrinter != null ? cmpPrinter : super.getPrinter();
     }
-
 }

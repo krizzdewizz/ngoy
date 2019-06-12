@@ -42,7 +42,7 @@ public final class Debug {
 
             // without the header, line numbers do not match janino's
             // with the header, the java file can be easier inspected in the ide
-            String cu = localDebug //
+            String cu = localDebug
                     ? new CodeBuilder() {
                 @Override
                 protected void doCreate() {
@@ -51,8 +51,7 @@ public final class Debug {
                     $$(code);
                     $("}");
                 }
-            }.create()
-                    .toString()
+            }.create().toString()
                     : code;
 
             Path tempFile;

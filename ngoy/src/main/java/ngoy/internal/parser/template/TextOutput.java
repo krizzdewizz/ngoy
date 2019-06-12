@@ -32,15 +32,13 @@ public class TextOutput extends BufferedOutput {
             printEscaped(text);
         } else {
             String ref = stringRef.createRef(text);
-            printer.get()
-                    .print(format("%s%s.p(%s);\n", getDepth(), JavaTemplate.CTX_VAR, ref));
+            printer.get().print(format("%s%s.p(%s);\n", getDepth(), JavaTemplate.CTX_VAR, ref));
         }
     }
 
     public void printEscaped(String expr) {
         flush();
-        printer.get()
-                .print(format("%s%s.%s(%s);\n", getDepth(), JavaTemplate.CTX_VAR, printCall, expr));
+        printer.get().print(format("%s%s.%s(%s);\n", getDepth(), JavaTemplate.CTX_VAR, printCall, expr));
     }
 
     private String getDepth() {

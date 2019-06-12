@@ -35,8 +35,7 @@ public class CodeBuilder {
     public CodeBuilder $(Object... stringss) {
         Object[] strings = Util.flatten(stringss);
 
-        String last = strings.length > 0 ? strings[strings.length - 1].toString()
-                .trim() : "";
+        String last = strings.length > 0 ? strings[strings.length - 1].toString().trim() : "";
         if (last.endsWith("}") || last.startsWith("}")) {
             depth--;
         }

@@ -27,7 +27,7 @@ public class Cli {
     private static final Options options;
 
     static {
-        options = new Options() //
+        options = new Options()
                 .addOption("h", "help", false, "display this help")
                 .addOption("t", "target", true, "target folder for the generated artifacts. A default is searched in the following order: [./src/main/java, ./src, .]")
                 .addOption(null, "version", false, "print version information");

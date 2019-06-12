@@ -36,7 +36,8 @@ public class XDom {
      */
     public static Jerry parseHtml(String html, int baseLineNumber) {
         try {
-            return Jerry.jerry(new NgoyDomBuilder(baseLineNumber))
+            return Jerry
+                    .jerry(new NgoyDomBuilder(baseLineNumber))
                     .parse(html);
         } catch (Exception e) {
             throw wrap(e);
@@ -66,8 +67,7 @@ public class XDom {
      * @return The appended node <code>el</code>
      */
     public static Jerry appendChild(Jerry parent, Jerry el) {
-        parent.get(0)
-                .addChild(el.get(0));
+        parent.get(0).addChild(el.get(0));
         return el;
     }
 
@@ -77,8 +77,7 @@ public class XDom {
      * @param node Node to remove
      */
     public static void remove(Node node) {
-        node.getParentNode()
-                .removeChild(node);
+        node.getParentNode().removeChild(node);
     }
 
     /**
@@ -103,7 +102,7 @@ public class XDom {
 
     private static List<String> split(Jerry el, String attr, String delimiter) {
         String value = el.attr(attr);
-        return value == null //
+        return value == null
                 ? emptyList()
                 : Stream.of(value.split(delimiter))
                 .map(String::trim)
@@ -117,9 +116,7 @@ public class XDom {
      * @param el
      */
     public static void removeContents(Jerry el) {
-        Stream.of(el.contents()
-                .get())
-                .forEach(XDom::remove);
+        Stream.of(el.contents().get()).forEach(XDom::remove);
     }
 
     /**
@@ -129,8 +126,7 @@ public class XDom {
      * @return Clone
      */
     public static Jerry cloneNode(Jerry node) {
-        return parseHtml(getHtml(node), getPosition(node).getLine()).children()
-                .first();
+        return parseHtml(getHtml(node), getPosition(node).getLine()).children().first();
     }
 
     /**
@@ -140,8 +136,7 @@ public class XDom {
      * @return HTML
      */
     public static String getHtml(Jerry node) {
-        return node.get(0)
-                .getHtml();
+        return node.get(0).getHtml();
     }
 
     /**
@@ -164,8 +159,7 @@ public class XDom {
      * @return Element
      */
     public static Jerry createElement(String name, int baseLineNumber) {
-        return parseHtml(format("<%s></%s>", name, name), baseLineNumber).children()
-                .first();
+        return parseHtml(format("<%s></%s>", name, name), baseLineNumber).children().first();
     }
 
     /**
@@ -175,8 +169,7 @@ public class XDom {
      * @return Node name
      */
     public static String getNodeName(Jerry node) {
-        return node.get(0)
-                .getNodeName();
+        return node.get(0).getNodeName();
     }
 
     /**
@@ -202,8 +195,7 @@ public class XDom {
      * @return true if equals, else false
      */
     public static boolean isEqualNode(Jerry first, Jerry second) {
-        return first.get(0)
-                .equals(second.get(0));
+        return first.get(0).equals(second.get(0));
     }
 
     /**

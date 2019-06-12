@@ -81,8 +81,7 @@ public final class SmartStringParser {
         }
 
         if (state != State.INIT) {
-            throw new ParseException("String literal is not properly closed with a %s-quote: ", state.name()
-                    .toLowerCase());
+            throw new ParseException("String literal is not properly closed with a %s-quote: ", state.name().toLowerCase());
         }
 
         return sb.toString();

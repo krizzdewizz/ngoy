@@ -37,8 +37,6 @@ public class LowerCasePipe implements PipeTransform {
             return null;
         }
 
-        return obj.toString()
-                .toLowerCase(localeProvider.getLocale());
+        return obj.toString().toLowerCase(localeProvider.getLocale());
     }
-
 }

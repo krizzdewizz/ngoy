@@ -44,8 +44,7 @@ public class Parser {
             Jerry doc = parseHtml(template, 0);
 
             if ("text/plain".equals(contentType)) {
-                doc = parseHtml(ForOfMicroParser.parse(doc.get(0)
-                        .getHtml()), 0);
+                doc = parseHtml(ForOfMicroParser.parse(doc.get(0).getHtml()), 0);
             }
 
             return doc;
@@ -95,8 +94,7 @@ public class Parser {
                 insideScriptOrStyle--;
             }
 
-            if (node.get(0)
-                    .getNodeType() == ELEMENT) {
+            if (node.get(0).getNodeType() == ELEMENT) {
                 endElement(node);
             }
             currentEl = null;
@@ -232,10 +230,8 @@ public class Parser {
         String switchExpr = "";
         if (isSwitch) {
             for (Attribute attr : getAttributes(el)) {
-                if (attr.getName()
-                        .startsWith("ngElseIfFirst-")) {
-                    firstCaseTpl = attr.getName()
-                            .substring("ngElseIfFirst-".length());
+                if (attr.getName().startsWith("ngElseIfFirst-")) {
+                    firstCaseTpl = attr.getName().substring("ngElseIfFirst-".length());
                     switchExpr = attr.getValue();
                     break;
                 }
@@ -260,8 +256,7 @@ public class Parser {
     }
 
     private void acceptTemplate(String ref, Jerry document) {
-        Jerry template = document.$(format("%s[\\#%s]", NG_TEMPLATE, ref))
-                .first();
+        Jerry template = document.$(format("%s[\\#%s]", NG_TEMPLATE, ref)).first();
         if (template.length() == 0) {
             throw new ParseException("No <%s> found for name %s", NG_TEMPLATE, ref);
         }
@@ -391,9 +386,9 @@ public class Parser {
     private void replaceCommentLikeNodes(Jerry node) {
         Node n = node.get(0);
         NodeType nodeType = n.getNodeType();
-        if (nodeType == NodeType.DOCUMENT_TYPE //
-                || nodeType == NodeType.COMMENT //
-                || nodeType == NodeType.CDATA //
+        if (nodeType == NodeType.DOCUMENT_TYPE
+                || nodeType == NodeType.COMMENT
+                || nodeType == NodeType.CDATA
                 || nodeType == NodeType.XML_DECLARATION) {
             handler.text(n.getHtml(), false, false);
         }

@@ -48,8 +48,8 @@ public class CapitalizePipe implements PipeTransform {
         }
 
         String first = s.substring(0, 1);
-        return first.toUpperCase(localeProvider == null ? Locale.getDefault() : localeProvider.getLocale())
+        return first
+                .toUpperCase(localeProvider == null ? Locale.getDefault() : localeProvider.getLocale())
                 .concat(s.substring(1));
     }
-
 }

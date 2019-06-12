@@ -48,19 +48,19 @@ public class Generator {
             throw new NgoyException("Target folder must be empty: %s", targetFolder);
         }
 
-        String[] all = { //
-                ".gitignore.tpl", //
-                "build.gradle.tpl", //
-                "ngoy.cmd.tpl", //
-                "ngoy.tpl", //
-                "settings.gradle.tpl", //
-                "src/main/java/$pack/$nameWebApplication.java.tpl", //
-                "src/main/java/$pack/app/app.component.css.tpl", //
-                "src/main/java/$pack/app/app.component.html.tpl", //
-                "src/main/java/$pack/app/AppComponent.java.tpl", //
-                "src/main/java/$pack/app/Main.java.tpl", //
-                "src/main/resources/application.properties.tpl", //
-                "src/main/resources/messages_en.properties.tpl", //
+        String[] all = {
+                ".gitignore.tpl",
+                "build.gradle.tpl",
+                "ngoy.cmd.tpl",
+                "ngoy.tpl",
+                "settings.gradle.tpl",
+                "src/main/java/$pack/$nameWebApplication.java.tpl",
+                "src/main/java/$pack/app/app.component.css.tpl",
+                "src/main/java/$pack/app/app.component.html.tpl",
+                "src/main/java/$pack/app/AppComponent.java.tpl",
+                "src/main/java/$pack/app/Main.java.tpl",
+                "src/main/resources/application.properties.tpl",
+                "src/main/resources/messages_en.properties.tpl",
         };
         generateArtifacts(genModel, "", targetFolder, "project", all);
         initGit(targetFolder);
@@ -94,13 +94,12 @@ public class Generator {
 
                 String className = tpl.contains(".java") ? genModel.className : name;
 
-                String file = tpl //
+                String file = tpl
                         .replace("$pack", genModel.pack.replace('.', '/'))
                         .replace("$name", className)
                         .replace(".tpl", "");
 
-                Path targetFile = targetFolder.resolve(packDir)
-                        .resolve(file);
+                Path targetFile = targetFolder.resolve(packDir).resolve(file);
 
                 Files.createDirectories(targetFile.getParent());
 
@@ -158,7 +157,7 @@ public class Generator {
     }
 
     protected void runProcess(Path cwd, String... args) throws Exception {
-        new ProcessBuilder(args) //
+        new ProcessBuilder(args)
                 .directory(cwd.toFile())
                 .start()
                 .waitFor();

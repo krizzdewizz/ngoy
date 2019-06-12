@@ -25,8 +25,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
 
     @Override
     public void start(Jerry el) {
-        if (el.get(0)
-                .getNodeType() == ELEMENT) {
+        if (el.get(0).getNodeType() == ELEMENT) {
 
             String ngSwitch = el.attr("[ngSwitch]");
             if (ngSwitch == null) {
@@ -55,8 +54,7 @@ public class SwitchToElseIfVisitor implements NodeVisitor {
                 i++;
             }
 
-            Jerry def = elClone.$("[ngSwitchDefault]")
-                    .first();
+            Jerry def = elClone.$("[ngSwitchDefault]").first();
             if (def.length() > 0) {
                 String ref = nextRef();
                 tpl.attr("ngElse", ref);

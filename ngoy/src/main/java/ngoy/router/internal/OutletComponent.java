@@ -29,8 +29,7 @@ public class OutletComponent implements OnDestroy, OnRender {
 
     @Override
     public void onRender(Output output) {
-        Route route = router.getRoutes()
-                .get(router.getActiveRoute());
+        Route route = router.getRoutes().get(router.getActiveRoute());
 
         Class<?> routeClass = route.getComponent();
 
@@ -71,8 +70,7 @@ public class OutletComponent implements OnDestroy, OnRender {
     }
 
     private String getSelector(Class<?> component) {
-        return component.getAnnotation(Component.class)
-                .selector();
+        return component.getAnnotation(Component.class).selector();
     }
 
 }

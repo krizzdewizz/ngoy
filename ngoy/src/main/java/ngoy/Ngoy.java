@@ -251,13 +251,13 @@ public class Ngoy<T> {
          * @return App
          */
         public Ngoy<T> build() {
-            return new Ngoy<>(appClass, //
-                    null, //
-                    config, //
-                    injectors, //
-                    modules, //
-                    packagePrefixes, //
-                    providers, //
+            return new Ngoy<>(appClass,
+                    null,
+                    config,
+                    injectors,
+                    modules,
+                    packagePrefixes,
+                    providers,
                     null);
         }
     }
@@ -445,7 +445,7 @@ public class Ngoy<T> {
         TemplateRenderCache.INSTANCE.clear();
 
         if (!packagePrefixes.isEmpty()) {
-            modules.add(new ClassScanner() //
+            modules.add(new ClassScanner()
                     .excludeClassNames(appClass.getName())
                     .scan(packagePrefixes.toArray(new String[0])));
         }
@@ -612,18 +612,18 @@ public class Ngoy<T> {
      *                   Given this route configuration:
      *
      *                   <pre>
-     *                                     RouterConfig routerConfig = RouterConfig //
-     *                                     		.baseHref("/")
-     *                                     		.route("index", HomeCmp.class)
-     *                                     		.route("details/:id", DetailsCmp.class)
-     *                                     		.build();
-     *                                     </pre>
+     *                                                       RouterConfig routerConfig = RouterConfig
+     *                                                       		.baseHref("/")
+     *                                                       		.route("index", HomeCmp.class)
+     *                                                       		.route("details/:id", DetailsCmp.class)
+     *                                                       		.build();
+     *                                                       </pre>
      *                   <p>
      *                   You can render several detail pages with:
      *
      *                   <pre>
-     *                                     ngoy.renderSite(Paths.get("docs"), "/index", "/details/123", "/details/456");
-     *                                     </pre>
+     *                                                       ngoy.renderSite(Paths.get("docs"), "/index", "/details/123", "/details/456");
+     *                                                       </pre>
      *                   <p>
      *                   Paths should start with the configured
      *                   <code>baseHref()</code>.

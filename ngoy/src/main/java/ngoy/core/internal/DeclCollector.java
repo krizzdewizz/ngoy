@@ -85,8 +85,7 @@ public class DeclCollector {
 
     public static void addDecls(Class<?> mod, List<Provider> providers, Map<String, List<Provider>> targetCmps, Map<String, ProviderWithModule> targetPipes) {
         for (Provider p : providers) {
-            Pipe pipe = p.getProvide()
-                    .getAnnotation(Pipe.class);
+            Pipe pipe = p.getProvide().getAnnotation(Pipe.class);
             if (pipe != null) {
                 String pipeValue = pipe.value();
                 ProviderWithModule providerWithModule = targetPipes.get(pipeValue);
@@ -96,14 +95,12 @@ public class DeclCollector {
                 targetPipes.put(pipeValue, new ProviderWithModule(p, mod.getName()));
             }
 
-            Component cmp = p.getProvide()
-                    .getAnnotation(Component.class);
+            Component cmp = p.getProvide().getAnnotation(Component.class);
             if (cmp != null) {
                 putCmp(cmp.selector(), p, targetCmps, false);
             }
 
-            Directive dir = p.getProvide()
-                    .getAnnotation(Directive.class);
+            Directive dir = p.getProvide().getAnnotation(Directive.class);
             if (dir != null) {
                 putCmp(dir.selector(), p, targetCmps, true);
             }
@@ -119,10 +116,9 @@ public class DeclCollector {
                 return;
             }
             throw new NgoyException("More than one component matched on the selector '%s'. Make sure that only one component's selector can match a given element. Conflicting components: %s, %s",
-                    selector, existing.getProvide()
-                    .getName(),
-                    p.getProvide()
-                            .getName());
+                    selector,
+                    existing.getProvide().getName(),
+                    p.getProvide().getName());
         }
 
         list = targetCmps.computeIfAbsent(selector, _k -> new ArrayList<>());
@@ -146,8 +142,7 @@ public class DeclCollector {
 
     public static Provider provides(Class<?> theClass, List<Provider> rootProviders) {
         return rootProviders.stream()
-                .filter(p -> p.getProvide()
-                        .equals(theClass))
+                .filter(p -> p.getProvide().equals(theClass))
                 .findFirst()
                 .orElse(null);
     }

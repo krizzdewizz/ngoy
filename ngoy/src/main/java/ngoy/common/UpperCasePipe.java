@@ -37,8 +37,6 @@ public class UpperCasePipe implements PipeTransform {
             return null;
         }
 
-        return obj.toString()
-                .toUpperCase(localeProvider.getLocale());
+        return obj.toString().toUpperCase(localeProvider.getLocale());
     }
-
 }

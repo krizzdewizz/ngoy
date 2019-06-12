@@ -31,7 +31,7 @@ public class Cli {
     private static final Options options;
 
     static {
-        options = new Options() //
+        options = new Options()
                 .addOption("h", "help", false, "display this help")
                 .addOption("e", "expression", false, "treat template as an expression")
                 .addOption("f", "file", false, "read template from file instead of command line")

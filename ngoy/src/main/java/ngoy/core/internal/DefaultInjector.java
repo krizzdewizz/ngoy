@@ -39,8 +39,7 @@ public class DefaultInjector implements Injector {
     @Nullable
     private static Annotation findAnnotation(Annotation[] anns, String name) {
         for (Annotation a : anns) {
-            if (name.equals(a.annotationType()
-                    .getSimpleName())) {
+            if (name.equals(a.annotationType().getSimpleName())) {
                 return a;
             }
         }
@@ -158,8 +157,7 @@ public class DefaultInjector implements Injector {
 
             List<Injection> fieldInjections = fieldInjections(useClass, resolving);
 
-            MethodHandle constructor = MethodHandles.lookup()
-                    .unreflectConstructor(ctor);
+            MethodHandle constructor = MethodHandles.lookup().unreflectConstructor(ctor);
 
             factory = () -> {
                 try {

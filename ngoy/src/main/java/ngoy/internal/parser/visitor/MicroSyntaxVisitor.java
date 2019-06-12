@@ -35,8 +35,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
 
     @Override
     public void start(Jerry el) {
-        if (el.get(0)
-                .getNodeType() == ELEMENT) {
+        if (el.get(0).getNodeType() == ELEMENT) {
             replaceNgIf(el);
             replaceNgFor(el);
 
@@ -163,8 +162,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
             return result;
         }
 
-        String right = ngFor.substring(semi)
-                .trim();
+        String right = ngFor.substring(semi).trim();
 
         String[] parts = right.split(";");
         for (String part : parts) {
@@ -177,16 +175,14 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
                 throw new NgoyException("Parse error in ngFor. Variables must be specified like: 'index as i; odd as o'");
             }
 
-            String variable = matcher.group(1)
-                    .trim();
+            String variable = matcher.group(1).trim();
             ForOfVariable fv;
             try {
                 fv = ForOfVariable.valueOf(variable);
             } catch (Exception e) {
                 throw new NgoyException("Unknown ngFor variable: %s", variable);
             }
-            String alias = matcher.group(2)
-                    .trim();
+            String alias = matcher.group(2).trim();
             result.put(fv, alias);
         }
 
@@ -194,8 +190,7 @@ public class MicroSyntaxVisitor extends NodeVisitor.Default {
     }
 
     private void replaceWithTemplate(Jerry el, String microAttr, String replacedAttr) {
-        if (!el.get(0)
-                .hasAttribute(microAttr)) {
+        if (!el.get(0).hasAttribute(microAttr)) {
             return;
         }
         String value = el.attr(microAttr);

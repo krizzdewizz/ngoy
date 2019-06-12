@@ -140,8 +140,7 @@ public class StyleUrlsDirective implements OnCompile {
         }
 
         if (OnCompileStyles.class.isAssignableFrom(clazz)) {
-            OnCompileStyles compileStyle = (OnCompileStyles) resolver.getInjector()
-                    .get(clazz);
+            OnCompileStyles compileStyle = (OnCompileStyles) resolver.getInjector().get(clazz);
             styles.add(compileStyle.onCompileStyles());
         }
 

@@ -395,16 +395,16 @@ public final class FieldAccessToGetterParser {
             }
 
             decl.addDeclaredMethod(new MethodDeclarator(//
-                    loc, //
-                    null, //
-                    new Java.Modifiers(Mod.PUBLIC), //
-                    null, //
-                    new ReferenceType(loc, rtIds, null), //
-                    lambdaMeth.getName(), //
-                    params, //
-                    new org.codehaus.janino.Java.Type[0], //
-                    null, //
-                    statements //
+                    loc,
+                    null,
+                    new Java.Modifiers(Mod.PUBLIC),
+                    null,
+                    new ReferenceType(loc, rtIds, null),
+                    lambdaMeth.getName(),
+                    params,
+                    new org.codehaus.janino.Java.Type[0],
+                    null,
+                    statements
             ));
             return new AtomDef<>(new NewAnonymousClassInstance(loc, null, decl, new Rvalue[0]), cd);
         }
