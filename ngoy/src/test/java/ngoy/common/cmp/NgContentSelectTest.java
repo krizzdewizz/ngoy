@@ -1,11 +1,5 @@
 package ngoy.common.cmp;
 
-import static ngoy.core.Provider.useValue;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Inject;
@@ -13,6 +7,11 @@ import ngoy.core.Input;
 import ngoy.core.NgModule;
 import ngoy.model.Person;
 import ngoy.service.TestService;
+import org.junit.Before;
+import org.junit.Test;
+
+import static ngoy.core.Provider.useValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class NgContentSelectTest extends ANgoyTest {
 

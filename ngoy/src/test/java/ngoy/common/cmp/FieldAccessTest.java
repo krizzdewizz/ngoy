@@ -1,18 +1,17 @@
 package ngoy.common.cmp;
 
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-
-import java.util.List;
-import java.util.stream.Stream;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.NgoyException;
 import ngoy.model.Person;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.stream.Stream;
+
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class FieldAccessTest extends ANgoyTest {
 

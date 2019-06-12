@@ -1,15 +1,14 @@
 package ngoy.hyperml.cmp;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import hyperml.base.BaseMl;
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.NgModule;
 import ngoy.hyperml.Html;
 import ngoy.hyperml.HtmlComponent;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StylesDocumentTest extends ANgoyTest {
 

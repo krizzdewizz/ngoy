@@ -1,17 +1,16 @@
 package ngoy.common.cmp;
 
-import static java.lang.String.format;
-import static ngoy.core.Provider.useValue;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.HostBinding;
 import ngoy.core.Inject;
 import ngoy.core.NgModule;
 import ngoy.service.OkService;
+import org.junit.Test;
+
+import static java.lang.String.format;
+import static ngoy.core.Provider.useValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HostBindingWithMethodCallTest extends ANgoyTest {
 

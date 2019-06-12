@@ -4,7 +4,7 @@ import java.lang.invoke.MethodHandle;
 
 public class ReflectStyleBinding extends ReflectBinding {
 
-	public ReflectStyleBinding(String name, MethodHandle getter) {
-		super(';', ':', name, getter);
-	}
+    public ReflectStyleBinding(String name, MethodHandle getter) {
+        super(';', ':', name, getter);
+    }
 }

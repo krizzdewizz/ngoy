@@ -1,19 +1,18 @@
 package ngoy;
 
-import static ngoy.Ngoy.app;
-import static ngoy.core.NgoyException.wrap;
-
-import java.io.StringWriter;
-import java.util.Objects;
-import java.util.function.Function;
-
+import ngoy.Ngoy.Builder;
+import ngoy.core.Provider;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import ngoy.Ngoy.Builder;
-import ngoy.core.Provider;
+import java.io.StringWriter;
+import java.util.Objects;
+import java.util.function.Function;
+
+import static ngoy.Ngoy.app;
+import static ngoy.core.NgoyException.wrap;
 
 public abstract class ANgoyTest {
 

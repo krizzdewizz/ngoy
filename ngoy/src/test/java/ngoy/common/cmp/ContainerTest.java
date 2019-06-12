@@ -1,14 +1,13 @@
 package ngoy.common.cmp;
 
-import static ngoy.core.Provider.useValue;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Inject;
 import ngoy.service.OkService;
+import org.junit.Test;
+
+import static ngoy.core.Provider.useValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContainerTest extends ANgoyTest {
 

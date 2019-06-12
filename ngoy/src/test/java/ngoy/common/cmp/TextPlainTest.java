@@ -1,15 +1,14 @@
 package ngoy.common.cmp;
 
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.model.Person;
+import org.junit.Test;
+
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TextPlainTest extends ANgoyTest {
 	@Component(selector = "test", contentType = "text/plain", template = "\nage of {{person.getName()}}:\t {{person.getAge()}}\n")

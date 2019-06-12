@@ -1,15 +1,5 @@
 package ngoy.common.cmp;
 
-import static java.util.Arrays.asList;
-import static ngoy.core.Provider.useValue;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.common.cmp.CmpTest.PersonCmp;
 import ngoy.core.Component;
@@ -18,6 +8,15 @@ import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
 import ngoy.model.Person;
 import ngoy.service.TestService;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static ngoy.core.Provider.useValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class ForOfTest extends ANgoyTest {
 

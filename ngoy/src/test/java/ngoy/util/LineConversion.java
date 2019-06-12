@@ -1,12 +1,12 @@
 package ngoy.util;
 
-import static java.util.stream.Collectors.joining;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.joining;
 
 public class LineConversion {
 	public static void main(String[] args) throws Exception {

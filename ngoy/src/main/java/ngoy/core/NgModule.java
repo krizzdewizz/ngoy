@@ -16,31 +16,31 @@ import java.lang.annotation.Target;
  * Unlike other module systems, there exists no boundaries between modules. At
  * the end, everything is stuffed into a single map. Everything can be reached
  * from anywhere.
- * 
+ *
  * @author krizz
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NgModule {
-	/**
-	 * @return Components, directives and pipes that this module provides
-	 */
-	Class<?>[] declarations() default {};
+    /**
+     * @return Components, directives and pipes that this module provides
+     */
+    Class<?>[] declarations() default {};
 
-	/**
-	 * @return Other modules (classes annotated with {@link NgModule})
-	 */
-	Class<?>[] imports() default {};
+    /**
+     * @return Other modules (classes annotated with {@link NgModule})
+     */
+    Class<?>[] imports() default {};
 
-	/**
-	 * @return Providers/services
-	 */
-	Class<?>[] providers() default {};
+    /**
+     * @return Providers/services
+     */
+    Class<?>[] providers() default {};
 
-	/**
-	 * Declare another class for a provider/service.
-	 * 
-	 * @return Providers
-	 */
-	Provide[] provide() default {};
+    /**
+     * Declare another class for a provider/service.
+     *
+     * @return Providers
+     */
+    Provide[] provide() default {};
 }

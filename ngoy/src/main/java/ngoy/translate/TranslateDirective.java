@@ -11,43 +11,43 @@ import ngoy.core.Input;
  * Example:
  * <p>
  * Given a message bundle:
- * 
+ *
  * <pre>
  * HELLO_MSG = hello
  * </pre>
- * 
+ * <p>
  * then
- * 
+ *
  * <pre>
  * &lt;a translate="MSG_HELLO"&gt;&lt;/a&gt;
  * </pre>
- * 
+ * <p>
  * will produce
- * 
+ *
  * <pre>
  * &lt;a&gt;hello&lt;/a&gt;
  * </pre>
- * 
+ * <p>
  * As with any other attribute/directive, a binding can be used to get the
  * translation key dynamically:
- * 
+ *
  * <pre>
  * &lt;a [translate]="key"&gt;&lt;/a&gt;
  * </pre>
- * 
+ *
  * @author krizz
  */
 @Directive(selector = "[translate]")
 public class TranslateDirective {
 
-	@Inject
-	public TranslateService translateService;
+    @Inject
+    public TranslateService translateService;
 
-	@HostBinding("ngText")
-	public String translation;
+    @HostBinding("ngText")
+    public String translation;
 
-	@Input
-	public void translate(String key) {
-		translation = translateService.translate(key);
-	}
+    @Input
+    public void translate(String key) {
+        translation = translateService.translate(key);
+    }
 }

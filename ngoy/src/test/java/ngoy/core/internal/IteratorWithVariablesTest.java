@@ -1,16 +1,15 @@
 package ngoy.core.internal;
 
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
+import ngoy.core.NgoyException;
+import ngoy.internal.parser.ForOfVariable;
+import org.junit.Test;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-
-import ngoy.core.NgoyException;
-import ngoy.internal.parser.ForOfVariable;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class IteratorWithVariablesTest {
 	@Test

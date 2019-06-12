@@ -1,13 +1,13 @@
 package ngoy.internal.parser;
 
-import static ngoy.internal.parser.SmartStringParser.toJavaString;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-
 import org.codehaus.janino.ExpressionEvaluator;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import static ngoy.internal.parser.SmartStringParser.toJavaString;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class SmartStringParserTest {
 

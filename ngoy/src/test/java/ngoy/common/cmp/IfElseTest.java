@@ -1,16 +1,15 @@
 package ngoy.common.cmp;
 
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
+import org.junit.Test;
+
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class IfElseTest extends ANgoyTest {
 

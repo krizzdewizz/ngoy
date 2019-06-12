@@ -1,12 +1,12 @@
 package ngoy;
 
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-
 import ngoy.core.Provider;
 import ngoy.testapp.PersonService;
 import ngoy.testapp.TestApp;
+
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
 public class XTest {
 //	@org.junit.Test

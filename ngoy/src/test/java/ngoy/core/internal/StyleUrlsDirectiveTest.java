@@ -1,16 +1,15 @@
 package ngoy.core.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.CssTransform;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
 import ngoy.core.Provide;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class StyleUrlsDirectiveTest extends ANgoyTest {
 	@Component(selector = "a-cmp", template = "", styleUrls = { "style_a0.css", "style_a1.css" })

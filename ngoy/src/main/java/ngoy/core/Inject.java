@@ -15,26 +15,26 @@ import java.lang.annotation.Target;
  * Constructor parameters must not be annotated.
  * <p>
  * Example:
- * 
+ *
  * <pre>
  * &#64;Component(...)
  * public class MyComponent {
  * 	&#64;Inject
  * 	public MyService service;
- * 
- *	&#64;Inject
+ *
+ * 	&#64;Inject
  * 	public void setOtherService(OtherService otherService) {
  * 		...
- * 	}
+ *    }
  * }
  * </pre>
  * <p>
  * You can use any annotation that is named <code>Inject</code>.
- * 
+ *
  * @author krizz
  * @see Optional
  */
-@Target({ ElementType.FIELD, ElementType.METHOD })
+@Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Inject {
 }

@@ -1,14 +1,13 @@
 package ngoy.internal.parser.visitor;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import jodd.jerry.Jerry;
 import ngoy.core.dom.NodeVisitor;
 import ngoy.core.dom.XDom;
 import ngoy.internal.parser.Parser;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SwitchToElseIfVisitorTest {
 

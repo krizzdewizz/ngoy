@@ -1,18 +1,17 @@
 package ngoy.common.cmp;
 
-import static ngoy.core.Provider.useValue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import org.junit.Test;
-import org.mockito.Mock;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Inject;
 import ngoy.core.NgModule;
 import ngoy.core.OnDestroy;
 import ngoy.core.OnInit;
+import org.junit.Test;
+import org.mockito.Mock;
+
+import static ngoy.core.Provider.useValue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class LifecycleTest extends ANgoyTest {
 

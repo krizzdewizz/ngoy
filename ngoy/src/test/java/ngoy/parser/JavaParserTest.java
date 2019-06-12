@@ -1,21 +1,20 @@
 package ngoy.parser;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toMap;
+import ngoy.core.Component;
+import ngoy.core.Input;
+import ngoy.core.NgModule;
+import ngoy.model.Person;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-
-import ngoy.core.Component;
-import ngoy.core.Input;
-import ngoy.core.NgModule;
-import ngoy.model.Person;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toMap;
 
 public class JavaParserTest {
 

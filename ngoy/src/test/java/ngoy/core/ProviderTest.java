@@ -1,13 +1,11 @@
 package ngoy.core;
 
+import org.junit.Test;
+
 import static ngoy.core.Provider.of;
 import static ngoy.core.Provider.useClass;
 import static ngoy.core.Provider.useValue;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
-import ngoy.core.Provider;
 
 public class ProviderTest {
 

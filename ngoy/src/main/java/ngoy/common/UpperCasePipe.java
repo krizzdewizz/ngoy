@@ -11,34 +11,34 @@ import ngoy.core.PipeTransform;
  * <p>
  * Example:
  * <p>
- * 
+ *
  * <pre>
- *  
+ *
  * {{ 'hello' | lowercase }}
  * </pre>
  * <p>
  * Output:
- * 
+ *
  * <pre>
  * HELLO
  * </pre>
- * 
+ *
  * @author krizz
  */
 @Pipe("uppercase")
 public class UpperCasePipe implements PipeTransform {
 
-	@Inject
-	public LocaleProvider localeProvider;
+    @Inject
+    public LocaleProvider localeProvider;
 
-	@Override
-	public Object transform(@Nullable Object obj, Object... params) {
-		if (obj == null) {
-			return null;
-		}
+    @Override
+    public Object transform(@Nullable Object obj, Object... params) {
+        if (obj == null) {
+            return null;
+        }
 
-		return obj.toString()
-				.toUpperCase(localeProvider.getLocale());
-	}
+        return obj.toString()
+                .toUpperCase(localeProvider.getLocale());
+    }
 
 }

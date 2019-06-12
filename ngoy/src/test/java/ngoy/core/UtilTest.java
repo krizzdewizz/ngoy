@@ -1,22 +1,21 @@
 package ngoy.core;
 
-import static java.lang.String.format;
-import static ngoy.core.Util.primitiveToRefType;
-import static ngoy.core.Util.sourceClassName;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
+import ngoy.core.UtilTest.Inner.Sub$Inner;
+import ngoy.core.UtilTest.Inner.SubInner;
+import ngoy.model.Person;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import ngoy.core.UtilTest.Inner.Sub$Inner;
-import ngoy.core.UtilTest.Inner.SubInner;
-import ngoy.model.Person;
+import static java.lang.String.format;
+import static ngoy.core.Util.primitiveToRefType;
+import static ngoy.core.Util.sourceClassName;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class UtilTest {
 	@Rule

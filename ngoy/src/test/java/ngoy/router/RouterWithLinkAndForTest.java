@@ -1,12 +1,5 @@
 package ngoy.router;
 
-import static ngoy.core.Provider.useValue;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.Modules;
 import ngoy.core.Component;
@@ -14,6 +7,12 @@ import ngoy.core.Inject;
 import ngoy.core.Input;
 import ngoy.core.ModuleWithProviders;
 import ngoy.core.NgModule;
+import org.junit.Test;
+
+import static ngoy.core.Provider.useValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RouterWithLinkAndForTest extends ANgoyTest {
 

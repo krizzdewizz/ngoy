@@ -16,30 +16,30 @@ import java.lang.annotation.Target;
  * <p>
  * A directive does not have a template and therefore does not alter the subtree
  * of it's matching elements.
- * 
+ *
  * @author krizz
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Directive {
-	/**
-	 * The directive will be associated to all elements matching this CSS selector.
-	 * 
-	 * @return CSS selector
-	 */
-	String selector();
+    /**
+     * The directive will be associated to all elements matching this CSS selector.
+     *
+     * @return CSS selector
+     */
+    String selector();
 
-	/**
-	 * Providers/services that this component depends on.
-	 * 
-	 * @return providers
-	 */
-	Class<?>[] providers() default {};
+    /**
+     * Providers/services that this component depends on.
+     *
+     * @return providers
+     */
+    Class<?>[] providers() default {};
 
-	/**
-	 * Providers/services that this component depends on.
-	 * 
-	 * @return providers
-	 */
-	Provide[] provide() default {};
+    /**
+     * Providers/services that this component depends on.
+     *
+     * @return providers
+     */
+    Provide[] provide() default {};
 }

@@ -1,11 +1,10 @@
 package ngoy.core.dom;
 
-import static ngoy.core.dom.NgoyElement.getPosition;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import jodd.jerry.Jerry;
 import org.junit.Test;
 
-import jodd.jerry.Jerry;
+import static ngoy.core.dom.NgoyElement.getPosition;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class NgoyElementTest {
 

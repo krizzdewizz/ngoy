@@ -1,58 +1,58 @@
 package ngoy.internal.parser.visitor;
 
-import static ngoy.core.dom.XDom.isEqualNode;
-
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Document;
 import ngoy.core.dom.NodeVisitor;
 
+import static ngoy.core.dom.XDom.isEqualNode;
+
 public class SkipSubTreeVisitor implements NodeVisitor {
 
-	private final NodeVisitor target;
-	private boolean skip;
-	private Jerry skipNode;
+    private final NodeVisitor target;
+    private boolean skip;
+    private Jerry skipNode;
 
-	public SkipSubTreeVisitor(NodeVisitor target) {
-		this.target = target;
-	}
+    public SkipSubTreeVisitor(NodeVisitor target) {
+        this.target = target;
+    }
 
-	public void skipSubTree(Jerry node) {
-		this.skipNode = node;
-	}
+    public void skipSubTree(Jerry node) {
+        this.skipNode = node;
+    }
 
-	private boolean skip(Jerry node) {
-		return skip || node.get(0) instanceof Document;
-	}
+    private boolean skip(Jerry node) {
+        return skip || node.get(0) instanceof Document;
+    }
 
-	public boolean shallSkip(Jerry node) {
-		return skipNode != null && isEqualNode(skipNode, node.parent());
-	}
+    public boolean shallSkip(Jerry node) {
+        return skipNode != null && isEqualNode(skipNode, node.parent());
+    }
 
-	@Override
-	public void start(Jerry node) {
-		if (skip(node)) {
-			return;
-		}
+    @Override
+    public void start(Jerry node) {
+        if (skip(node)) {
+            return;
+        }
 
-		if (shallSkip(node)) {
-			skip = true;
-			return;
-		}
+        if (shallSkip(node)) {
+            skip = true;
+            return;
+        }
 
-		target.start(node);
-	}
+        target.start(node);
+    }
 
-	@Override
-	public void end(Jerry node) {
-		if (shallSkip(node)) {
-			skip = false;
-			return;
-		}
+    @Override
+    public void end(Jerry node) {
+        if (shallSkip(node)) {
+            skip = false;
+            return;
+        }
 
-		if (skip(node)) {
-			return;
-		}
+        if (skip(node)) {
+            return;
+        }
 
-		target.end(node);
-	}
+        target.end(node);
+    }
 }

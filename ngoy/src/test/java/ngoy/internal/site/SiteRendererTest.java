@@ -1,15 +1,5 @@
 package ngoy.internal.site;
 
-import static ngoy.core.Provider.useValue;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
 import ngoy.ANgoyTest;
 import ngoy.Ngoy;
 import ngoy.core.Component;
@@ -20,6 +10,15 @@ import ngoy.router.RouteParams;
 import ngoy.router.RouterConfig;
 import ngoy.router.RouterModule;
 import ngoy.router.RouterTest.ACmp;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static ngoy.core.Provider.useValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SiteRendererTest extends ANgoyTest {
 

@@ -1,13 +1,12 @@
 package ngoy.core.internal;
 
-import static org.hamcrest.CoreMatchers.containsString;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class InvalidSyntaxTest extends ANgoyTest {
 

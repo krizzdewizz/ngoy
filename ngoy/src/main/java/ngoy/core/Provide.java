@@ -7,13 +7,13 @@ import java.lang.annotation.Target;
 
 /**
  * Provide another class at 'declaration time'.
- * 
+ *
  * @author krizz
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Provide {
-	Class<?> provide();
+    Class<?> provide();
 
-	Class<?> useClass();
+    Class<?> useClass();
 }

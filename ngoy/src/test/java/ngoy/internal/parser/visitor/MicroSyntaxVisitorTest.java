@@ -1,24 +1,23 @@
 package ngoy.internal.parser.visitor;
 
-import static ngoy.core.dom.XDom.accept;
-import static ngoy.internal.parser.visitor.MicroSyntaxVisitor.parseVariables;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
-import static org.hamcrest.CoreMatchers.containsString;
-
-import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import jodd.jerry.Jerry;
 import jodd.lagarto.dom.Element;
 import ngoy.core.NgoyException;
 import ngoy.core.dom.NodeVisitor;
 import ngoy.internal.parser.ForOfVariable;
 import ngoy.internal.parser.Parser;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import java.util.Map;
+
+import static ngoy.core.dom.XDom.accept;
+import static ngoy.internal.parser.visitor.MicroSyntaxVisitor.parseVariables;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class MicroSyntaxVisitorTest {
 

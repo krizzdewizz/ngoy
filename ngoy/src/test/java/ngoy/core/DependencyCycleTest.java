@@ -1,10 +1,9 @@
 package ngoy.core;
 
-import static org.hamcrest.CoreMatchers.containsString;
-
+import ngoy.ANgoyTest;
 import org.junit.Test;
 
-import ngoy.ANgoyTest;
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class DependencyCycleTest extends ANgoyTest {
 

@@ -8,9 +8,9 @@ package ngoy.core;
  * <p>
  * {@link #onDestroy()} is called in the rendering phase when the component
  * gets out of scope.
- * 
+ *
  * @author krizz
  */
 public interface OnDestroy {
-	void onDestroy();
+    void onDestroy();
 }

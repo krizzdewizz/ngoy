@@ -6,7 +6,7 @@ import ngoy.hyperml.base.HtmlBaseComponent;
 
 /**
  * Base class for code-only components using {@link Html}.
- * 
+ *
  * @author krizz
  */
 public abstract class HtmlComponent extends HtmlBaseComponent<Html> implements OnRender, OnCompileStyles {

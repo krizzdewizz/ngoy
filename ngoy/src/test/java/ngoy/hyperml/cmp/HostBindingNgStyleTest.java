@@ -1,16 +1,15 @@
 package ngoy.hyperml.cmp;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Map;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.HostBinding;
 import ngoy.core.NgModule;
 import ngoy.hyperml.HtmlComponent;
+import org.junit.Test;
+
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HostBindingNgStyleTest extends ANgoyTest {
 	@Component(selector = "x")

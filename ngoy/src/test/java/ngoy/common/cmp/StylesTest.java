@@ -1,14 +1,13 @@
 package ngoy.common.cmp;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import ngoy.ANgoyTest;
+import ngoy.core.Component;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
-
-import ngoy.ANgoyTest;
-import ngoy.core.Component;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StylesTest extends ANgoyTest {
 

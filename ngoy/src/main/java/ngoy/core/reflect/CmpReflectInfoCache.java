@@ -5,24 +5,24 @@ import java.util.Map;
 
 /**
  * Caches a component's input info.
- * 
+ *
  * @author krizz
  */
 public enum CmpReflectInfoCache {
-	INSTANCE;
+    INSTANCE;
 
-	private final Map<Class<?>, CmpReflectInfo> map = new HashMap<>();
+    private final Map<Class<?>, CmpReflectInfo> map = new HashMap<>();
 
-	public CmpReflectInfo getInfo(Class<?> clazz) {
-		CmpReflectInfo info = map.get(clazz);
-		if (info == null) {
-			map.put(clazz, info = CmpReflectInfo.of(clazz));
-		}
+    public CmpReflectInfo getInfo(Class<?> clazz) {
+        CmpReflectInfo info = map.get(clazz);
+        if (info == null) {
+            map.put(clazz, info = CmpReflectInfo.of(clazz));
+        }
 
-		return info;
-	}
+        return info;
+    }
 
-	public void clear() {
-		map.clear();
-	}
+    public void clear() {
+        map.clear();
+    }
 }

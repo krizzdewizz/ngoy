@@ -1,15 +1,14 @@
 package ngoy.translate;
 
-import static ngoy.core.Provider.useValue;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Locale;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.LocaleProvider;
+import org.junit.Test;
+
+import java.util.Locale;
+
+import static ngoy.core.Provider.useValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TranslateDirectiveTest extends ANgoyTest {
 

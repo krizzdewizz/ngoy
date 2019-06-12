@@ -1,14 +1,13 @@
 package ngoy.common.cmp;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
 import ngoy.model.Person;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InlineCmpsTest extends ANgoyTest {
 

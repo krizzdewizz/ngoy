@@ -2,17 +2,17 @@ package ngoy.core;
 
 /**
  * Exception thrown from the generated TemplateRender class.
- * 
+ *
  * @author krizz
  */
 public class RenderException extends NgoyException {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public final String debugInfo;
+    public final String debugInfo;
 
-	public RenderException(Exception cause, String debugInfo) {
-		super(cause);
-		this.debugInfo = debugInfo;
-	}
+    public RenderException(Exception cause, String debugInfo) {
+        super(cause);
+        this.debugInfo = debugInfo;
+    }
 }

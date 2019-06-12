@@ -1,9 +1,5 @@
 package ngoy.internal.scan;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import ngoy.core.ModuleWithProviders;
 import ngoy.internal.scan.a.ACmp;
 import ngoy.internal.scan.a.ADirective;
@@ -11,6 +7,9 @@ import ngoy.internal.scan.a.XCmp;
 import ngoy.internal.scan.a.b.BCmp;
 import ngoy.internal.scan.a.b.BPipe;
 import ngoy.internal.scan.a.b.BService;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ClassScannerTest {
 

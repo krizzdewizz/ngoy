@@ -1,17 +1,16 @@
 package ngoy;
 
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
+import ngoy.Ngoy.Config;
+import ngoy.core.Context;
+import org.junit.Test;
 
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.junit.Test;
-
-import ngoy.Ngoy.Config;
-import ngoy.core.Context;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RenderStringTest {
 

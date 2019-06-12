@@ -1,10 +1,9 @@
 package ngoy.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import ngoy.model.Person;
 import org.junit.Test;
 
-import ngoy.model.Person;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContextTest {
 

@@ -1,16 +1,15 @@
 package ngoy.common.cmp;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Inject;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
 
 public class RuntimeErrorsTest extends ANgoyTest {
 

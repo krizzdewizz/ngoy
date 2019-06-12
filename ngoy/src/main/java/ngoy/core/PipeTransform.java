@@ -5,13 +5,13 @@ package ngoy.core;
  * <p>
  * The transformation can be parametrized. Every pipe must implement this
  * interface.
- * 
+ *
  * @author krizz
  */
 public interface PipeTransform {
-	/**
-	 * @param obj if null, implementors should return null
-	 */
-	@Nullable
-	Object transform(@Nullable Object obj, Object... params);
+    /**
+     * @param obj if null, implementors should return null
+     */
+    @Nullable
+    Object transform(@Nullable Object obj, Object... params);
 }

@@ -1,5 +1,12 @@
 package ngoy.internal.parser;
 
+import ngoy.internal.parser.ExprParser.ExpressionWithPipesParser;
+import ngoy.internal.parser.ExprParser.TextHandler;
+import ngoy.internal.parser.org.springframework.expression.Expression;
+import org.junit.Test;
+
+import java.util.HashSet;
+
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -8,14 +15,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-
-import java.util.HashSet;
-
-import org.junit.Test;
-
-import ngoy.internal.parser.ExprParser.ExpressionWithPipesParser;
-import ngoy.internal.parser.ExprParser.TextHandler;
-import ngoy.internal.parser.org.springframework.expression.Expression;
 
 public class ExprParserTest {
 

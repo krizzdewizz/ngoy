@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * An annotated parameter or method (return type) may have the null value.
- * 
+ *
  * @author krizz
  */
 @Documented

@@ -1,10 +1,10 @@
 package ngoy.testapp;
 
-import static java.util.Arrays.asList;
+import ngoy.model.Person;
 
 import java.util.List;
 
-import ngoy.model.Person;
+import static java.util.Arrays.asList;
 
 public class PersonService {
 	public List<Person> getPersons() {

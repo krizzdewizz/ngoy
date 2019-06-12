@@ -1,11 +1,10 @@
 package ngoy.internal.parser;
 
-import static ngoy.internal.parser.Inputs.fieldName;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import ngoy.ANgoyTest;
 import org.junit.Test;
 
-import ngoy.ANgoyTest;
+import static ngoy.internal.parser.Inputs.fieldName;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InputsTest extends ANgoyTest {
 

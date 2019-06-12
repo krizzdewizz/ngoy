@@ -1,9 +1,5 @@
 package ngoy.j2html;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.function.Consumer;
-
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
 import j2html.tags.UnescapedText;
@@ -18,6 +14,10 @@ import ngoy.core.internal.Ctx;
 import ngoy.core.reflect.CmpReflectInfo;
 import ngoy.core.reflect.CmpReflectInfoCache;
 import ngoy.core.reflect.ReflectBinding;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.function.Consumer;
 
 /**
  * Base class for code-only components using j2html.

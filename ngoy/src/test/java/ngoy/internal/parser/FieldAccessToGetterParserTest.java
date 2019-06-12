@@ -1,16 +1,15 @@
 package ngoy.internal.parser;
 
-import static java.util.Collections.emptyMap;
-import static ngoy.internal.parser.FieldAccessToGetterParser.fieldAccessToGetter;
-import static org.assertj.core.api.Assertions.assertThat;
+import ngoy.model.Person;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-
-import ngoy.model.Person;
+import static java.util.Collections.emptyMap;
+import static ngoy.internal.parser.FieldAccessToGetterParser.fieldAccessToGetter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("unused")
 public class FieldAccessToGetterParserTest {

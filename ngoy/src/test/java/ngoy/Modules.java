@@ -1,9 +1,8 @@
 package ngoy;
 
-import java.util.function.Function;
-
-import ngoy.Ngoy;
 import ngoy.core.ModuleWithProviders;
+
+import java.util.function.Function;
 
 public class Modules<T> implements Function<Ngoy.Builder<?>, Ngoy.Builder<?>> {
 

@@ -1,15 +1,14 @@
 package ngoy.common.directive;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import jodd.jerry.Jerry;
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Directive;
 import ngoy.core.NgModule;
 import ngoy.core.OnCompile;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DirectiveMany2Test extends ANgoyTest {
 

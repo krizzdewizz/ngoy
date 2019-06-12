@@ -1,15 +1,14 @@
 package ngoy.common.cmp;
 
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
+import ngoy.ANgoyTest;
+import ngoy.core.Component;
+import org.junit.Test;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-
-import ngoy.ANgoyTest;
-import ngoy.core.Component;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ForOf2Test extends ANgoyTest {
 

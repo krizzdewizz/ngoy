@@ -1,15 +1,14 @@
 package ngoy.common.cmp;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Inject;
 import ngoy.core.NgModule;
 import ngoy.core.Provide;
 import ngoy.internal.scan.ClassScannerTest;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ModuleTest extends ANgoyTest {
 

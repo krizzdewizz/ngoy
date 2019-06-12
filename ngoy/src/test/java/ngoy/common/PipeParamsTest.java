@@ -1,16 +1,15 @@
 package ngoy.common;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
 import ngoy.core.Pipe;
 import ngoy.core.PipeTransform;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class PipeParamsTest extends ANgoyTest {
 

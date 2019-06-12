@@ -1,15 +1,14 @@
 package ngoy.hyperml.cmp;
 
-import static org.hamcrest.CoreMatchers.containsString;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.Input;
 import ngoy.core.NgModule;
 import ngoy.core.NgoyException;
 import ngoy.hyperml.HtmlComponent;
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class ErrorTest extends ANgoyTest {
 

@@ -1,12 +1,11 @@
 package ngoy.internal.parser;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import ngoy.internal.parser.LambdaParser.Lambda;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import ngoy.internal.parser.LambdaParser.Lambda;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class LambdaParserTest {
 

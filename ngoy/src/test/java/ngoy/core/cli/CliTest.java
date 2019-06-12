@@ -1,8 +1,11 @@
 package ngoy.core.cli;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
+import ngoy.core.NgoyException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,13 +18,9 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
-import ngoy.core.NgoyException;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CliTest {
 

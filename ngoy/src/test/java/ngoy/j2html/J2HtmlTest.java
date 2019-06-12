@@ -1,10 +1,5 @@
 package ngoy.j2html;
 
-import static j2html.TagCreator.div;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import j2html.tags.DomContent;
 import j2html.tags.Text;
 import ngoy.ANgoyTest;
@@ -12,6 +7,10 @@ import ngoy.core.Component;
 import ngoy.core.HostBinding;
 import ngoy.core.NgModule;
 import ngoy.core.OnInit;
+import org.junit.Test;
+
+import static j2html.TagCreator.div;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class J2HtmlTest extends ANgoyTest {
 	@Component(selector = "x")

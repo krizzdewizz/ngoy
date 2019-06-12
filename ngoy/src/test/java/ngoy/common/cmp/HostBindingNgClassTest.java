@@ -1,16 +1,15 @@
 package ngoy.common.cmp;
 
-import static ngoy.core.Util.map;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Map;
-
-import org.junit.Test;
-
 import ngoy.ANgoyTest;
 import ngoy.core.Component;
 import ngoy.core.HostBinding;
 import ngoy.core.NgModule;
+import org.junit.Test;
+
+import java.util.Map;
+
+import static ngoy.core.Util.map;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HostBindingNgClassTest extends ANgoyTest {
 	@Component(selector = "x", template = "hello")

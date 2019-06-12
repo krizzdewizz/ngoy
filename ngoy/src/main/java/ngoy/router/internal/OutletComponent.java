@@ -18,62 +18,61 @@ import ngoy.router.Router;
 @Component(selector = "router-outlet", template = "<ng-content></ng-content>")
 @Scope
 public class OutletComponent implements OnDestroy, OnRender {
-	@Inject
-	public Router router;
+    @Inject
+    public Router router;
 
-	@Inject
-	public TemplateCompiler compiler;
+    @Inject
+    public TemplateCompiler compiler;
 
-	@Inject
-	public Injector injector;
+    @Inject
+    public Injector injector;
 
-	@Override
-	public void onRender(Output output) {
-		Route route = router.getRoutes()
-				.get(router.getActiveRoute());
+    @Override
+    public void onRender(Output output) {
+        Route route = router.getRoutes()
+                .get(router.getActiveRoute());
 
-		Class<?> routeClass = route.getComponent();
+        Class<?> routeClass = route.getComponent();
 
-		OnRender render;
-		Object cmp = injector.getNew(routeClass);
-		if (cmp instanceof OnRender) {
-			render = (OnRender) cmp;
-		} else {
-			TemplateRender templateRender = TemplateRenderCache.INSTANCE.compile(routeClass, compiler);
-			Object cmpp = cmp;
-			render = out -> templateRender.render(new Ctx(cmpp, injector, out.getWriter()));
-		}
+        OnRender render;
+        Object cmp = injector.getNew(routeClass);
+        if (cmp instanceof OnRender) {
+            render = (OnRender) cmp;
+        } else {
+            TemplateRender templateRender = TemplateRenderCache.INSTANCE.compile(routeClass, compiler);
+            render = out -> templateRender.render(new Ctx(cmp, injector, out.getWriter()));
+        }
 
-		if (cmp instanceof OnInit) {
-			((OnInit) cmp).onInit();
-		}
+        if (cmp instanceof OnInit) {
+            ((OnInit) cmp).onInit();
+        }
 
-		String selector = getSelector(routeClass);
+        String selector = getSelector(routeClass);
 
-		output.write("<");
-		output.write(selector);
-		output.write(">");
+        output.write("<");
+        output.write(selector);
+        output.write(">");
 
-		render.onRender(output);
-		render.onRenderEnd(output);
+        render.onRender(output);
+        render.onRenderEnd(output);
 
-		output.write("</");
-		output.write(selector);
-		output.write(">");
+        output.write("</");
+        output.write(selector);
+        output.write(">");
 
-		if (cmp instanceof OnDestroy) {
-			((OnDestroy) cmp).onDestroy();
-		}
-	}
+        if (cmp instanceof OnDestroy) {
+            ((OnDestroy) cmp).onDestroy();
+        }
+    }
 
-	@Override
-	public void onDestroy() {
-		router.clearRouteParams();
-	}
+    @Override
+    public void onDestroy() {
+        router.clearRouteParams();
+    }
 
-	private String getSelector(Class<?> component) {
-		return component.getAnnotation(Component.class)
-				.selector();
-	}
+    private String getSelector(Class<?> component) {
+        return component.getAnnotation(Component.class)
+                .selector();
+    }
 
 }
